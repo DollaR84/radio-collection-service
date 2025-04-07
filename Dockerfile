@@ -8,7 +8,7 @@ ENV PYTHONUNBUFFERED 1
 WORKDIR /app
 
 # Copy the current directory contents and requirements.txt into the container at /app
-COPY src requirements.txt entrypoint.sh /app/
+COPY src/* entrypoint.sh requirements.txt /app/
 
 # Ensure the entrypoint script is executable
 RUN chmod a+x /app/entrypoint.sh
