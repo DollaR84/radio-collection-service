@@ -1,0 +1,11 @@
+.idea
+.git
+.gitignore
+env/
+venv/
+.env/
+.env
+*.log
+.flake8
+uploads/
+wsl2win/
