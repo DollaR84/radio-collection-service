@@ -1,0 +1,11 @@
+__pycache__/
+.ruff_cache/
+wsl2win/
+env/
+.env/
+.env
+.flake8
+*.log
+*.dat
+*.json
+*.service
