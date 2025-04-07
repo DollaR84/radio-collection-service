@@ -8,7 +8,7 @@ ENV PYTHONUNBUFFERED 1
 WORKDIR /app
 
 # Copy the current directory contents and requirements.txt into the container at /app
-COPY src requirements.txt /app
+COPY src requirements.txt entrypoint.sh /app/
 
 # Ensure the entrypoint script is executable
 RUN chmod a+x /app/entrypoint.sh
@@ -27,4 +27,5 @@ RUN pip install --upgrade pip \
 EXPOSE 8000
 
 # Run the application
-CMD ["sh", "src/entrypoint.sh"]
+ENTRYPOINT ["bash"]
+CMD ["/app/entrypoint.sh"]
