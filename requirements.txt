@@ -1,4 +1,6 @@
 alembic
+asyncpg
+coloredlogs
 dishka
 fastapi
 SQLAlchemy
