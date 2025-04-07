@@ -5,6 +5,7 @@ env/
 .env/
 .env
 .flake8
+*.ini
 *.log
 *.dat
 *.json
