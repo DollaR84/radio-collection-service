@@ -24,7 +24,7 @@ def get_app() -> FastAPI:
     )
 
     config = Config()
-    app = FastAPIApp().create(config)
+    app = FastAPIApp(config).app
 
     container = make_async_container(
         DBProvider(),
