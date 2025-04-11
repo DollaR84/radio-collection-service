@@ -7,18 +7,18 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, async_scoped_session
 from sqlalchemy.exc import OperationalError
 
-from config import Config
+from config import DBConfig
 
 from .base import Base, BaseDbConnector
 
 
 class PostgresDbConnector(BaseDbConnector):
 
-    def __init__(self, config: Config):
+    def __init__(self, config: DBConfig):
         try:
             self._engine = create_async_engine(
-                config.db.db_uri,
-                echo=config.db.debug,
+                config.uri,
+                echo=config.debug,
                 pool_size=15,
                 max_overflow=15,
             )

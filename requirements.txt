@@ -5,3 +5,7 @@ dishka
 fastapi
 SQLAlchemy
 uvicorn
+authlib
+passlib
+python-jose
+python-multipart

@@ -13,7 +13,7 @@ from api import FastAPIApp
 
 from config import Config
 
-from providers import DBProvider
+from providers import AppProvider, DBProvider, ServiceProvider
 
 
 def get_app() -> FastAPI:
@@ -24,10 +24,12 @@ def get_app() -> FastAPI:
     )
 
     config = Config()
-    app = FastAPIApp(config).app
+    app = FastAPIApp(config.api).app
 
     container = make_async_container(
+        AppProvider(),
         DBProvider(),
+        ServiceProvider(),
         context={Config: config},
     )
 

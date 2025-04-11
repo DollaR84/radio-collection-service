@@ -13,7 +13,7 @@ class DBConfig:
     debug: bool = os.environ.get("SQLALCHEMY_DEBUG", "false").lower() == "true"
 
     @property
-    def db_uri(self) -> str:
+    def uri(self) -> str:
         return f"postgresql+asyncpg://{self.username}:{self.password}@{self.host}:{self.port}/{self.db_name}"
 
 
@@ -24,6 +24,25 @@ class APIConfig:
 
 
 @dataclass(slots=True)
+class SecurityConfig:
+    algorithm: str = os.environ["ALGORITHM"]
+    secret_key: str = os.environ["SECRET_KEY"]
+
+    access_token_expire_minutes: int = int(os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
+    refresh_token_expire_minutes: int = int(os.environ.get("REFRESH_TOKEN_EXPIRE_MINUTES", 15))
+
+
+@dataclass(slots=True)
+class GoogleConfig:
+    google_client_name: str = os.environ["GOOGLE_CLIENT_NAME"]
+    google_client_id: str = os.environ["GOOGLE_CLIENT_ID"]
+    google_client_secret: str = os.environ["GOOGLE_CLIENT_SECRET"]
+    google_redirect_url: str = os.environ["GOOGLE_REDIRECT_URL"]
+
+
+@dataclass(slots=True)
 class Config:
     db: DBConfig = field(default_factory=DBConfig)
     api: APIConfig = field(default_factory=APIConfig)
+    security: SecurityConfig = field(default_factory=SecurityConfig)
+    google: GoogleConfig = field(default_factory=GoogleConfig)
