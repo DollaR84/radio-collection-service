@@ -41,8 +41,16 @@ class GoogleConfig:
 
 
 @dataclass(slots=True)
+class ParserConfig:
+    max_workers: int = 4
+    batch_size: int = 25
+    default_sleep_timeout: float = 0.5
+
+
+@dataclass(slots=True)
 class Config:
     db: DBConfig = field(default_factory=DBConfig)
     api: APIConfig = field(default_factory=APIConfig)
     security: SecurityConfig = field(default_factory=SecurityConfig)
     google: GoogleConfig = field(default_factory=GoogleConfig)
+    parser: ParserConfig = field(default_factory=ParserConfig)
