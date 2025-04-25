@@ -4,7 +4,7 @@ from typing import Protocol
 from db import domain
 
 
-class CreateUser(Protocol):
+class CreateUserInterface(Protocol):
 
     @abstractmethod
     async def create_user(

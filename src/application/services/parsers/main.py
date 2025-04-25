@@ -7,7 +7,7 @@ from .base import BaseParser
 from .collections import BaseCollection
 
 
-class Parser(BaseParser):
+class CollectionParser(BaseParser):
 
     def __init__(self, config: ParserConfig):
         super().__init__(config)

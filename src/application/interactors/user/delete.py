@@ -6,7 +6,7 @@ from application import interfaces
 
 class DeleteUser:
 
-    def __init__(self, gateway: interfaces.DeleteUser):
+    def __init__(self, gateway: interfaces.DeleteUserInterface):
         self.gateway = gateway
 
     async def __call__(

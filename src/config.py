@@ -18,6 +18,12 @@ class DBConfig:
 
 
 @dataclass(slots=True)
+class RedisConfig:
+    host: str = os.environ["REDIS_PORT"]
+    port: int = int(os.environ["REDIS_PORT"])
+
+
+@dataclass(slots=True)
 class APIConfig:
     debug: bool = os.environ.get("FASTAPI_DEBUG", "false").lower() == "true"
     upload_folder: str = os.environ["FASTAPI_UPLOAD_FOLDER"]
@@ -48,9 +54,20 @@ class ParserConfig:
 
 
 @dataclass(slots=True)
+class WorkerConfig:
+    redis_database: int = int(os.environ["REDIS_DATABASE"])
+    handle_signals: bool = os.environ.get("HANDLE_SIGNALS", "false").lower() == "true"
+    health_check_interval: int = int(os.environ["HEALTH_CHECK_INTERVAL"])
+    max_jobs: int = int(os.environ["MAX_JOBS"])
+    job_timeout: int = int(os.environ["JOB_TIMEOUT"])
+
+
+@dataclass(slots=True)
 class Config:
     db: DBConfig = field(default_factory=DBConfig)
+    redis: RedisConfig = field(default_factory=RedisConfig)
     api: APIConfig = field(default_factory=APIConfig)
     security: SecurityConfig = field(default_factory=SecurityConfig)
     google: GoogleConfig = field(default_factory=GoogleConfig)
     parser: ParserConfig = field(default_factory=ParserConfig)
+    worker: WorkerConfig = field(default_factory=WorkerConfig)

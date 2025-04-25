@@ -6,7 +6,7 @@ from db import domain
 
 class CreateUser:
 
-    def __init__(self, gateway: interfaces.CreateUser):
+    def __init__(self, gateway: interfaces.CreateUserInterface):
         self.gateway = gateway
 
     async def __call__(

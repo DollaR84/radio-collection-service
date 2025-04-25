@@ -2,9 +2,6 @@ import logging
 
 import coloredlogs
 
-from dishka import make_async_container
-from dishka.integrations.fastapi import setup_dishka
-
 from fastapi import FastAPI
 
 import uvicorn
@@ -13,7 +10,7 @@ from api import FastAPIApp
 
 from config import Config
 
-from providers import AppProvider, DBProvider, ServiceProvider
+from container import setup_container
 
 
 def get_app() -> FastAPI:
@@ -26,14 +23,7 @@ def get_app() -> FastAPI:
     config = Config()
     app = FastAPIApp(config.api).app
 
-    container = make_async_container(
-        AppProvider(),
-        DBProvider(),
-        ServiceProvider(),
-        context={Config: config},
-    )
-
-    setup_dishka(container, app)
+    setup_container(app, config)
     return app
 
 

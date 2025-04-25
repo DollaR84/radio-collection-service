@@ -1,16 +1,14 @@
-import logging
 from typing import Optional
 import uuid
 
 from sqlalchemy import delete
-from sqlalchemy.exc import SQLAlchemyError
 
 from ..base import BaseGateway
 
 from ...models import User
 
 
-class DeleteUserGateway(BaseGateway):
+class DeleteUserGateway(BaseGateway[int, User]):
 
     async def delete_user(
             self,
@@ -26,10 +24,6 @@ class DeleteUserGateway(BaseGateway):
         else:
             stmt = stmt.where(User.id == user_id)
 
-        try:
-            await self.session.execute(stmt)
-            await self.session.commit()
-        except SQLAlchemyError as error:
-            logging.error(error, exc_info=True)
-            id_str = f"uuid_id={uuid_id}" if uuid_id else f"id={user_id}"
-            raise ValueError(f"Error deleting User {id_str}") from error
+        id_str = f"uuid_id={uuid_id}" if uuid_id else f"id={user_id}"
+        error_message = f"Error deleting User {id_str}"
+        await self._delete(stmt, error_message)

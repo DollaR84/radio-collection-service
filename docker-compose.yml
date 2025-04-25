@@ -9,6 +9,13 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
   api:
     build:
       context: .
@@ -20,6 +27,18 @@ services:
       - "8000:8000"
     depends_on:
       - db
+      - redis
+
+  worker:
+    build: .
+    env_file: .env
+    volumes:
+      - .:/app
+    command: arq workers.worker.WorkerSettings
+    depends_on:
+      - db
+      - redis
 
 volumes:
   postgres_data:
+  redis_data:

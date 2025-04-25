@@ -1,6 +1,6 @@
-import logging
+import uuid
 
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import insert
 
 from db import domain
 
@@ -9,19 +9,14 @@ from ..base import BaseGateway
 from ...models import User
 
 
-class CreateUserGateway(BaseGateway):
+class CreateUserGateway(BaseGateway[uuid.UUID, User]):
 
     async def create_user(
             self,
             data: domain.NewUserModel,
     ) -> domain.UserModel:
-        new_user = User(**data.dict())
+        stmt = insert(User).values(**data.dict()).returning(User.uuid_id)
+        error_message = "Error creating new user"
 
-        try:
-            self.session.add(new_user)
-            await self.session.commit()
-
-            return domain.UserModel(uuid_id=new_user.uuid_id)
-        except SQLAlchemyError as error:
-            logging.error(error, exc_info=True)
-            raise ValueError("Error creating new user") from error
+        result = await self._create(stmt, error_message)
+        return domain.UserModel(uuid_id=result)

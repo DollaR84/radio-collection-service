@@ -15,3 +15,7 @@ aiohttp
 fake_useragent
 beautifulsoup4
 pyradios
+redis
+aioredis
+arq
+apscheduler

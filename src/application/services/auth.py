@@ -3,6 +3,7 @@ from typing import Any
 from authlib.integrations.starlette_client import OAuth
 
 from config import Config, GoogleConfig
+
 from utils import SecurityTool
 
 

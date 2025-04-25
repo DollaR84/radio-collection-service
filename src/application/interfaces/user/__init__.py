@@ -1,8 +1,8 @@
-from .create import CreateUser
-from .delete import DeleteUser
+from .create import CreateUserInterface
+from .delete import DeleteUserInterface
 
 
 __all__ = [
-    "CreateUser",
-    "DeleteUser",
+    "CreateUserInterface",
+    "DeleteUserInterface",
 ]
