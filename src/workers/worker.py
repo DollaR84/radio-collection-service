@@ -20,13 +20,13 @@ from .exceptions import TaskManagerNotInitializedError
 from .manager import TaskManager
 
 
-async def execute_register_task(ctx: dict[Any, Any], task_name: str, *args: Any, **kwargs: Any) -> Any:
+async def execute_register_task(ctx: dict[Any, Any], task_name: str) -> Any:
     _ctx = cast(ArqContext, ctx)
     if _ctx.task_manager is None:
         raise TaskManagerNotInitializedError()
 
     task_cls = _ctx.task_manager.get_task(task_name)
-    return await task_cls().execute(*args, **kwargs)
+    await _ctx.task_manager.execute_task(task_cls)
 
 
 def get_worker_settings() -> Type[WorkerSettingsBase]:
@@ -37,7 +37,7 @@ def get_worker_settings() -> Type[WorkerSettingsBase]:
         setup_container(_ctx, config)
 
         _ctx.scheduler = AsyncIOScheduler()
-        _ctx.task_manager = TaskManager(scheduler=_ctx.scheduler)
+        _ctx.task_manager = TaskManager(scheduler=_ctx.scheduler, container=_ctx.dishka_container)
         _ctx.task_manager.setup_scheduler()
         _ctx.scheduler.start()
 

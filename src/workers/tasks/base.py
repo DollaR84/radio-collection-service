@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 import re
-from typing import Any, Type, Optional
+from typing import Any, Optional, Type
 
 from apscheduler.triggers.base import BaseTrigger
 
@@ -41,5 +41,5 @@ class BaseTask(ABC):
         )
 
     @abstractmethod
-    async def execute(self, *args: Any, **kwargs: Any) -> None:
+    async def execute(self) -> None:
         raise NotImplementedError

@@ -6,6 +6,9 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from arq.jobs import Job as ArqJob
 from arq import ArqRedis
 
+from dishka import AsyncContainer
+
+from .exceptions import SchedulerNotInitializedError, ContainerNotInitializedError
 from .tasks import BaseTask
 
 
@@ -15,9 +18,11 @@ class TaskManager:
             self,
             scheduler: Optional[AsyncIOScheduler] = None,
             redis_pool: Optional[ArqRedis] = None,
+            container: Optional[AsyncContainer] = None,
     ):
         self.scheduler = scheduler
         self.redis_pool = redis_pool
+        self.container = container
 
         self._scheduled_tasks: list[Job] = []
         self._on_demand_tasks: dict[str, Type[BaseTask]] = {}
@@ -29,12 +34,21 @@ class TaskManager:
 
     def _create_scheduled_job(self, task_cls: Type[BaseTask]) -> Job:
         if self.scheduler is None:
-            raise ValueError("need scheduler to work tasks on the schedule")
+            raise SchedulerNotInitializedError()
 
         return self.scheduler.add_job(
-            task_cls().execute,
+            self.execute_task,
             trigger=task_cls.trigger,
+            args=[task_cls],
         )
+
+    async def execute_task(self, task_cls: Type[BaseTask]) -> None:
+        if self.container is None:
+            raise ContainerNotInitializedError()
+
+        async with self.container() as container:
+            task = await container.get(task_cls)
+            await task.execute()
 
     def register_adhoc_tasks(self) -> None:
         for task_cls in BaseTask.get_all_tasks():

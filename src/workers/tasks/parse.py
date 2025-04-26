@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
-from typing import Any
 
+from dishka import FromDishka
 from dishka.integrations.arq import inject
 
 from apscheduler.triggers.cron import CronTrigger
@@ -16,21 +16,24 @@ from .base import BaseTask
 class BaseCollectionTask(BaseTask, is_abstract=True):
 
     @inject
-    async def execute(  # pylint: disable=arguments-differ
+    def __init__(
             self,
-            parser: CollectionParser,
-            get_urls: GetStationUrls,
-            creator: CreateStation,
-            *args: Any,
-            **kwargs: Any,
-    ) -> None:
-        collection = parser.get_collection(self.get_name())
+            parser: FromDishka[CollectionParser],
+            get_urls: FromDishka[GetStationUrls],
+            creator: FromDishka[CreateStation],
+    ):
+        self.parser: CollectionParser = parser
+        self.get_urls: GetStationUrls = get_urls
+        self.creator: CreateStation = creator
+
+    async def execute(self) -> None:
+        collection = self.parser.get_collection(self.get_name())
         data = await collection.parse()
 
-        exists_urls = await get_urls()
+        exists_urls = await self.get_urls()
         data = [collection_item for collection_item in data if collection_item.url not in exists_urls]
 
-        await creator([Station(**item.dict()) for item in data])
+        await self.creator([Station(**item.dict()) for item in data])
 
 
 class RadioBrowserTask(BaseCollectionTask):
