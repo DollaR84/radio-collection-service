@@ -1,5 +1,6 @@
 from abc import abstractmethod
 from typing import Protocol
+import uuid
 
 from db import domain
 
@@ -10,5 +11,5 @@ class CreateUserInterface(Protocol):
     async def create_user(
             self,
             data: domain.NewUserModel,
-    ) -> domain.UserModel:
+    ) -> uuid.UUID:
         ...

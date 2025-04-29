@@ -1,6 +1,6 @@
 from dishka.integrations.fastapi import DishkaRoute, FromDishka
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 
 from application import dto
 from application import interactors
@@ -18,23 +18,110 @@ router = APIRouter(prefix="/auth", route_class=DishkaRoute)
     status_code=status.HTTP_201_CREATED,
     response_model=schemas.UserResponse,
 )
-async def register_user_by_password(
-        data: schemas.UserCreateByPassword,
+async def register_user(
+        data: schemas.UserCreateByPassword | schemas.UserGoogle,
         auth: FromDishka[Authenticator],
-        interactor: FromDishka[interactors.CreateUser],
+        creator: FromDishka[interactors.CreateUser],
 ) -> schemas.UserResponse:
-    user_data = dto.NewUser(
-        email=data.email,
-        user_name=data.user_name,
-        hashed_password=auth.get_password_hash(data.password),
-    )
+    user_data = dto.NewUser(email=data.email)
+    if isinstance(data, schemas.UserCreateByPassword):
+        user_data.user_name = data.user_name
+        user_data.hashed_password = auth.get_password_hash(data.password)
+    elif isinstance(data, schemas.UserGoogle):
+        user_data.google_id = data.google_id
 
     try:
-        user = await interactor(user_data)
+        uuid_id = await creator(user_data)
     except Exception as error:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Failed to create user: email '{data.email}' is exists",
         ) from error
 
-    return schemas.UserResponse(uuid_id=user.uuid_id)
+    return schemas.UserResponse(uuid_id=uuid_id)
+
+
+@router.post(
+    "/login",
+    description="Method for login user by password",
+    status_code=status.HTTP_200_OK,
+    response_model=schemas.UserMessageResponse,
+)
+async def login_user(
+        response: Response,
+        data: schemas.UserLoginByPassword | schemas.UserGoogle,
+        auth: FromDishka[Authenticator],
+        get_user: FromDishka[interactors.GetUserByEmail],
+) -> schemas.UserMessageResponse:
+    user = await get_user(data.email)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="this user is not registered",
+        )
+
+    if isinstance(data, schemas.UserLoginByPassword):
+        if auth.verify_password(plain_password=data.password, hashed_password=user.hashed_password):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="incorrect email or password",
+            )
+
+    auth.set_access_token(response, user.uuid_id)
+    auth.set_refresh_token(response, user.uuid_id)
+
+    return schemas.UserMessageResponse(
+        ok=True,
+        message="Authorization successful",
+    )
+
+
+@router.post(
+    "/logout",
+    description="Method for logout user",
+    status_code=status.HTTP_200_OK,
+    response_model=schemas.UserMessageResponse,
+)
+async def logout_user(
+        response: Response,
+        auth: FromDishka[Authenticator],
+) -> schemas.UserMessageResponse:
+    auth.delete_access_token(response)
+    auth.delete_refresh_token(response)
+
+    return schemas.UserMessageResponse(
+        ok=True,
+        message="logout successfully",
+    )
+
+
+@router.get(
+    "/me",
+    description="Method for get user info",
+    status_code=status.HTTP_200_OK,
+    response_model=schemas.UserInfoResponse,
+)
+async def get_me_user(
+        user: dto.User = Depends(Authenticator.get_current_user),
+) -> schemas.UserInfoResponse:
+    return schemas.UserInfoResponse(**user.dict())
+
+
+@router.post(
+    "/refresh",
+    description="Method for refresh user token",
+    status_code=status.HTTP_200_OK,
+    response_model=schemas.UserMessageResponse,
+)
+async def process_refresh_token(
+        response: Response,
+        auth: FromDishka[Authenticator],
+        user: dto.User = Depends(Authenticator.check_refresh_token),
+) -> schemas.UserMessageResponse:
+    auth.set_access_token(response, user.uuid_id)
+    auth.set_refresh_token(response, user.uuid_id)
+
+    return schemas.UserMessageResponse(
+        ok=True,
+        message="tokens successfully updated",
+    )

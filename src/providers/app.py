@@ -7,6 +7,10 @@ class AppProvider(Provider):
 
     create_user_interactor = provide(interactors.CreateUser, scope=Scope.REQUEST)
     delete_user_interactor = provide(interactors.DeleteUser, scope=Scope.REQUEST)
+    get_user_by_id_interactor = provide(interactors.GetUserByID, scope=Scope.REQUEST)
+    get_user_by_uuid_interactor = provide(interactors.GetUserByUUID, scope=Scope.REQUEST)
+    get_user_by_google_interactor = provide(interactors.GetUserByGoogle, scope=Scope.REQUEST)
+    get_user_by_email_interactor = provide(interactors.GetUserByEmail, scope=Scope.REQUEST)
 
     create_station_interactor = provide(interactors.CreateStation, scope=Scope.REQUEST)
     delete_station_interactor = provide(interactors.DeleteStation, scope=Scope.REQUEST)

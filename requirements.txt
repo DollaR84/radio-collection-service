@@ -1,9 +1,9 @@
 alembic
 asyncpg
-coloredlogs
 dishka
 fastapi
 pydantic
+pydantic-settings
 SQLAlchemy
 uvicorn
 authlib

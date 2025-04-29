@@ -5,8 +5,8 @@ import uuid
 from .base import BaseData
 
 
-@dataclass(slots=True)
-class NewUser(BaseData):
+@dataclass(slots=True, kw_only=True)
+class BaseUser(BaseData):
     email: str
     hashed_password: Optional[str] = None
     google_id: Optional[str] = None
@@ -16,6 +16,14 @@ class NewUser(BaseData):
     last_name: Optional[str] = None
 
 
+class NewUser(BaseUser):
+    pass
+
+
 @dataclass(slots=True)
-class User(BaseData):
+class User(BaseUser):
+    id: int
     uuid_id: uuid.UUID
+
+    is_active: bool
+    is_admin: bool

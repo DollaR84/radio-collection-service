@@ -1,5 +1,5 @@
 from .station import CreateStationInterface, DeleteStationInterface, GetStationInterface
-from .user import CreateUserInterface, DeleteUserInterface
+from .user import CreateUserInterface, DeleteUserInterface, GetUserInterface
 
 
 __all__ = [
@@ -9,4 +9,5 @@ __all__ = [
 
     "CreateUserInterface",
     "DeleteUserInterface",
+    "GetUserInterface",
 ]

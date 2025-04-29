@@ -1,26 +1,23 @@
 import logging
 
-import coloredlogs
-
 from fastapi import FastAPI
 
 import uvicorn
 
 from api import FastAPIApp
 
-from config import Config
+from config import Config, get_config
 
 from container import setup_container
 
 
 def get_app() -> FastAPI:
-    coloredlogs.install()
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s  %(process)-7s %(module)-20s %(message)s',
     )
 
-    config = Config()
+    config: Config = get_config()
     app = FastAPIApp(config.api).app
 
     setup_container(app, config)

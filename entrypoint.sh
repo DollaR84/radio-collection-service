@@ -1,2 +1,24 @@
-echo "Starting the server ..."
-python3 /app/main.py
+#!/bin/bash
+set -e
+
+chown -R appuser:appgroup /app/data 2>/dev/null || true
+
+graceful_shutdown() {
+  echo "Shutting down..."
+  exit 0
+}
+trap graceful_shutdown SIGTERM SIGINT
+
+until pg_isready -h $POSTGRES_HOST -p $POSTGRES_PORT; do
+  echo "Waiting for PostgreSQL..."
+  sleep 2
+done
+
+echo "Applying database migrations..."
+for i in {1..5}; do
+    alembic upgrade head && break
+    sleep $i
+done
+
+echo "Starting application..."
+exec python -m main

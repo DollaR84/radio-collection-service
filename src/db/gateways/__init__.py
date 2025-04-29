@@ -1,5 +1,5 @@
 from .station import CreateStationGateway, DeleteStationGateway, GetStationGateway
-from .user import CreateUserGateway, DeleteUserGateway
+from .user import CreateUserGateway, DeleteUserGateway, GetUserGateway
 
 
 __all__ = [
@@ -9,4 +9,5 @@ __all__ = [
 
     "CreateUserGateway",
     "DeleteUserGateway",
+    "GetUserGateway",
 ]

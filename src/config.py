@@ -1,73 +1,127 @@
-from dataclasses import dataclass, field
-import os
+from functools import lru_cache
+from typing import Literal
+
+from pydantic import Field, field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-@dataclass(slots=True)
-class DBConfig:
-    username: str = os.environ["POSTGRES_USER"]
-    password: str = os.environ["POSTGRES_PASSWORD"]
-    db_name: str = os.environ["POSTGRES_DB"]
-    host: str = os.environ["POSTGRES_HOST"]
-    port: int = int(os.environ["POSTGRES_PORT"])
+class DBConfig(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix="POSTGRES_")
 
-    debug: bool = os.environ.get("SQLALCHEMY_DEBUG", "false").lower() == "true"
+    username: str = Field(alias="USER")
+    password: str
+    db_name: str = Field(alias="DB")
+    host: str
+    port: int = 5432
+    debug: bool = False
+
+    @field_validator("port")
+    @classmethod
+    def validate_port(cls, value: int) -> int:
+        if not 0 < value < 65535:
+            raise ValueError("invalid db postgres port")
+        return value
 
     @property
     def uri(self) -> str:
         return f"postgresql+asyncpg://{self.username}:{self.password}@{self.host}:{self.port}/{self.db_name}"
 
 
-@dataclass(slots=True)
-class RedisConfig:
-    host: str = os.environ["REDIS_PORT"]
-    port: int = int(os.environ["REDIS_PORT"])
+class RedisConfig(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix="REDIS_")
+
+    host: str
+    port: int = 6379
+
+    @field_validator("port")
+    @classmethod
+    def validate_port(cls, value: int) -> int:
+        if not 0 < value < 65535:
+            raise ValueError("invalid redis port")
+        return value
 
 
-@dataclass(slots=True)
-class APIConfig:
-    debug: bool = os.environ.get("FASTAPI_DEBUG", "false").lower() == "true"
-    upload_folder: str = os.environ["FASTAPI_UPLOAD_FOLDER"]
+class APIConfig(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix="FASTAPI_")
+
+    title: str
+    version: str
+    upload_folder: str
+    debug: bool = False
+
+    allow_credentials: bool = True
+    allow_origins: list[str] = Field(default_factory=list)
+    allow_methods: list[str] = ["GET", "POST"]
+    allow_headers: list[str] = ["*"]
+
+    @field_validator("allow_origins", "allow_methods", "allow_headers", mode="before")
+    @classmethod
+    def split_string(cls, value: str) -> list[str]:
+        return value.split(",") if isinstance(value, str) else value
 
 
-@dataclass(slots=True)
-class SecurityConfig:
-    algorithm: str = os.environ["ALGORITHM"]
-    secret_key: str = os.environ["SECRET_KEY"]
+class CookieConfig(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix="COOKIE_")
 
-    access_token_expire_minutes: int = int(os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
-    refresh_token_expire_minutes: int = int(os.environ.get("REFRESH_TOKEN_EXPIRE_MINUTES", 15))
+    access_key: str
+    refresh_key: str
+    samesite: Literal["lax", "strict", "none"] | None = "lax"
 
-
-@dataclass(slots=True)
-class GoogleConfig:
-    google_client_name: str = os.environ["GOOGLE_CLIENT_NAME"]
-    google_client_id: str = os.environ["GOOGLE_CLIENT_ID"]
-    google_client_secret: str = os.environ["GOOGLE_CLIENT_SECRET"]
-    google_redirect_url: str = os.environ["GOOGLE_REDIRECT_URL"]
+    httponly: bool = True
+    secure: bool = True
 
 
-@dataclass(slots=True)
-class ParserConfig:
+class SecurityConfig(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix="SECURITY_")
+
+    algorithm: str
+    secret_key: str
+
+    access_token_expire_minutes: int = 30
+    refresh_token_expire_days: int = 7
+
+    cookie: CookieConfig = Field(default_factory=CookieConfig)
+
+
+class GoogleConfig(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix="GOOGLE_")
+
+    client_name: str
+    client_id: str
+    client_secret: str
+    redirect_url: str
+
+
+class ParserConfig(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix="PARSER_")
+
     max_workers: int = 4
     batch_size: int = 25
     default_sleep_timeout: float = 0.5
 
 
-@dataclass(slots=True)
-class WorkerConfig:
-    redis_database: int = int(os.environ["REDIS_DATABASE"])
-    handle_signals: bool = os.environ.get("HANDLE_SIGNALS", "false").lower() == "true"
-    health_check_interval: int = int(os.environ["HEALTH_CHECK_INTERVAL"])
-    max_jobs: int = int(os.environ["MAX_JOBS"])
-    job_timeout: int = int(os.environ["JOB_TIMEOUT"])
+class WorkerConfig(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix="WORKER_")
+
+    redis_database: int = 0
+    handle_signals: bool = False
+    health_check_interval: int
+    max_jobs: int
+    job_timeout: int
 
 
-@dataclass(slots=True)
-class Config:
-    db: DBConfig = field(default_factory=DBConfig)
-    redis: RedisConfig = field(default_factory=RedisConfig)
-    api: APIConfig = field(default_factory=APIConfig)
-    security: SecurityConfig = field(default_factory=SecurityConfig)
-    google: GoogleConfig = field(default_factory=GoogleConfig)
-    parser: ParserConfig = field(default_factory=ParserConfig)
-    worker: WorkerConfig = field(default_factory=WorkerConfig)
+class Config(BaseSettings):
+    model_config = SettingsConfigDict(env_nested_delimiter="__")
+
+    db: DBConfig = Field(default_factory=DBConfig)
+    redis: RedisConfig = Field(default_factory=RedisConfig)
+    api: APIConfig = Field(default_factory=APIConfig)
+    security: SecurityConfig = Field(default_factory=SecurityConfig)
+    google: GoogleConfig = Field(default_factory=GoogleConfig)
+    parser: ParserConfig = Field(default_factory=ParserConfig)
+    worker: WorkerConfig = Field(default_factory=WorkerConfig)
+
+
+@lru_cache(maxsize=1)
+def get_config() -> Config:
+    return Config()

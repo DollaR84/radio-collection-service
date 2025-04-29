@@ -9,9 +9,7 @@ from arq.cron import CronJob
 from arq.typing import WorkerCoroutine, WorkerSettingsBase
 from arq.worker import create_worker
 
-import coloredlogs
-
-from config import Config
+from config import Config, get_config
 
 from container import setup_container
 
@@ -29,9 +27,7 @@ async def execute_register_task(ctx: dict[Any, Any], task_name: str) -> Any:
     await _ctx.task_manager.execute_task(task_cls)
 
 
-def get_worker_settings() -> Type[WorkerSettingsBase]:
-    config = Config()
-
+def get_worker_settings(config: Config) -> Type[WorkerSettingsBase]:
     async def on_startup(ctx: dict[Any, Any]) -> dict[Any, Any]:
         _ctx = ArqContext(ctx)
         setup_container(_ctx, config)
@@ -71,13 +67,13 @@ def get_worker_settings() -> Type[WorkerSettingsBase]:
 
 
 def main() -> None:
-    coloredlogs.install()
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s  %(process)-7s %(module)-20s %(message)s',
     )
 
-    worker = create_worker(get_worker_settings())
+    config: Config = get_config()
+    worker = create_worker(get_worker_settings(config))
     asyncio.run(worker.async_run())
 
 

@@ -36,6 +36,10 @@ class DBProvider(Provider):
         return gateways.DeleteUserGateway(session)
 
     @provide(scope=Scope.REQUEST)
+    async def user_getter(self, session: AsyncSession) -> interfaces.GetUserInterface:
+        return gateways.GetUserGateway(session)
+
+    @provide(scope=Scope.REQUEST)
     async def station_creator(self, session: AsyncSession) -> interfaces.CreateStationInterface:
         return gateways.CreateStationGateway(session)
 
