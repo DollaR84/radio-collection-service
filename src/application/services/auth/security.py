@@ -48,10 +48,10 @@ class SecurityTool:
             return data
 
         except ExpiredSignatureError as error:
-            raise TokenExpiredException from error
+            raise TokenExpiredException() from error
 
         except JWTError as error:
-            raise NoJwtException from error
+            raise NoJwtException() from error
 
     def get_uuid_from_token(
             self,
@@ -69,7 +69,7 @@ class SecurityTool:
 
         uuid_id: str = payload["sub"]
         if not uuid_id:
-            raise NoJwtException
+            raise NoJwtException()
 
         return uuid_id
 
@@ -79,21 +79,21 @@ class SecurityTool:
 
         expire_time = datetime.fromtimestamp(int(expire), tz=timezone.utc)
         if (not expire) or (expire_time < datetime.utcnow()):
-            raise TokenExpiredException
+            raise TokenExpiredException()
 
         return self.get_uuid_from_token(payload=payload)
 
     def get_access_token(self, request: Request) -> str:
         token = request.cookies.get("user_access_token")
         if not token:
-            raise TokenNotFound
+            raise TokenNotFound()
 
         return token
 
     def get_refresh_token(self, request: Request) -> str:
         token = request.cookies.get("user_refresh_token")
         if not token:
-            raise TokenNotFound
+            raise TokenNotFound()
 
         return token
 

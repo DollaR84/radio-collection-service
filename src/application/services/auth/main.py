@@ -57,7 +57,7 @@ class Authenticator:
         user = await get_user(uuid_id)
 
         if not user:
-            raise NoJwtException
+            raise NoJwtException()
         return user
 
     async def get_current_user(self, request: Request, get_user: interactors.GetUserByUUID) -> dto.User:
@@ -66,13 +66,13 @@ class Authenticator:
         user = await get_user(uuid_id)
 
         if not user:
-            raise NoJwtException
+            raise NoJwtException()
         return user
 
     async def get_current_admin_user(self, request: Request, get_user: interactors.GetUserByUUID) -> dto.User:
         token = self.get_access_token(request)
         user = await self.get_current_user(token, get_user)
         if not user.is_admin:
-            raise ForbiddenException
+            raise ForbiddenException()
 
         return user
