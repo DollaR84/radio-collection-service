@@ -27,3 +27,13 @@ class User(BaseUser):
 
     is_active: bool
     is_admin: bool
+
+
+@dataclass(slots=True)
+class CurrentUser(User):
+    pass
+
+
+@dataclass(slots=True)
+class AdminUser(User):
+    pass

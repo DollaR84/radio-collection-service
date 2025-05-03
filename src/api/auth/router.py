@@ -1,6 +1,6 @@
 from dishka.integrations.fastapi import DishkaRoute, FromDishka
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, HTTPException, status
 
 from application import dto
 from application import interactors
@@ -19,9 +19,9 @@ router = APIRouter(prefix="/auth", route_class=DishkaRoute)
     response_model=schemas.UserResponse,
 )
 async def register_user(
-        data: schemas.UserCreateByPassword | schemas.UserGoogle,
         auth: FromDishka[Authenticator],
         creator: FromDishka[interactors.CreateUser],
+        data: schemas.UserCreateByPassword | schemas.UserGoogle,
 ) -> schemas.UserResponse:
     user_data = dto.NewUser(email=data.email)
     if isinstance(data, schemas.UserCreateByPassword):
@@ -48,12 +48,11 @@ async def register_user(
     response_model=schemas.UserMessageResponse,
 )
 async def login_user(
-        response: Response,
-        data: schemas.UserLoginByPassword | schemas.UserGoogle,
         auth: FromDishka[Authenticator],
-        get_user: FromDishka[interactors.GetUserByEmail],
+        interactor: FromDishka[interactors.GetUserByEmail],
+        data: schemas.UserLoginByPassword | schemas.UserGoogle,
 ) -> schemas.UserMessageResponse:
-    user = await get_user(data.email)
+    user = await interactor(data.email)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -61,14 +60,14 @@ async def login_user(
         )
 
     if isinstance(data, schemas.UserLoginByPassword):
-        if auth.verify_password(plain_password=data.password, hashed_password=user.hashed_password):
+        if not auth.verify_password(plain_password=data.password, hashed_password=user.hashed_password):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="incorrect email or password",
             )
 
-    auth.set_access_token(response, user.uuid_id)
-    auth.set_refresh_token(response, user.uuid_id)
+    auth.set_access_token(user.uuid_id)
+    auth.set_refresh_token(user.uuid_id)
 
     return schemas.UserMessageResponse(
         ok=True,
@@ -83,11 +82,10 @@ async def login_user(
     response_model=schemas.UserMessageResponse,
 )
 async def logout_user(
-        response: Response,
         auth: FromDishka[Authenticator],
 ) -> schemas.UserMessageResponse:
-    auth.delete_access_token(response)
-    auth.delete_refresh_token(response)
+    auth.delete_access_token()
+    auth.delete_refresh_token()
 
     return schemas.UserMessageResponse(
         ok=True,
@@ -102,7 +100,7 @@ async def logout_user(
     response_model=schemas.UserInfoResponse,
 )
 async def get_me_user(
-        user: dto.User = Depends(Authenticator.get_current_user),
+        user: FromDishka[dto.CurrentUser],
 ) -> schemas.UserInfoResponse:
     return schemas.UserInfoResponse(**user.dict())
 
@@ -114,12 +112,11 @@ async def get_me_user(
     response_model=schemas.UserMessageResponse,
 )
 async def process_refresh_token(
-        response: Response,
         auth: FromDishka[Authenticator],
-        user: dto.User = Depends(Authenticator.check_refresh_token),
+        user: FromDishka[dto.CurrentUser],
 ) -> schemas.UserMessageResponse:
-    auth.set_access_token(response, user.uuid_id)
-    auth.set_refresh_token(response, user.uuid_id)
+    auth.set_access_token(user.uuid_id)
+    auth.set_refresh_token(user.uuid_id)
 
     return schemas.UserMessageResponse(
         ok=True,

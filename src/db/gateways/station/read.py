@@ -1,6 +1,8 @@
 from typing import Optional
 
-from sqlalchemy import select
+from sqlalchemy import select, exists, func
+
+from application.types import StationStatusType
 
 from db import domain
 
@@ -24,11 +26,25 @@ class GetStationGateway(BaseGateway[int, Station]):
 
     async def get_stations(
             self,
+            name: Optional[str] = None,
+            info: Optional[str] = None,
+            status: Optional[StationStatusType] = None,
             offset: Optional[int] = None,
             limit: Optional[int] = None,
     ) -> list[domain.StationModel]:
         error_message = "Error get stations"
         stmt = select(Station)
+
+        if name:
+            stmt = stmt.where(Station.name.icontains(name))
+        if info:
+            stmt = stmt.where(
+                exists().where(
+                    func.unnest(Station.tags).icontains(info)
+                )
+            )
+        if status:
+            stmt = stmt.where(Station.status == status)
 
         if offset:
             stmt = stmt.offset(offset)
@@ -37,7 +53,7 @@ class GetStationGateway(BaseGateway[int, Station]):
 
         stations = await self._get(stmt, error_message, is_multiple=True)
         return [
-            domain.StationModel(**station.dict(exclude=["id", "created_at", "updated_at"]))
+            domain.StationModel(**station.dict())
             for station in stations
         ]
 

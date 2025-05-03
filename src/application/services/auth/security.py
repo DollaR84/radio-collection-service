@@ -14,11 +14,14 @@ from .exceptions import NotTokenDataError, NoJwtException, TokenExpiredException
 
 
 class SecurityTool:
-    __slots__ = ("config", "pwd_context",)
+    __slots__ = ("config", "pwd_context", "request", "response",)
 
-    def __init__(self, config: SecurityConfig):
+    def __init__(self, config: SecurityConfig, request: Request, response: Response):
         self.config: SecurityConfig = config
         self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+        self.request = request
+        self.response = response
 
     def get_password_hash(self, password: str) -> str:
         hashed_password: str = self.pwd_context.hash(password)
@@ -83,23 +86,23 @@ class SecurityTool:
 
         return self.get_uuid_from_token(payload=payload)
 
-    def get_access_token(self, request: Request) -> str:
-        token = request.cookies.get("user_access_token")
+    def get_access_token(self) -> str:
+        token = self.request.cookies.get("user_access_token")
         if not token:
             raise TokenNotFound()
 
         return token
 
-    def get_refresh_token(self, request: Request) -> str:
-        token = request.cookies.get("user_refresh_token")
+    def get_refresh_token(self) -> str:
+        token = self.request.cookies.get("user_refresh_token")
         if not token:
             raise TokenNotFound()
 
         return token
 
-    def set_access_token(self, response: Response, uuid_id: uuid.UUID) -> None:
+    def set_access_token(self, uuid_id: uuid.UUID) -> None:
         access_token = self.create_access_token({"sub": uuid_id})
-        response.set_cookie(
+        self.response.set_cookie(
             key=self.config.cookie.access_key,
             value=access_token,
             httponly=self.config.cookie.httponly,
@@ -107,9 +110,9 @@ class SecurityTool:
             samesite=self.config.cookie.samesite,
         )
 
-    def set_refresh_token(self, response: Response, uuid_id: uuid.UUID) -> None:
+    def set_refresh_token(self, uuid_id: uuid.UUID) -> None:
         refresh_token = self.create_refresh_token({"sub": uuid_id})
-        response.set_cookie(
+        self.response.set_cookie(
             key=self.config.cookie.refresh_key,
             value=refresh_token,
             httponly=self.config.cookie.httponly,
@@ -117,8 +120,8 @@ class SecurityTool:
             samesite=self.config.cookie.samesite,
         )
 
-    def delete_access_token(self, response: Response) -> None:
-        response.delete_cookie(self.config.cookie.access_key)
+    def delete_access_token(self) -> None:
+        self.response.delete_cookie(self.config.cookie.access_key)
 
-    def delete_refresh_token(self, response: Response) -> None:
-        response.delete_cookie(self.config.cookie.refresh_key)
+    def delete_refresh_token(self) -> None:
+        self.response.delete_cookie(self.config.cookie.refresh_key)
