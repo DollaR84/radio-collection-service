@@ -2,6 +2,7 @@ from typing import Optional
 
 from sqlalchemy import select, exists, func
 
+from application import dto
 from application.types import StationStatusType
 
 from db import domain
@@ -26,13 +27,14 @@ class GetStationGateway(BaseGateway[int, Station]):
 
     async def get_stations(
             self,
+            user: dto.User,
             name: Optional[str] = None,
             info: Optional[str] = None,
             status: Optional[StationStatusType] = None,
             offset: Optional[int] = None,
             limit: Optional[int] = None,
     ) -> list[domain.StationModel]:
-        error_message = "Error get stations"
+        error_message = f"Error get stations for user id={user.id}"
         stmt = select(Station)
 
         if name:
@@ -58,5 +60,8 @@ class GetStationGateway(BaseGateway[int, Station]):
         ]
 
     async def get_stations_urls(self) -> list[str]:
-        stations = await self.get_stations()
+        error_message = "Error get stations"
+        stmt = select(Station)
+
+        stations = await self._get(stmt, error_message, is_multiple=True)
         return [station.url for station in stations]

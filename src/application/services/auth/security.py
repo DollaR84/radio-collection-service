@@ -2,7 +2,8 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 import uuid
 
-from fastapi import Request, Response
+from fastapi import Depends, Request, Response
+from fastapi.security import OAuth2PasswordBearer
 
 from jose import jwt, JWTError, ExpiredSignatureError
 
@@ -11,6 +12,9 @@ from passlib.context import CryptContext
 from config import SecurityConfig
 
 from .exceptions import NotTokenDataError, NoJwtException, TokenExpiredException, TokenNotFound
+
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 
 class SecurityTool:
@@ -87,6 +91,17 @@ class SecurityTool:
         return self.get_uuid_from_token(payload=payload)
 
     def get_access_token(self) -> str:
+        try:
+            token = self.get_token_from_header()
+        except Exception:
+            token = self.get_token_from_cookie()
+
+        return token
+
+    def get_token_from_header(self, token: str = Depends(oauth2_scheme)) -> str:
+        return token
+
+    def get_token_from_cookie(self) -> str:
         token = self.request.cookies.get("user_access_token")
         if not token:
             raise TokenNotFound()
@@ -100,7 +115,7 @@ class SecurityTool:
 
         return token
 
-    def set_access_token(self, uuid_id: uuid.UUID) -> None:
+    def set_access_token(self, uuid_id: uuid.UUID) -> str:
         access_token = self.create_access_token({"sub": uuid_id})
         self.response.set_cookie(
             key=self.config.cookie.access_key,
@@ -110,7 +125,9 @@ class SecurityTool:
             samesite=self.config.cookie.samesite,
         )
 
-    def set_refresh_token(self, uuid_id: uuid.UUID) -> None:
+        return access_token
+
+    def set_refresh_token(self, uuid_id: uuid.UUID) -> str:
         refresh_token = self.create_refresh_token({"sub": uuid_id})
         self.response.set_cookie(
             key=self.config.cookie.refresh_key,
@@ -119,6 +136,8 @@ class SecurityTool:
             secure=self.config.cookie.secure,
             samesite=self.config.cookie.samesite,
         )
+
+        return refresh_token
 
     def delete_access_token(self) -> None:
         self.response.delete_cookie(self.config.cookie.access_key)

@@ -1,6 +1,7 @@
 from abc import abstractmethod
 from typing import Optional, Protocol
 
+from application import dto
 from application.types import StationStatusType
 
 from db import domain
@@ -15,6 +16,7 @@ class GetStationInterface(Protocol):
     @abstractmethod
     async def get_stations(
             self,
+            user: dto.User,
             name: Optional[str] = None,
             info: Optional[str] = None,
             status: Optional[StationStatusType] = None,

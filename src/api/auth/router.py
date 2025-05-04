@@ -66,12 +66,14 @@ async def login_user(
                 detail="incorrect email or password",
             )
 
-    auth.set_access_token(user.uuid_id)
-    auth.set_refresh_token(user.uuid_id)
+    access_token = auth.set_access_token(user.uuid_id)
+    refresh_token = auth.set_refresh_token(user.uuid_id)
 
-    return schemas.UserMessageResponse(
+    return schemas.UserMessageTokenResponse(
         ok=True,
         message="Authorization successful",
+        access=access_token,
+        refresh=refresh_token,
     )
 
 

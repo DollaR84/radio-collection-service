@@ -4,6 +4,7 @@ from dishka.integrations.fastapi import DishkaRoute, FromDishka
 
 from fastapi import APIRouter, status
 
+from application import dto
 from application import interactors
 from application.types import StationStatusType
 
@@ -20,6 +21,7 @@ router = APIRouter(route_class=DishkaRoute)
     response_model=list[schemas.StationResponse],
 )
 async def get_stations(
+        user: FromDishka[dto.CurrentUser],
         interactor: FromDishka[interactors.GetStations],
         name: Optional[str] = None,
         info: Optional[str] = None,
@@ -27,7 +29,7 @@ async def get_stations(
         offset: Optional[int] = None,
         limit: Optional[int] = None,
 ) -> list[schemas.StationResponse]:
-    stations = await interactor(name, info, status_type, offset, limit)
+    stations = await interactor(user, name, info, status_type, offset, limit)
     return [
         schemas.StationResponse(**station.dict())
         for station in stations

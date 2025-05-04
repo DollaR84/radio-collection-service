@@ -49,3 +49,8 @@ class UserInfoResponse(UserResponse):
 class UserMessageResponse(BaseModel):
     ok: bool
     message: str
+
+
+class UserMessageTokenResponse(UserMessageResponse):
+    access: str
+    refresh: str
