@@ -9,6 +9,8 @@ from config import APIConfig
 
 from . import auth
 from . import station
+
+from . import service
 from .exception_handlers import register_exception_handlers
 
 
@@ -43,6 +45,7 @@ class FastAPIApp:
 
     def register_routers(self) -> None:
         register_exception_handlers(self._app)
+        self._app.include_router(service.router)
 
         self._app.include_router(auth.router)
         self._app.include_router(station.router)

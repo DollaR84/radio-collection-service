@@ -1,8 +1,7 @@
 __pycache__/
 .ruff_cache/
 wsl2win/
-env/
-.env/
+_env/
 .env
 .flake8
 *.ini

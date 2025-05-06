@@ -20,6 +20,7 @@ RUN chmod a+x /app/entrypoint.sh
 RUN apt-get update && apt-get install -y --no-install-recommends \
   gcc \
   libpq-dev \
+  curl \
   postgresql-client \
   build-essential \
   && rm -rf /var/lib/apt/lists/*

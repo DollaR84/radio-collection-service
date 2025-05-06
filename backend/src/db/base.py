@@ -1,14 +1,15 @@
 from abc import ABC, abstractmethod
 from typing import Any, AsyncContextManager, Dict, List
 
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncAttrs, AsyncSession
 from sqlalchemy.orm import DeclarativeBase
 import sqlalchemy.orm as so
 
 from utils.text import paschal_case_to_snake_case
 
 
-class Base(DeclarativeBase):
+class Base(AsyncAttrs, DeclarativeBase):
+    __abstract__ = True
 
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
 
