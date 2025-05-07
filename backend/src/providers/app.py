@@ -14,5 +14,6 @@ class AppProvider(Provider):
 
     create_station_interactor = provide(interactors.CreateStation, scope=Scope.REQUEST)
     delete_station_interactor = provide(interactors.DeleteStation, scope=Scope.REQUEST)
+    get_station_interactor = provide(interactors.GetStation, scope=Scope.REQUEST)
     get_stations_interactor = provide(interactors.GetStations, scope=Scope.REQUEST)
     get_station_urls_interactor = provide(interactors.GetStationUrls, scope=Scope.REQUEST)

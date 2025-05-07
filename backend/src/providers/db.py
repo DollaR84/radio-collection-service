@@ -50,3 +50,7 @@ class DBProvider(Provider):
     @provide(scope=Scope.REQUEST)
     async def station_getter(self, session: AsyncSession) -> interfaces.GetStationInterface:
         return gateways.GetStationGateway(session)
+
+    @provide(scope=Scope.REQUEST)
+    async def stations_urls_getter(self, session: AsyncSession) -> interfaces.GetStationsUrlsInterface:
+        return gateways.GetStationsUrlsGateway(session)

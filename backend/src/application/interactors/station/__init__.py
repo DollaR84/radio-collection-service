@@ -1,6 +1,6 @@
 from .create import CreateStation
 from .delete import DeleteStation
-from .read import GetStations, GetStationUrls
+from .read import GetStations, GetStationUrls, GetStation
 
 
 __all__ = [
@@ -9,4 +9,5 @@ __all__ = [
 
     "GetStations",
     "GetStationUrls",
+    "GetStation",
 ]

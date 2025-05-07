@@ -14,15 +14,15 @@ from ...models import Station
 
 class GetStationGateway(BaseGateway[int, Station]):
 
-    async def get_station(self, station_id: int) -> Optional[domain.StationModel]:
-        error_message = "Error get station"
+    async def get_station(self, user: dto.User, station_id: int) -> Optional[domain.StationModel]:
+        error_message = f"Error get station for user id={user.id}"
 
         stmt = select(Station)
         stmt = stmt.where(Station.id == station_id)
 
         station = await self._get(stmt, error_message)
         if station:
-            return domain.StationModel(**station.dict(exclude=["id", "created_at", "updated_at"]))
+            return domain.StationModel(**station.dict())
         return None
 
     async def get_stations(
@@ -59,9 +59,12 @@ class GetStationGateway(BaseGateway[int, Station]):
             for station in stations
         ]
 
+
+class GetStationsUrlsGateway(BaseGateway[int, str]):
+
     async def get_stations_urls(self) -> list[str]:
         error_message = "Error get stations"
-        stmt = select(Station)
+        stmt = select(Station.url)
 
-        stations = await self._get(stmt, error_message, is_multiple=True)
-        return [station.url for station in stations]
+        urls = await self._get(stmt, error_message, is_multiple=True)
+        return urls

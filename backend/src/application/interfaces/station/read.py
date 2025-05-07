@@ -10,7 +10,7 @@ from db import domain
 class GetStationInterface(Protocol):
 
     @abstractmethod
-    async def get_station(self, station_id: int) -> Optional[domain.StationModel]:
+    async def get_station(self, user: dto.User, station_id: int) -> Optional[domain.StationModel]:
         ...
 
     @abstractmethod
@@ -24,6 +24,9 @@ class GetStationInterface(Protocol):
             limit: Optional[int] = None,
     ) -> list[domain.StationModel]:
         ...
+
+
+class GetStationsUrlsInterface(Protocol):
 
     async def get_stations_urls(self) -> list[str]:
         ...
