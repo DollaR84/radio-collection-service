@@ -10,7 +10,7 @@ from ..mixins import TimeCreateMixin, TimeUpdateMixin
 class Station(TimeCreateMixin, TimeUpdateMixin, Base):
 
     name: so.Mapped[str] = so.mapped_column(sa.String(255), nullable=False)
-    url: so.Mapped[str] = so.mapped_column(unique=True, nullable=False)
+    url: so.Mapped[str] = so.mapped_column(sa.String, unique=True, nullable=False)
 
     tags: so.Mapped[list[str]] = so.mapped_column(
         sa.ARRAY(sa.String(50)),
