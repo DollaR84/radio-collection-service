@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-import re
 from typing import Any, Optional, Type
 
 from apscheduler.triggers.base import BaseTrigger
+
+from utils.text import paschal_case_to_words
 
 
 class BaseTask(ABC):
@@ -23,8 +24,8 @@ class BaseTask(ABC):
 
     @classmethod
     def get_name(cls) -> str:
-        name = cls.__name__.replace("Task", "")
-        return " ".join(list(re.findall(r"[A-Z][a-z0-9]+", name)))
+        _name = cls.__name__.replace("Task", "")
+        return paschal_case_to_words(_name)
 
     @classmethod
     def get_task(cls, name: str) -> Type[BaseTask]:

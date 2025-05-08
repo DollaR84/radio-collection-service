@@ -1,10 +1,11 @@
 ﻿from __future__ import annotations
 
 from abc import ABC, abstractmethod
-import re
 from typing import Any, Type
 
 from application.dto import CollectionData
+
+from utils.text import paschal_case_to_words
 
 from ..base import BaseParser
 
@@ -21,7 +22,7 @@ class BaseCollection(ABC):
     @classmethod
     def get_name(cls) -> str:
         _name = cls.__name__.replace("Collection", "")
-        return " ".join(list(re.findall(r"[A-Z][a-z0-9]+", _name)))
+        return paschal_case_to_words(_name)
 
     @classmethod
     def get_collection(cls, name: str, **kwargs: Any) -> BaseCollection:
