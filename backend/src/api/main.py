@@ -8,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from config import APIConfig
 
 from . import auth
+from . import favorite
 from . import station
 
 from . import service
@@ -49,6 +50,7 @@ class FastAPIApp:
 
         self._app.include_router(auth.router)
         self._app.include_router(station.router)
+        self._app.include_router(favorite.router)
 
     @property
     def app(self) -> FastAPI:

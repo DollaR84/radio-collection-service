@@ -1,6 +1,6 @@
-from .create import CreateStationInterface
-from .delete import DeleteStationInterface
-from .read import GetStationInterface, GetStationsUrlsInterface
+from .create import CreateStationInterface, CreateFavoriteInterface
+from .delete import DeleteStationInterface, DeleteFavoriteInterface
+from .read import GetStationInterface, GetStationsUrlsInterface, GetFavoriteInterface
 
 
 __all__ = [
@@ -8,4 +8,8 @@ __all__ = [
     "DeleteStationInterface",
     "GetStationInterface",
     "GetStationsUrlsInterface",
+
+    "CreateFavoriteInterface",
+    "DeleteFavoriteInterface",
+    "GetFavoriteInterface",
 ]

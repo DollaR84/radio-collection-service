@@ -16,6 +16,7 @@ class BaseUser(BaseData):
     last_name: Optional[str] = None
 
 
+@dataclass(slots=True)
 class NewUser(BaseUser):
     pass
 

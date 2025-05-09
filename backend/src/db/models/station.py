@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import sqlalchemy as sa
 import sqlalchemy.orm as so
 
@@ -5,6 +9,9 @@ from application.types import StationStatusType
 
 from ..base import Base
 from ..mixins import TimeCreateMixin, TimeUpdateMixin
+
+if TYPE_CHECKING:
+    from db.models.user import User
 
 
 class Station(TimeCreateMixin, TimeUpdateMixin, Base):
@@ -25,6 +32,23 @@ class Station(TimeCreateMixin, TimeUpdateMixin, Base):
         index=True,
     )
 
+    favorited_by: so.Mapped[list["User"]] = so.relationship(
+        secondary="favorites",
+        back_populates="favorite_stations",
+        lazy="selectin",
+        viewonly=True,
+    )
+
     __table_args__ = (
         sa.Index("ix_tags_gin", tags, postgresql_using="gin"),
     )
+
+
+class Favorite(TimeCreateMixin, Base):
+
+    id: so.Mapped[int] = so.mapped_column(primary_key=False, autoincrement=True)
+    user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    station_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey("stations.id", ondelete="CASCADE"), primary_key=True)
+
+    user: so.Mapped["User"] = so.relationship(back_populates="favorite_stations")
+    station: so.Mapped["Station"] = so.relationship(back_populates="favorited_by")

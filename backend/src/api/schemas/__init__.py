@@ -1,4 +1,4 @@
-from .station import StationResponse
+from .station import StationResponse, AddFavorite
 from .user import (
     UserCreateByPassword,
     UserLoginByPassword,
@@ -12,6 +12,7 @@ from .user import (
 
 __all__ = [
     "StationResponse",
+    "AddFavorite",
 
     "UserCreateByPassword",
     "UserLoginByPassword",

@@ -1,4 +1,13 @@
-from .station import CreateStationGateway, DeleteStationGateway, GetStationGateway, GetStationsUrlsGateway
+from .station import (
+    CreateStationGateway,
+    DeleteStationGateway,
+    GetStationGateway,
+    GetStationsUrlsGateway,
+    CreateFavoriteGateway,
+    DeleteFavoriteGateway,
+    GetFavoriteGateway,
+)
+
 from .user import CreateUserGateway, DeleteUserGateway, GetUserGateway
 
 
@@ -7,6 +16,10 @@ __all__ = [
     "DeleteStationGateway",
     "GetStationsUrlsGateway",
     "GetStationGateway",
+
+    "CreateFavoriteGateway",
+    "DeleteFavoriteGateway",
+    "GetFavoriteGateway",
 
     "CreateUserGateway",
     "DeleteUserGateway",

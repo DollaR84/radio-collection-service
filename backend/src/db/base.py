@@ -2,10 +2,10 @@ from abc import ABC, abstractmethod
 from typing import Any, AsyncContextManager, Dict, List
 
 from sqlalchemy.ext.asyncio import AsyncAttrs, AsyncSession
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.orm import DeclarativeBase, declared_attr
 import sqlalchemy.orm as so
 
-from utils.text import paschal_case_to_snake_case
+from utils.text import pascal_case_to_snake_case
 
 
 class Base(AsyncAttrs, DeclarativeBase):
@@ -13,10 +13,9 @@ class Base(AsyncAttrs, DeclarativeBase):
 
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
 
-    def __init_subclass__(cls, **kwargs: Any) -> None:
-        super().__init_subclass__(**kwargs)
-        if not cls.__tablename__:
-            cls.__tablename__ = paschal_case_to_snake_case(cls.__name__) + "s"
+    @declared_attr.directive
+    def __tablename__(cls) -> str:  # pylint: disable=no-self-argument
+        return pascal_case_to_snake_case(cls.__name__) + "s"
 
     def __str__(self) -> str:
         return f"{self.__class__.__name__} #{self.id}"

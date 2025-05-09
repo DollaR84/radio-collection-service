@@ -4,6 +4,7 @@ wsl2win/
 _env/
 .env
 .flake8
+.pylintrc
 *.ini
 *.log
 *.dat

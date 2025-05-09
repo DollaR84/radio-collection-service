@@ -19,3 +19,10 @@ class CreateStationInterface(Protocol):
             data: list[domain.StationModel],
     ) -> list[int]:
         ...
+
+
+class CreateFavoriteInterface(Protocol):
+
+    @abstractmethod
+    async def create_favorite(self, user_id: int, station_id: int) -> int:
+        ...

@@ -54,3 +54,15 @@ class DBProvider(Provider):
     @provide(scope=Scope.REQUEST)
     async def stations_urls_getter(self, session: AsyncSession) -> interfaces.GetStationsUrlsInterface:
         return gateways.GetStationsUrlsGateway(session)
+
+    @provide(scope=Scope.REQUEST)
+    async def favorite_creator(self, session: AsyncSession) -> interfaces.CreateFavoriteInterface:
+        return gateways.CreateFavoriteGateway(session)
+
+    @provide(scope=Scope.REQUEST)
+    async def favorite_deleter(self, session: AsyncSession) -> interfaces.DeleteFavoriteInterface:
+        return gateways.DeleteFavoriteGateway(session)
+
+    @provide(scope=Scope.REQUEST)
+    async def favorite_getter(self, session: AsyncSession) -> interfaces.GetFavoriteInterface:
+        return gateways.GetFavoriteGateway(session)

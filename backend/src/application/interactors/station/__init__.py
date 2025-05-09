@@ -1,6 +1,6 @@
-from .create import CreateStation
-from .delete import DeleteStation
-from .read import GetStations, GetStationUrls, GetStation
+from .create import CreateStation, CreateFavorite
+from .delete import DeleteStation, DeleteFavorite
+from .read import GetStations, GetStationUrls, GetStation, GetUserFavorites
 
 
 __all__ = [
@@ -10,4 +10,8 @@ __all__ = [
     "GetStations",
     "GetStationUrls",
     "GetStation",
+
+    "CreateFavorite",
+    "DeleteFavorite",
+    "GetUserFavorites",
 ]

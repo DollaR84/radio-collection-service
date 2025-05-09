@@ -14,3 +14,7 @@ class StationResponse(BaseModel):
 
     created_at: datetime
     updated_at: datetime
+
+
+class AddFavorite(BaseModel):
+    station_id: int

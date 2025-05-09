@@ -29,7 +29,14 @@ async def get_stations(
         offset: Optional[int] = None,
         limit: Optional[int] = None,
 ) -> list[schemas.StationResponse]:
-    stations = await interactor(user, name, info, status_type, offset, limit)
+    try:
+        stations = await interactor(name, info, status_type, offset, limit)
+    except Exception as error:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"error get radio stations for user id={user.id}",
+        ) from error
+
     return [
         schemas.StationResponse(**station.dict())
         for station in stations
@@ -47,11 +54,11 @@ async def get_station(
         interactor: FromDishka[interactors.GetStation],
         station_id: int,
 ) -> schemas.StationResponse:
-    station = await interactor(user, station_id)
+    station = await interactor(station_id)
     if station is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"radio station with id={station_id} not found",
+            detail=f"radio station with id={station_id} for user id={user.id} not found",
         )
 
     return schemas.StationResponse(**station.dict())

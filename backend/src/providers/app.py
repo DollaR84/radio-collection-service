@@ -17,3 +17,7 @@ class AppProvider(Provider):
     get_station_interactor = provide(interactors.GetStation, scope=Scope.REQUEST)
     get_stations_interactor = provide(interactors.GetStations, scope=Scope.REQUEST)
     get_station_urls_interactor = provide(interactors.GetStationUrls, scope=Scope.REQUEST)
+
+    create_favorite_interactor = provide(interactors.CreateFavorite, scope=Scope.REQUEST)
+    delete_favorite_interactor = provide(interactors.DeleteFavorite, scope=Scope.REQUEST)
+    get_user_favorites_interactor = provide(interactors.GetUserFavorites, scope=Scope.REQUEST)

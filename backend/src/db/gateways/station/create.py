@@ -4,7 +4,7 @@ from db import domain
 
 from ..base import BaseGateway
 
-from ...models import Station
+from ...models import Station, Favorite
 
 
 class CreateStationGateway(BaseGateway[int, Station]):
@@ -30,3 +30,12 @@ class CreateStationGateway(BaseGateway[int, Station]):
 
         stmt = insert(Station).values(stations_data).returning(Station.id)
         return await self._create(stmt, error_message, is_multiple=True)
+
+
+class CreateFavoriteGateway(BaseGateway[int, Favorite]):
+
+    async def create_favorite(self, user_id: int, station_id: int) -> int:
+        stmt = insert(Favorite).values(user_id=user_id, station_id=station_id).returning(Favorite.id)
+        error_message = "Error add station to favorites"
+
+        return await self._create(stmt, error_message)

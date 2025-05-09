@@ -22,3 +22,16 @@ class CreateStation:
 
         domain_data = domain.StationModel(**data.dict())
         return await self.gateway.create_station(domain_data)
+
+
+class CreateFavorite:
+
+    def __init__(self, gateway: interfaces.CreateFavoriteInterface):
+        self.gateway = gateway
+
+    async def __call__(
+            self,
+            user_id: int,
+            station_id: int,
+    ) -> int:
+        return await self.gateway.create_favorite(user_id, station_id)

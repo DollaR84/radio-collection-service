@@ -4,6 +4,9 @@ from .station import (
     GetStation,
     GetStations,
     GetStationUrls,
+    CreateFavorite,
+    DeleteFavorite,
+    GetUserFavorites,
 )
 
 from .user import (
@@ -29,4 +32,8 @@ __all__ = [
     "GetStation",
     "GetStations",
     "GetStationUrls",
+
+    "CreateFavorite",
+    "DeleteFavorite",
+    "GetUserFavorites",
 ]

@@ -2,39 +2,35 @@ from typing import Optional
 
 from sqlalchemy import select, exists, func
 
-from application import dto
 from application.types import StationStatusType
 
 from db import domain
 
 from ..base import BaseGateway
 
-from ...models import Station
+from ...models import Station, Favorite
 
 
 class GetStationGateway(BaseGateway[int, Station]):
 
-    async def get_station(self, user: dto.User, station_id: int) -> Optional[domain.StationModel]:
-        error_message = f"Error get station for user id={user.id}"
+    async def get_station(self, station_id: int) -> Optional[domain.StationModel]:
+        error_message = f"Error get station id={station_id}"
 
         stmt = select(Station)
         stmt = stmt.where(Station.id == station_id)
 
         station = await self._get(stmt, error_message)
-        if station:
-            return domain.StationModel(**station.dict())
-        return None
+        return domain.StationModel(**station.dict()) if station else None
 
     async def get_stations(
             self,
-            user: dto.User,
             name: Optional[str] = None,
             info: Optional[str] = None,
             status: Optional[StationStatusType] = None,
             offset: Optional[int] = None,
             limit: Optional[int] = None,
     ) -> list[domain.StationModel]:
-        error_message = f"Error get stations for user id={user.id}"
+        error_message = "Error get stations"
         stmt = select(Station)
 
         if name:
@@ -68,3 +64,29 @@ class GetStationsUrlsGateway(BaseGateway[int, str]):
 
         urls = await self._get(stmt, error_message, is_multiple=True)
         return urls
+
+
+class GetFavoriteGateway(BaseGateway[int, Station]):
+
+    async def get_favorites(
+            self,
+            user_id: int,
+            offset: Optional[int] = None,
+            limit: Optional[int] = None,
+    ) -> list[domain.StationModel]:
+        error_message = f"Error get favorites for user id={user_id}"
+
+        stmt = select(Station)
+        stmt = stmt.join(Favorite, Favorite.station_id == Station.id)
+        stmt = stmt.where(Favorite.user_id == user_id)
+
+        if offset:
+            stmt = stmt.offset(offset)
+        if limit:
+            stmt = stmt.limit(limit)
+
+        stations = await self._get(stmt, error_message, is_multiple=True)
+        return [
+            domain.StationModel(**station.dict())
+            for station in stations
+        ]

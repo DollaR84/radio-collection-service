@@ -1,7 +1,6 @@
 from abc import abstractmethod
 from typing import Optional, Protocol
 
-from application import dto
 from application.types import StationStatusType
 
 from db import domain
@@ -10,13 +9,12 @@ from db import domain
 class GetStationInterface(Protocol):
 
     @abstractmethod
-    async def get_station(self, user: dto.User, station_id: int) -> Optional[domain.StationModel]:
+    async def get_station(self, station_id: int) -> Optional[domain.StationModel]:
         ...
 
     @abstractmethod
     async def get_stations(
             self,
-            user: dto.User,
             name: Optional[str] = None,
             info: Optional[str] = None,
             status: Optional[StationStatusType] = None,
@@ -29,4 +27,16 @@ class GetStationInterface(Protocol):
 class GetStationsUrlsInterface(Protocol):
 
     async def get_stations_urls(self) -> list[str]:
+        ...
+
+
+class GetFavoriteInterface(Protocol):
+
+    @abstractmethod
+    async def get_favorites(
+            self,
+            user_id: int,
+            offset: Optional[int] = None,
+            limit: Optional[int] = None,
+    ) -> list[domain.StationModel]:
         ...
