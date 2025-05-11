@@ -79,3 +79,6 @@ class TaskManager:
 
     def get_task(self, task_name: str) -> Type[BaseTask]:
         return self._on_demand_tasks[task_name]
+
+    def get_all_tasks_names(self) -> list[str]:
+        return BaseTask.get_all_tasks_names()

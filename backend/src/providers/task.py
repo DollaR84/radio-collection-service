@@ -4,13 +4,19 @@ from arq.connections import RedisSettings, create_pool
 
 from dishka import AsyncContainer, from_context, Provider, Scope, provide
 
-from application.interactors import CreateStation, GetStationUrls
-from application.services import CollectionParser
+from application.interactors import CreateStation, GetStations, GetStationUrls, UpdateStationStatus
+from application.services import CollectionParser, RadioTester
 
 from config import Config
 
 from workers import TaskManager
-from workers.tasks import RadioBrowserTask, InternetRadioStreamsTask, Mp3RadioStationsTask
+from workers.tasks import (
+    RadioBrowserTask,
+    InternetRadioStreamsTask,
+    Mp3RadioStationsTask,
+    TestNotVerifiedTask,
+    TestNotWorkTask,
+)
 
 
 class TaskProvider(Provider):
@@ -58,3 +64,21 @@ class TaskProvider(Provider):
             creator: CreateStation,
     ) -> Mp3RadioStationsTask:
         return Mp3RadioStationsTask(parser, get_urls, creator)
+
+    @provide(scope=Scope.REQUEST)
+    async def get_test_not_verified_task(
+            self,
+            tester: RadioTester,
+            get_stations: GetStations,
+            updater: UpdateStationStatus,
+    ) -> TestNotVerifiedTask:
+        return TestNotVerifiedTask(tester, get_stations, updater)
+
+    @provide(scope=Scope.REQUEST)
+    async def get_test_not_work_task(
+            self,
+            tester: RadioTester,
+            get_stations: GetStations,
+            updater: UpdateStationStatus,
+    ) -> TestNotWorkTask:
+        return TestNotWorkTask(tester, get_stations, updater)

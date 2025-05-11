@@ -41,6 +41,10 @@ class BaseTask(ABC):
             key=lambda x: x.order_id
         )
 
+    @classmethod
+    def get_all_tasks_names(cls) -> list[str]:
+        return list(cls._tasks.keys())
+
     @abstractmethod
     async def execute(self) -> None:
         raise NotImplementedError

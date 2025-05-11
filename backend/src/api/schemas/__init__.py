@@ -1,3 +1,4 @@
+from .task import TaskData, TaskStartedResponse
 from .station import StationResponse, AddFavorite
 from .user import (
     UserCreateByPassword,
@@ -23,4 +24,7 @@ __all__ = [
     "UserInfoResponse",
     "UserMessageResponse",
     "UserMessageTokenResponse",
+
+    "TaskData",
+    "TaskStartedResponse",
 ]
