@@ -124,3 +124,28 @@ async def process_refresh_token(
         ok=True,
         message="tokens successfully updated",
     )
+
+
+@router.put(
+    "/update",
+    description="Method for update user data",
+    status_code=status.HTTP_200_OK,
+    response_model=schemas.UserMessageResponse,
+)
+async def update_user_data(
+        user: FromDishka[dto.CurrentUser],
+        updater: FromDishka[interactors.UpdateUserByUUID],
+        data: schemas.UserUpdate,
+) -> schemas.UserMessageResponse:
+    update_data = dto.UpdateUser(
+        email=data.email,
+        user_name=data.user_name,
+        first_name=data.first_name,
+        last_name=data.last_name,
+    )
+    await updater(user.uuid_id, update_data)
+
+    return schemas.UserMessageResponse(
+        ok=True,
+        message="user data successfully updated",
+    )

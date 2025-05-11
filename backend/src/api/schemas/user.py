@@ -29,6 +29,13 @@ class UserGoogle(BaseUser):
     google_id: str
 
 
+class UserUpdate(BaseModel):
+    email: Optional[str] = None
+    user_name: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+
+
 class UserResponse(BaseModel):
     uuid_id: uuid.UUID
 
