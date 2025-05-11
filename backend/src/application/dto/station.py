@@ -6,7 +6,7 @@ from application.types import StationStatusType
 from .base import BaseData
 
 
-@dataclass(slots=True)
+@dataclass(slots=True, kw_only=True)
 class Station(BaseData):
     name: str
     url: str
@@ -15,8 +15,15 @@ class Station(BaseData):
     status: StationStatusType = StationStatusType.NOT_VERIFIED
 
 
+@dataclass(slots=True)
 class StationData(Station):
     id: int
 
     created_at: datetime
     updated_at: datetime
+
+
+@dataclass(slots=True)
+class UpdateStationStatus(BaseData):
+    id: int
+    status: StationStatusType

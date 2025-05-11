@@ -110,6 +110,13 @@ class WorkerConfig(BaseSettings):
     job_timeout: int
 
 
+class TesterConfig(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix="TESTER_")
+
+    repeat_count: int
+    repeat_timeout: int
+
+
 class Config(BaseSettings):
     model_config = SettingsConfigDict(env_nested_delimiter="__")
 
@@ -120,6 +127,7 @@ class Config(BaseSettings):
     google: GoogleConfig = Field(default_factory=GoogleConfig)
     parser: ParserConfig = Field(default_factory=ParserConfig)
     worker: WorkerConfig = Field(default_factory=WorkerConfig)
+    tester: TesterConfig = Field(default_factory=TesterConfig)
 
 
 @lru_cache(maxsize=1)

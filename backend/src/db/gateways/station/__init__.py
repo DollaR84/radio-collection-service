@@ -1,6 +1,7 @@
 from .create import CreateStationGateway, CreateFavoriteGateway
 from .delete import DeleteStationGateway, DeleteFavoriteGateway
 from .read import GetStationGateway, GetStationsUrlsGateway, GetFavoriteGateway
+from .update import UpdateStationGateway
 
 
 __all__ = [
@@ -8,6 +9,7 @@ __all__ = [
     "DeleteStationGateway",
     "GetStationGateway",
     "GetStationsUrlsGateway",
+    "UpdateStationGateway",
 
     "CreateFavoriteGateway",
     "DeleteFavoriteGateway",

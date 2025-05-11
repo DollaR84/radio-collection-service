@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Optional
 import uuid
 
@@ -7,7 +8,6 @@ from .base import BaseData
 
 @dataclass(slots=True, kw_only=True)
 class BaseUser(BaseData):
-    email: str
     hashed_password: Optional[str] = None
     google_id: Optional[str] = None
 
@@ -17,17 +17,25 @@ class BaseUser(BaseData):
 
 
 @dataclass(slots=True)
-class NewUser(BaseUser):
+class BaseEmailUser(BaseUser):
+    email: str
+
+
+@dataclass(slots=True)
+class NewUser(BaseEmailUser):
     pass
 
 
 @dataclass(slots=True)
-class User(BaseUser):
+class User(BaseEmailUser):
     id: int
     uuid_id: uuid.UUID
 
     is_active: bool
     is_admin: bool
+
+    created_at: datetime
+    updated_at: datetime
 
 
 @dataclass(slots=True)
@@ -38,3 +46,8 @@ class CurrentUser(User):
 @dataclass(slots=True)
 class AdminUser(User):
     pass
+
+
+@dataclass(slots=True)
+class UpdateUser(BaseUser):
+    email: Optional[str] = None

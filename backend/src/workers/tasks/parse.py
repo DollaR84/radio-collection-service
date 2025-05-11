@@ -38,7 +38,7 @@ class BaseCollectionTask(BaseTask, is_abstract=True):
 
 class RadioBrowserTask(BaseCollectionTask):
     order_id = 1
-    trigger = IntervalTrigger(days=7, start_date=datetime.utcnow() + timedelta(minutes=5))
+    trigger = IntervalTrigger(days=7, start_date=datetime.utcnow() + timedelta(hours=1))
 
 
 class InternetRadioStreamsTask(BaseCollectionTask):

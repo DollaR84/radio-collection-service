@@ -26,6 +26,7 @@ class GetStationInterface(Protocol):
 
 class GetStationsUrlsInterface(Protocol):
 
+    @abstractmethod
     async def get_stations_urls(self) -> list[str]:
         ...
 

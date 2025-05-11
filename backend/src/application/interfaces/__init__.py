@@ -3,12 +3,13 @@ from .station import (
     DeleteStationInterface,
     GetStationInterface,
     GetStationsUrlsInterface,
+    UpdateStationInterface,
     CreateFavoriteInterface,
     DeleteFavoriteInterface,
     GetFavoriteInterface,
 )
 
-from .user import CreateUserInterface, DeleteUserInterface, GetUserInterface
+from .user import CreateUserInterface, DeleteUserInterface, GetUserInterface, UpdateUserInterface
 
 
 __all__ = [
@@ -16,6 +17,7 @@ __all__ = [
     "DeleteStationInterface",
     "GetStationsUrlsInterface",
     "GetStationInterface",
+    "UpdateStationInterface",
 
     "CreateFavoriteInterface",
     "DeleteFavoriteInterface",
@@ -24,4 +26,5 @@ __all__ = [
     "CreateUserInterface",
     "DeleteUserInterface",
     "GetUserInterface",
+    "UpdateUserInterface",
 ]

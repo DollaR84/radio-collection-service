@@ -18,3 +18,9 @@ class StationModel(BaseData):
 
     tags: list[str] = field(default_factory=list)
     status: StationStatusType = StationStatusType.NOT_VERIFIED
+
+
+@dataclass(slots=True)
+class UpdateStationStatusModel(BaseData):
+    id: int
+    status: StationStatusType

@@ -40,6 +40,10 @@ class DBProvider(Provider):
         return gateways.GetUserGateway(session)
 
     @provide(scope=Scope.REQUEST)
+    async def user_updater(self, session: AsyncSession) -> interfaces.UpdateUserInterface:
+        return gateways.UpdateUserGateway(session)
+
+    @provide(scope=Scope.REQUEST)
     async def station_creator(self, session: AsyncSession) -> interfaces.CreateStationInterface:
         return gateways.CreateStationGateway(session)
 
@@ -54,6 +58,10 @@ class DBProvider(Provider):
     @provide(scope=Scope.REQUEST)
     async def stations_urls_getter(self, session: AsyncSession) -> interfaces.GetStationsUrlsInterface:
         return gateways.GetStationsUrlsGateway(session)
+
+    @provide(scope=Scope.REQUEST)
+    async def station_updater(self, session: AsyncSession) -> interfaces.UpdateStationInterface:
+        return gateways.UpdateStationGateway(session)
 
     @provide(scope=Scope.REQUEST)
     async def favorite_creator(self, session: AsyncSession) -> interfaces.CreateFavoriteInterface:

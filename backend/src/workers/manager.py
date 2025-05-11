@@ -1,3 +1,4 @@
+import logging
 from typing import Any, Optional, Type
 
 from apscheduler.job import Job
@@ -46,9 +47,13 @@ class TaskManager:
         if self.container is None:
             raise ContainerNotInitializedError()
 
-        async with self.container() as container:
-            task = await container.get(task_cls)
-            await task.execute()
+        try:
+            async with self.container() as container:
+                task = await container.get(task_cls)
+                await task.execute()
+
+        except Exception as error:
+            logging.error("task '%s' failed: %s", task.get_name(), str(error))
 
     def register_adhoc_tasks(self) -> None:
         for task_cls in BaseTask.get_all_tasks():

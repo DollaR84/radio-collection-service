@@ -2,9 +2,9 @@ import logging
 from typing import Generic, Literal, Optional, overload, TypeVar
 import uuid
 
-from sqlalchemy.exc import SQLAlchemyError, MultipleResultsFound
+from sqlalchemy.exc import SQLAlchemyError, MultipleResultsFound, NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql import Delete, Insert, Select
+from sqlalchemy.sql import Delete, Insert, Select, Update
 
 
 T = TypeVar("T", int, uuid.UUID)
@@ -89,6 +89,45 @@ class BaseGateway(Generic[T, M]):
             logging.error(error, exc_info=True)
             raise ValueError(f"Multiple records found: {error_message}") from error
 
+        except SQLAlchemyError as error:
+            logging.error(error, exc_info=True)
+            raise ValueError(error_message) from error
+
+    @overload
+    async def _update(
+            self,
+            stmt: Update,
+            error_message: str,
+            is_multiple: Literal[False] = False,
+    ) -> T:
+        ...
+
+    @overload
+    async def _update(
+            self,
+            stmt: Update,
+            error_message: str,
+            is_multiple: Literal[True],
+    ) -> list[T]:
+        ...
+
+    async def _update(
+            self,
+            stmt: Update,
+            error_message: str,
+            is_multiple: bool = False,
+    ) -> T | list[T]:
+        try:
+            result = await self.session.execute(stmt)
+            await self.session.commit()
+
+            return list(result.scalars().all()) if is_multiple else result.scalar_one()
+        except NoResultFound as error:
+            logging.error(error, exc_info=True)
+            raise NoResultFound(f"no records updated: {error_message}") from error
+        except MultipleResultsFound as error:
+            logging.error(error, exc_info=True)
+            raise MultipleResultsFound(f"multiple records updated: {error_message}") from error
         except SQLAlchemyError as error:
             logging.error(error, exc_info=True)
             raise ValueError(error_message) from error

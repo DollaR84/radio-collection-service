@@ -40,5 +40,5 @@ class GetUserGateway(BaseGateway[int, User]):
     async def _get_user(self, stmt: Select, error_message: str) -> Optional[domain.UserModel]:
         user = await self._get(stmt, error_message)
         if user:
-            return domain.UserModel(**user.dict(exclude=["created_at", "updated_at"]))
+            return domain.UserModel(**user.dict())
         return None

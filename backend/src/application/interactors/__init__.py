@@ -4,6 +4,8 @@ from .station import (
     GetStation,
     GetStations,
     GetStationUrls,
+    UpdateStationStatus,
+    UpdateStationsStatus,
     CreateFavorite,
     DeleteFavorite,
     GetUserFavorites,
@@ -16,6 +18,10 @@ from .user import (
     GetUserByUUID,
     GetUserByGoogle,
     GetUserByEmail,
+    UpdateUserByID,
+    UpdateUserByUUID,
+    UpdateUserByGoogle,
+    UpdateUserByEmail,
 )
 
 
@@ -26,9 +32,15 @@ __all__ = [
     "GetUserByGoogle",
     "GetUserByID",
     "GetUserByUUID",
+    "UpdateUserByID",
+    "UpdateUserByUUID",
+    "UpdateUserByGoogle",
+    "UpdateUserByEmail",
 
     "CreateStation",
     "DeleteStation",
+    "UpdateStationStatus",
+    "UpdateStationsStatus",
     "GetStation",
     "GetStations",
     "GetStationUrls",

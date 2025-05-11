@@ -4,7 +4,7 @@ from fastapi import Request, Response
 
 from application import dto
 from application import interactors
-from application.services import Authenticator, CollectionParser
+from application.services import Authenticator, CollectionParser, RadioTester
 
 from config import Config
 
@@ -39,3 +39,7 @@ class ServiceProvider(Provider):
     @provide(scope=Scope.REQUEST)
     async def get_collection_parser(self, config: Config) -> CollectionParser:
         return CollectionParser(config.parser)
+
+    @provide(scope=Scope.REQUEST)
+    async def get_radio_tester(self, config: Config) -> RadioTester:
+        return RadioTester(config.tester)
