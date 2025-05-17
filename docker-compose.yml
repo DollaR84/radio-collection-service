@@ -8,8 +8,8 @@ services:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USERNAME}"]
-      interval: 5s
-      timeout: 5s
+      interval: 3s
+      timeout: 3s
       retries: 5
 
   redis:
@@ -20,8 +20,8 @@ services:
       - redis_data:/data
     healthcheck:
       test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
-      interval: 5s
-      timeout: 5s
+      interval: 3s
+      timeout: 3s
       retries: 5
 
   api:
@@ -31,7 +31,9 @@ services:
     env_file: .env
     command: ["--workers", "4"]
     volumes:
+      - ./backend/src/migration/versions:/app/migration/versions
       - shared_data:/app/data
+    user: "1000:1000"
     ports:
       - "8000:8000"
     depends_on:

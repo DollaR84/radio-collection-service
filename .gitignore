@@ -1,6 +1,7 @@
 __pycache__/
 .ruff_cache/
 wsl2win/
+dist/
 _env/
 .env
 .flake8

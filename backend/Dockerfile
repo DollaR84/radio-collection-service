@@ -5,7 +5,7 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # Create a user and group
-RUN groupadd -r appgroup && useradd -r -g appgroup appuser
+RUN addgroup --gid 1000 appgroup && adduser --uid 1000 --gid 1000 --disabled-password appuser
 
 # Set the working directory in the container to /app
 WORKDIR /app
@@ -31,8 +31,10 @@ RUN pip install --upgrade pip \
 
 # Establish the rights to the directory
 RUN mkdir -p /app/data && chown -R appuser:appgroup /app/data
+RUN mkdir -p /app/migration/versions && chown -R 1000:1000 /app/migration
+
 # Switching to an unheard of user
-USER appuser
+USER 1000
 
 # Make port 8000 available to the world outside this container
 EXPOSE 8000
