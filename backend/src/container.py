@@ -6,13 +6,13 @@ from fastapi import FastAPI
 
 from config import Config
 
-from providers import AppProvider, DBProvider, ServiceProvider, TaskProvider
+from providers import ApiProvider, AppProvider, DBProvider, ServiceProvider, TaskProvider
 
 from workers import ArqContext
 
 
 def setup_container(context: FastAPI | ArqContext, config: Config) -> None:
-    providers = [AppProvider(), DBProvider(), ServiceProvider(), TaskProvider()]
+    providers = [ApiProvider(), AppProvider(), DBProvider(), ServiceProvider(), TaskProvider()]
 
     container = make_async_container(
         *providers,

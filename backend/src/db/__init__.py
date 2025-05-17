@@ -1,6 +1,6 @@
-from .postgres import PostgresDbConnector as DbConnector
+from .postgres import PostgresDbConnector
 
 
 __all__ = [
-    "DbConnector",
+    "PostgresDbConnector",
 ]

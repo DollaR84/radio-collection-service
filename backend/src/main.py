@@ -2,8 +2,6 @@ import logging
 
 from fastapi import FastAPI
 
-import uvicorn
-
 from api import FastAPIApp
 
 from config import Config, get_config
@@ -18,11 +16,10 @@ def get_app() -> FastAPI:
     )
 
     config: Config = get_config()
-    app = FastAPIApp(config.api).app
+    _app = FastAPIApp(config.api).app
 
-    setup_container(app, config)
-    return app
+    setup_container(_app, config)
+    return _app
 
 
-if "__main__" == __name__:
-    uvicorn.run(get_app(), host="0.0.0.0", port=8000, reload=True, lifespan="on")
+app = get_app()

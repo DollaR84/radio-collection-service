@@ -8,7 +8,7 @@ from application import interfaces
 
 from config import Config
 
-from db import DbConnector
+from db import PostgresDbConnector
 from db.base import BaseDbConnector
 from db import gateways
 
@@ -20,10 +20,10 @@ class DBProvider(Provider):
 
     @provide(scope=Scope.REQUEST)
     async def get_db(self, config: Config) -> BaseDbConnector:
-        return DbConnector(config.db)
+        return PostgresDbConnector(config.db)
 
     @provide(scope=Scope.REQUEST)
-    async def db_session(self, connector: DbConnector) -> AsyncGenerator[AsyncSession, None]:
+    async def db_session(self, connector: BaseDbConnector) -> AsyncGenerator[AsyncSession, None]:
         async with connector.get_session() as session:
             yield session
 

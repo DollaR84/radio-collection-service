@@ -14,14 +14,17 @@ from .base import BaseTask
 
 
 class BaseCollectionTask(BaseTask, is_abstract=True):
+    parser: CollectionParser
+    get_all_urls: GetStationUrls
+    creator: CreateStation
 
     @inject
-    def __init__(
+    async def initialize(
             self,
             parser: FromDishka[CollectionParser],
             get_all_urls: FromDishka[GetStationUrls],
             creator: FromDishka[CreateStation],
-    ):
+    ) -> None:
         self.parser: CollectionParser = parser
         self.get_all_urls: GetStationUrls = get_all_urls
         self.creator: CreateStation = creator

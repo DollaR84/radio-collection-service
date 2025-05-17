@@ -15,14 +15,17 @@ from .base import BaseTask
 
 
 class BaseTestTask(BaseTask):
+    tester: RadioTester
+    get_stations: GetStations
+    updater: UpdateStationStatus
 
     @inject
-    def __init__(
+    async def initialize(
             self,
             tester: FromDishka[RadioTester],
             get_stations: FromDishka[GetStations],
             updater: FromDishka[UpdateStationStatus],
-    ):
+    ) -> None:
         self.tester: RadioTester = tester
         self.get_stations: GetStations = get_stations
         self.updater: UpdateStationStatus = updater

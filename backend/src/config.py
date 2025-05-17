@@ -8,9 +8,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class DBConfig(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="POSTGRES_")
 
-    username: str = Field(alias="USER")
+    username: str
     password: str
-    db_name: str = Field(alias="DB")
+    db_name: str
     host: str
     port: int = 5432
     debug: bool = False
@@ -53,11 +53,6 @@ class APIConfig(BaseSettings):
     allow_origins: list[str] = Field(default_factory=list)
     allow_methods: list[str] = ["GET", "POST"]
     allow_headers: list[str] = ["*"]
-
-    @field_validator("allow_origins", "allow_methods", "allow_headers", mode="before")
-    @classmethod
-    def split_string(cls, value: str) -> list[str]:
-        return value.split(",") if isinstance(value, str) else value
 
 
 class CookieConfig(BaseSettings):

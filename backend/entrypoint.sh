@@ -21,4 +21,4 @@ for i in {1..5}; do
 done
 
 echo "Starting application..."
-exec python -m main
+exec uvicorn main:app --lifespan on --host 0.0.0.0 --port 8000 "$@"

@@ -3,6 +3,7 @@ asyncpg
 dishka
 fastapi
 pydantic
+pydantic[email]
 pydantic-settings
 SQLAlchemy
 uvicorn

@@ -39,4 +39,4 @@ EXPOSE 8000
 
 # Run the application
 ENTRYPOINT ["/app/entrypoint.sh"]
-CMD ["python", "-m", "main"]
+CMD ["--workers", "4"]
