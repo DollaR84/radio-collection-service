@@ -28,6 +28,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    image: radio-collection-service-api
     env_file: .env
     command: ["--workers", "4"]
     volumes:
@@ -61,10 +62,10 @@ services:
         condition: service_healthy
 
   worker:
-    build:
-      context: ./backend
+    image: radio-collection-service-api
     env_file: .env
-    command: python -m workers.worker
+    entrypoint: ["python", "-m"]
+    command: "workers.worker"
     volumes:
       - shared_data:/app/data
     depends_on:

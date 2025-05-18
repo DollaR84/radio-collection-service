@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import logging
 
 from dishka import FromDishka
 from dishka.integrations.arq import inject
@@ -30,6 +31,8 @@ class BaseCollectionTask(BaseTask, is_abstract=True):
         self.creator: CreateStation = creator
 
     async def execute(self) -> None:
+        logging.info("starting task: %s", self.__class__.__name__)
+
         collection = self.parser.get_collection(self.get_name())
         data = await collection.parse()
 
@@ -37,6 +40,7 @@ class BaseCollectionTask(BaseTask, is_abstract=True):
         data = [collection_item for collection_item in data if collection_item.url not in exists_urls]
 
         await self.creator([Station(**item.dict()) for item in data])
+        logging.info("task completed: %s", self.__class__.__name__)
 
 
 class RadioBrowserTask(BaseCollectionTask):

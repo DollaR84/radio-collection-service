@@ -22,6 +22,7 @@ def setup_container(context: FastAPI | ArqContext, config: Config) -> None:
     if isinstance(context, FastAPI):
         setup_fastapi_dishka(container, context)
     elif isinstance(context, ArqContext):
+        context.dishka_container = container
         setup_arq_dishka(container, worker_settings=context)
     else:
         raise ValueError(

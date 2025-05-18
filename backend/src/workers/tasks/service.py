@@ -1,5 +1,6 @@
 import asyncio
 from datetime import datetime, timedelta
+import logging
 
 from dishka import FromDishka
 from dishka.integrations.arq import inject
@@ -48,13 +49,21 @@ class TestNotVerifiedTask(BaseTestTask):
     trigger = IntervalTrigger(days=1, start_date=datetime.utcnow() + timedelta(hours=2))
 
     async def execute(self) -> None:
+        logging.info("starting task: %s", self.__class__.__name__)
+
         stations = await self.get_stations(status=StationStatusType.NOT_VERIFIED)
         await self.check(stations)
+
+        logging.info("task completed: %s", self.__class__.__name__)
 
 
 class TestNotWorkTask(BaseTestTask):
     trigger = IntervalTrigger(days=3, start_date=datetime.utcnow() + timedelta(hours=3))
 
     async def execute(self) -> None:
+        logging.info("starting task: %s", self.__class__.__name__)
+
         stations = await self.get_stations(status=StationStatusType.NOT_WORK)
         await self.check(stations)
+
+        logging.info("task completed: %s", self.__class__.__name__)
