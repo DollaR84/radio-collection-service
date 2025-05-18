@@ -1,6 +1,6 @@
 from dishka import from_context, Provider, Scope, provide
 
-from application.services import CollectionParser, RadioTester
+from application.services import CollectionParser, RadioTester, NoService
 
 from config import Config
 
@@ -17,3 +17,7 @@ class ServiceProvider(Provider):
     @provide(scope=Scope.REQUEST)
     async def get_radio_tester(self, config: Config) -> RadioTester:
         return RadioTester(config.tester)
+
+    @provide(scope=Scope.REQUEST)
+    async def get_no_service(self) -> NoService:
+        return NoService()

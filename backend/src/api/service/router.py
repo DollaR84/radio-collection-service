@@ -1,7 +1,9 @@
-from dishka.integrations.fastapi import DishkaRoute
+from dishka.integrations.fastapi import DishkaRoute, FromDishka
 
 from fastapi import APIRouter, status
 from fastapi.responses import JSONResponse
+
+from application.services import NoService
 
 
 router = APIRouter(route_class=DishkaRoute)
@@ -12,11 +14,11 @@ router = APIRouter(route_class=DishkaRoute)
     description="Method for root page stub",
     status_code=status.HTTP_200_OK,
 )
-async def index() -> JSONResponse:
+async def index(reasigner: FromDishka[NoService]) -> JSONResponse:
     status_code = status.HTTP_200_OK
     response = {
         "status": "OK",
-        "message": "To login, follow the link: '/auth'",
+        "reason": await reasigner("To login, follow the link: '/auth'"),
     }
 
     return JSONResponse(content=response, status_code=status_code)
