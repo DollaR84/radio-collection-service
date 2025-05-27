@@ -1,5 +1,5 @@
 import uuid
-from typing import Literal, Optional
+from typing import Optional
 from typing_extensions import Self
 
 from pydantic import BaseModel, EmailStr, Field, model_validator
@@ -56,13 +56,3 @@ class UserInfoResponse(UserResponse):
 class UserMessageResponse(BaseModel):
     ok: bool
     message: str
-
-
-class TokenResponse(BaseModel):
-    access_token: str
-    token_type: Literal["bearer"] = "bearer"
-
-
-class Token2Response(BaseModel):
-    access_token: str
-    refresh_token: str

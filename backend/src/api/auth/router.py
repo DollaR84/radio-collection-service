@@ -49,7 +49,7 @@ async def _common_login_logic(
         interactor: interactors.GetUserByEmail,
         email: str,
         password: Optional[str] = None,
-) -> schemas.Token2Response:
+) -> schemas.TokensResponse:
     user = await interactor(email)
     if not user:
         raise HTTPException(
@@ -66,20 +66,20 @@ async def _common_login_logic(
     access_token = auth.set_access_token(user.uuid_id)
     refresh_token = auth.set_refresh_token(user.uuid_id)
 
-    return schemas.Token2Response(access_token=access_token, refresh_token=refresh_token)
+    return schemas.TokensResponse(access_token=access_token, refresh_token=refresh_token)
 
 
 @router.post(
     "/login/form",
     description="Login using form-data (OAuth2 compatible)",
     status_code=status.HTTP_200_OK,
-    response_model=schemas.TokenResponse,
+    response_model=schemas.TokenFormResponse,
 )
 async def login_by_form(
         auth: FromDishka[Authenticator],
         interactor: FromDishka[interactors.GetUserByEmail],
         form_data: OAuth2PasswordRequestForm = Depends(),
-) -> schemas.TokenResponse:
+) -> schemas.TokenFormResponse:
     token_data = await _common_login_logic(
         auth=auth,
         interactor=interactor,
@@ -87,20 +87,20 @@ async def login_by_form(
         password=form_data.password,
     )
 
-    return schemas.TokenResponse(access_token=token_data.access_token)
+    return schemas.TokenFormResponse(access_token=token_data.access_token)
 
 
 @router.post(
     "/login",
     description="Login using JSON body",
     status_code=status.HTTP_200_OK,
-    response_model=schemas.TokenResponse,
+    response_model=schemas.TokensResponse,
 )
 async def login_by_json(
         auth: FromDishka[Authenticator],
         interactor: FromDishka[interactors.GetUserByEmail],
         data: schemas.UserLoginByPassword | schemas.UserGoogle,
-) -> schemas.Token2Response:
+) -> schemas.TokensResponse:
     return await _common_login_logic(
         auth=auth,
         interactor=interactor,
