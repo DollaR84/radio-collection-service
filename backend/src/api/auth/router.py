@@ -1,13 +1,16 @@
+import logging
+from typing import Optional
+
 from dishka.integrations.fastapi import DishkaRoute, FromDishka
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 
 from application import dto
 from application import interactors
 from application.services import Authenticator
 
 from .. import schemas
-
 
 router = APIRouter(prefix="/auth", route_class=DishkaRoute)
 
@@ -41,39 +44,68 @@ async def register_user(
     return schemas.UserResponse(uuid_id=uuid_id)
 
 
-@router.post(
-    "/login",
-    description="Method for login user by password",
-    status_code=status.HTTP_200_OK,
-    response_model=schemas.UserMessageResponse,
-)
-async def login_user(
-        auth: FromDishka[Authenticator],
-        interactor: FromDishka[interactors.GetUserByEmail],
-        data: schemas.UserLoginByPassword | schemas.UserGoogle,
-) -> schemas.UserMessageResponse:
-    user = await interactor(data.email)
+async def _common_login_logic(
+        auth: Authenticator,
+        interactor: interactors.GetUserByEmail,
+        email: str,
+        password: Optional[str] = None,
+) -> schemas.Token2Response:
+    user = await interactor(email)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="this user is not registered",
         )
 
-    if isinstance(data, schemas.UserLoginByPassword):
-        if not auth.verify_password(plain_password=data.password, hashed_password=user.hashed_password):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="incorrect email or password",
-            )
+    if password and not auth.verify_password(plain_password=password, hashed_password=user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="incorrect email or password",
+        )
 
     access_token = auth.set_access_token(user.uuid_id)
     refresh_token = auth.set_refresh_token(user.uuid_id)
 
-    return schemas.UserMessageTokenResponse(
-        ok=True,
-        message="Authorization successful",
-        access=access_token,
-        refresh=refresh_token,
+    return schemas.Token2Response(access_token=access_token, refresh_token=refresh_token)
+
+
+@router.post(
+    "/login/form",
+    description="Login using form-data (OAuth2 compatible)",
+    status_code=status.HTTP_200_OK,
+    response_model=schemas.TokenResponse,
+)
+async def login_by_form(
+        auth: FromDishka[Authenticator],
+        interactor: FromDishka[interactors.GetUserByEmail],
+        form_data: OAuth2PasswordRequestForm = Depends(),
+) -> schemas.TokenResponse:
+    token_data = await _common_login_logic(
+        auth=auth,
+        interactor=interactor,
+        email=form_data.username,
+        password=form_data.password,
+    )
+
+    return schemas.TokenResponse(access_token=token_data.access_token)
+
+
+@router.post(
+    "/login",
+    description="Login using JSON body",
+    status_code=status.HTTP_200_OK,
+    response_model=schemas.TokenResponse,
+)
+async def login_by_json(
+        auth: FromDishka[Authenticator],
+        interactor: FromDishka[interactors.GetUserByEmail],
+        data: schemas.UserLoginByPassword | schemas.UserGoogle,
+) -> schemas.Token2Response:
+    return await _common_login_logic(
+        auth=auth,
+        interactor=interactor,
+        email=data.email,
+        password=data.password if isinstance(data, schemas.UserLoginByPassword) else None,
     )
 
 
@@ -85,10 +117,12 @@ async def login_user(
 )
 async def logout_user(
         auth: FromDishka[Authenticator],
+        user: FromDishka[dto.CurrentUser],
 ) -> schemas.UserMessageResponse:
     auth.delete_access_token()
     auth.delete_refresh_token()
 
+    logging.info("user id=%s logout successfully", user.id)
     return schemas.UserMessageResponse(
         ok=True,
         message="logout successfully",

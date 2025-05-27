@@ -45,6 +45,7 @@ class APIConfig(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="FASTAPI_")
 
     title: str
+    description: str
     version: str
     upload_folder: str
     debug: bool = False
@@ -62,6 +63,7 @@ class CookieConfig(BaseSettings):
     refresh_key: str
     samesite: Literal["lax", "strict", "none"] | None = "lax"
 
+    is_enable: bool = False
     httponly: bool = True
     secure: bool = True
 

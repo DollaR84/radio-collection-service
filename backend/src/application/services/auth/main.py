@@ -2,7 +2,7 @@ from typing import Any
 
 from authlib.integrations.starlette_client import OAuth
 
-from fastapi import Request, Response
+from fastapi import Request
 
 from application import dto
 from application import interactors
@@ -15,11 +15,9 @@ from .security import SecurityTool
 
 class Authenticator:
 
-    def __init__(self, config: Config, request: Request, response: Response):
+    def __init__(self, config: Config, request: Request):
         self.config: GoogleConfig = config.google
-        self.__security_tool: SecurityTool = SecurityTool(config.security, request, response)
-
-        self.check_refresh_token = self.__security_tool.check_refresh_token
+        self.__security_tool: SecurityTool = SecurityTool(config.security, request)
 
         self.oauth = OAuth()
         self.oauth.register(
@@ -51,26 +49,26 @@ class Authenticator:
     def scopes(self) -> str:
         return "openid email profile"
 
-    async def get_user_by_refresh_token(self, interactor: interactors.GetUserByUUID) -> dto.User:
-        token = self.get_access_token()
-        uuid_id = self.get_uuid_from_token(token)
-        user = await interactor(uuid_id)
-
-        if not user:
-            raise NoJwtException()
-        return user
-
-    async def get_current_user(self, interactor: interactors.GetUserByUUID) -> dto.CurrentUser:
-        token = self.get_access_token()
-        uuid_id = self.check_expire_refresh_token(token)
+    async def get_current_user(
+            self,
+            interactor: interactors.GetUserByUUID,
+            token: dto.AccessToken,
+    ) -> dto.CurrentUser:
+        token_type = "access"
+        payload = self.check_expire_token(token=token.value, token_type=token_type)
+        uuid_id = self.get_uuid_from_token(payload=payload, token_type=token_type)
         user = await interactor(uuid_id)
 
         if not user:
             raise NoJwtException()
         return dto.CurrentUser(**user.dict())
 
-    async def get_current_admin_user(self, interactor: interactors.GetUserByUUID) -> dto.AdminUser:
-        user = await self.get_current_user(interactor)
+    async def get_current_admin_user(
+            self,
+            interactor: interactors.GetUserByUUID,
+            token: dto.AccessToken,
+    ) -> dto.AdminUser:
+        user = await self.get_current_user(interactor, token)
         if not user.is_admin:
             raise ForbiddenException()
 

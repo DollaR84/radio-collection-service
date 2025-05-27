@@ -1,6 +1,4 @@
-from __future__ import annotations
-
-from typing import Optional, TYPE_CHECKING
+from typing import Optional
 import uuid
 
 import sqlalchemy as sa
@@ -9,9 +7,6 @@ from sqlalchemy.dialects.postgresql import UUID as PgUUID
 
 from ..base import Base
 from ..mixins import TimeCreateMixin, TimeUpdateMixin
-
-if TYPE_CHECKING:
-    from db.models.station import Station
 
 
 class User(TimeCreateMixin, TimeUpdateMixin, Base):
@@ -33,10 +28,3 @@ class User(TimeCreateMixin, TimeUpdateMixin, Base):
 
     is_active: so.Mapped[bool] = so.mapped_column(default=True)
     is_admin: so.Mapped[bool] = so.mapped_column(default=False)
-
-    favorite_stations: so.Mapped[list["Station"]] = so.relationship(
-        secondary="favorites",
-        back_populates="favorited_by",
-        lazy="selectin",
-        viewonly=True,
-    )

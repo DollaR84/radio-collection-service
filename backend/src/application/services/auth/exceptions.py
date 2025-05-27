@@ -39,6 +39,15 @@ class TokenExpiredException(HTTPException):
         )
 
 
+class TokenExpiredNotFoundException(HTTPException):
+
+    def __init__(self) -> None:
+        super().__init__(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="token expire field not found",
+        )
+
+
 class ForbiddenException(HTTPException):
 
     def __init__(self) -> None:

@@ -8,7 +8,8 @@ from .user import (
     UserResponse,
     UserInfoResponse,
     UserMessageResponse,
-    UserMessageTokenResponse,
+    TokenResponse,
+    Token2Response,
 )
 
 
@@ -23,7 +24,8 @@ __all__ = [
     "UserResponse",
     "UserInfoResponse",
     "UserMessageResponse",
-    "UserMessageTokenResponse",
+    "TokenResponse",
+    "Token2Response",
 
     "TaskData",
     "TaskStartedResponse",
