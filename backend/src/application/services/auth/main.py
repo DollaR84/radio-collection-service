@@ -11,6 +11,7 @@ from config import Config, GoogleConfig
 
 from .exceptions import NoJwtException, ForbiddenException
 from .security import SecurityTool
+from .types import TokenType
 
 
 class Authenticator:
@@ -54,9 +55,8 @@ class Authenticator:
             interactor: interactors.GetUserByUUID,
             token: dto.AccessToken,
     ) -> dto.CurrentUser:
-        token_type = "access"
-        payload = self.check_expire_token(token=token.value, token_type=token_type)
-        uuid_id = self.get_uuid_from_token(payload=payload, token_type=token_type)
+        payload = self.check_expire_token(token=token.value, token_type=TokenType.ACCESS)
+        uuid_id = self.get_uuid_from_token(payload=payload, token_type=TokenType.ACCESS)
         user = await interactor(uuid_id)
 
         if not user:
