@@ -12,6 +12,7 @@ from config import APIConfig
 from . import auth
 from . import favorite
 from . import station
+from . import tasks
 
 from . import service
 from .exception_handlers import register_exception_handlers
@@ -98,6 +99,7 @@ class FastAPIApp:
         self._app.include_router(auth.router)
         self._app.include_router(station.router)
         self._app.include_router(favorite.router)
+        self._app.include_router(tasks.router)
 
     @property
     def app(self) -> FastAPI:

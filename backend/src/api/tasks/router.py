@@ -1,3 +1,5 @@
+import logging
+
 from dishka.integrations.fastapi import DishkaRoute, FromDishka
 
 from fastapi import APIRouter, HTTPException, status
@@ -25,6 +27,7 @@ async def get_tasks(
     try:
         return manager.get_all_tasks_names()
     except Exception as error:
+        logging.error(error, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"error to get list of task names for user with id={user.id}",
@@ -43,10 +46,11 @@ async def run_task(
         task_data: schemas.TaskData,
 ) -> schemas.TaskStartedResponse:
     try:
-        job_id = await manager.trigger_task(task_data.name)
+        job_id = await manager.execute_task(task_data.name)
         return schemas.TaskStartedResponse(job_id=job_id)
 
     except Exception as error:
+        logging.error(error, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"error to run task for user with id={user.id}",

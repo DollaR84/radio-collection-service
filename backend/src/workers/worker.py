@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Any, cast, Optional, Type
+from typing import Any, Optional, Type
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
@@ -13,18 +13,20 @@ from config import Config, get_config
 
 from container import setup_container
 
-from .context import ArqContext
 from .exceptions import TaskManagerNotInitializedError
 from .manager import TaskManager
 
 
 async def execute_register_task(ctx: dict[Any, Any], task_name: str) -> Any:
-    _ctx = cast(ArqContext, ctx)
-    if _ctx.task_manager is None:
+    task_manager = ctx.get("task_manager")
+    if task_manager is None:
         raise TaskManagerNotInitializedError()
 
-    task_cls = _ctx.task_manager.get_task(task_name)
-    await _ctx.task_manager.execute_task(task_cls)
+    task = await task_manager.get_task(task_name)
+    try:
+        await task.execute()
+    except Exception as error:
+        logging.error("task '%s' failed: %s", task.get_name(), str(error))
 
 
 def get_worker_settings(config: Config, loop: Optional[asyncio.AbstractEventLoop] = None) -> Type[WorkerSettingsBase]:
@@ -45,25 +47,27 @@ def get_worker_settings(config: Config, loop: Optional[asyncio.AbstractEventLoop
 
         @staticmethod
         async def on_startup(ctx: dict[Any, Any]) -> dict[Any, Any]:
-            _ctx = ArqContext(ctx)
-            setup_container(_ctx, config)
+            task_manager = TaskManager()
+            task_manager.arq_context = ctx
+            setup_container(task_manager, config)
 
-            _ctx.scheduler = AsyncIOScheduler(event_loop=loop or asyncio.get_event_loop())
-            _ctx.task_manager = TaskManager(scheduler=_ctx.scheduler, container=_ctx.dishka_container)
-            _ctx.task_manager.setup_scheduler()
-            _ctx.scheduler.start()
+            task_manager.scheduler = AsyncIOScheduler(event_loop=loop or asyncio.get_event_loop())
+            task_manager.setup_scheduler()
+            task_manager.scheduler.start()
 
-            return _ctx
+            return task_manager.arq_context
 
         @staticmethod
         async def on_shutdown(ctx: dict[Any, Any]) -> Any:
-            _ctx = cast(ArqContext, ctx)
+            task_manager = ctx.get("task_manager")
+            if task_manager is None:
+                raise TaskManagerNotInitializedError()
 
-            if _ctx.dishka_container:
-                await _ctx.dishka_container.close()
+            if task_manager.dishka_container:
+                await task_manager.dishka_container.close()
 
-            if _ctx.scheduler:
-                await _ctx.scheduler.shutdown()
+            if task_manager.scheduler:
+                await task_manager.scheduler.shutdown()
 
     return WorkerSettings
 

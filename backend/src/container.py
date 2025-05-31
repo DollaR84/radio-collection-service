@@ -11,27 +11,28 @@ from config import Config
 
 from providers import ApiProvider, AppProvider, DBProvider, ServiceProvider, TaskProvider
 
-from workers import ArqContext
+from workers import TaskManager
 
 
-def setup_container(app_ctx: FastAPI | ArqContext, config: Config) -> None:
+def setup_container(app: FastAPI | TaskManager, config: Config) -> None:
     providers = [ApiProvider(), AppProvider(), DBProvider(), ServiceProvider(), TaskProvider()]
 
     container = make_async_container(
         *providers,
         context={
             Config: config,
-            OAuth2PasswordBearer: oauth2_scheme if isinstance(app_ctx, FastAPI) else None,
+            OAuth2PasswordBearer: oauth2_scheme if isinstance(app, FastAPI) else None,
         },
     )
 
-    if isinstance(app_ctx, FastAPI):
-        setup_fastapi_dishka(container, app_ctx)
+    if isinstance(app, FastAPI):
+        setup_fastapi_dishka(container, app)
 
-    elif isinstance(app_ctx, ArqContext):
-        app_ctx.dishka_container = container
-        setup_arq_dishka(container, worker_settings=app_ctx)
+    elif isinstance(app, TaskManager):
+        app.dishka_container = container
+        setup_arq_dishka(container, worker_settings=app.arq_context)
+
     else:
         raise ValueError(
-            f"create container can only be used for 'FastAPI' or 'ArqContext'. Cannot be used for '{type(app_ctx)}'"
+            f"create container can only be used for 'FastAPI' or 'TaskManager'. Cannot be used for '{type(app)}'"
         )

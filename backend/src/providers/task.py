@@ -1,7 +1,5 @@
 from typing import Optional
 
-from arq.connections import RedisSettings, create_pool
-
 from dishka import AsyncContainer, from_context, Provider, Scope, provide
 
 from application.interactors import CreateStation, GetStations, GetStationUrls, UpdateStationStatus
@@ -29,12 +27,9 @@ class TaskProvider(Provider):
     @provide(scope=Scope.REQUEST)
     async def get_task_manager(self, config: Config, container: AsyncContainer) -> TaskManager:
         if self.task_manager is None:
-            redis_pool = await create_pool(RedisSettings(
-                host=config.redis.host,
-                port=config.redis.port,
-                database=config.worker.redis_database,
-            ))
-            self.task_manager = TaskManager(redis_pool=redis_pool, container=container)
+            self.task_manager = TaskManager()
+            self.task_manager.dishka_container = container
+            await self.task_manager.create_redis_pool(config)
             self.task_manager.register_adhoc_tasks()
         return self.task_manager
 

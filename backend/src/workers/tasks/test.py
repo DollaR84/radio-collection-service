@@ -15,7 +15,7 @@ from application.types import StationStatusType
 from .base import BaseTask
 
 
-class BaseTestTask(BaseTask):
+class BaseTestTask(BaseTask, is_abstract=True):
     tester: RadioTester
     get_stations: GetStations
     updater: UpdateStationStatus
