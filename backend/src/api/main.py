@@ -2,7 +2,9 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from typing import Any
 
-from fastapi import FastAPI
+from dishka.integrations.fastapi import DishkaRoute
+
+from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.openapi.utils import get_openapi
@@ -94,12 +96,15 @@ class FastAPIApp:
 
     def register_routers(self) -> None:
         register_exception_handlers(self._app)
-        self._app.include_router(service.router)
+        main_router = APIRouter(prefix="/api", route_class=DishkaRoute)
 
-        self._app.include_router(auth.router)
-        self._app.include_router(station.router)
-        self._app.include_router(favorite.router)
-        self._app.include_router(tasks.router)
+        main_router.include_router(auth.router, tags=["auth", "user"])
+        main_router.include_router(service.router, tags=["service"])
+        main_router.include_router(station.router, tags=["station"])
+        main_router.include_router(favorite.router, tags=["favorite"])
+        main_router.include_router(tasks.router, tags=["task"])
+
+        self._app.include_router(main_router)
 
     @property
     def app(self) -> FastAPI:

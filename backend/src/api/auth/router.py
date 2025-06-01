@@ -130,7 +130,7 @@ async def logout_user(
 
 
 @router.get(
-    "/me",
+    "/profile",
     description="Method for get user info",
     status_code=status.HTTP_200_OK,
     response_model=schemas.UserInfoResponse,
