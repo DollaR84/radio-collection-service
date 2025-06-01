@@ -5,6 +5,7 @@ WORKDIR /app/web
 COPY ./src /app/web/src/
 COPY index.html package*.json tsconfig.json postcss.config.js tailwind.config.js vite.config.ts /app/web/
 
+RUN npm cache clean --force
 RUN npm install
 RUN npm run build
 
