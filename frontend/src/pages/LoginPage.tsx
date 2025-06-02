@@ -41,7 +41,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
           onLogin(response.data.access_token);
         }        
 
-        navigate("/stations");
+        navigate("/profile");
       } else {
         setError("Server didn't return authentication token");
       }
