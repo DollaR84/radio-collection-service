@@ -21,17 +21,13 @@ from .types import TokenType
 
 
 class SecurityTool:
-    __slots__ = ("config", "pwd_context", "request", "response",)
+    __slots__ = ("config", "pwd_context", "request",)
 
     def __init__(self, config: SecurityConfig, request: Request):
         self.config: SecurityConfig = config
         self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
         self.request: Request = request
-        self.response: Optional[Response] = None
-
-    def setup_response(self, response: Response) -> None:
-        self.response = response
 
     def get_password_hash(self, password: str) -> str:
         hashed_password: str = self.pwd_context.hash(password)
@@ -88,7 +84,7 @@ class SecurityTool:
             raise NotTokenDataError()
 
         if not payload and token:
-            payload = self.check_token(token, token_type=token_type)
+            payload = self.check_expire_token(token, token_type=token_type)
 
         if not payload:
             raise NotTokenDataError()
@@ -103,61 +99,49 @@ class SecurityTool:
         return uuid.UUID(uuid_id)
 
     def get_access_token(self) -> str:
-        if self.config.cookie.is_enable and self.response:
-            token = self.get_token_from_cookie()
-        else:
-            raise NoJwtException()
-
-        return token
-
-    def get_token_from_cookie(self) -> str:
-        token = self.request.cookies.get("user_access_token")
+        token = self.request.cookies.get("access_token")
         if not token:
             raise TokenNotFound()
 
         return token
 
     def get_refresh_token(self) -> str:
-        token = self.request.cookies.get("user_refresh_token")
+        token = self.request.cookies.get("refresh_token")
         if not token:
             raise TokenNotFound()
 
         return token
 
-    def set_access_token(self, uuid_id: uuid.UUID) -> str:
+    def set_access_token(self, uuid_id: uuid.UUID, response: Response) -> str:
         time_delta = timedelta(minutes=self.config.access_token_expire_minutes)
         access_token = self.create_token({"sub": str(uuid_id)}, TokenType.ACCESS, time_delta)
 
-        if self.config.cookie.is_enable and self.response:
-            self.response.set_cookie(
-                key=self.config.cookie.access_key,
-                value=access_token,
-                httponly=self.config.cookie.httponly,
-                secure=self.config.cookie.secure,
-                samesite=self.config.cookie.samesite,
-            )
+        response.set_cookie(
+            key=self.config.cookie.access_key,
+            value=access_token,
+            httponly=self.config.cookie.httponly,
+            secure=self.config.cookie.secure,
+            samesite=self.config.cookie.samesite,
+        )
 
         return access_token
 
-    def set_refresh_token(self, uuid_id: uuid.UUID) -> str:
+    def set_refresh_token(self, uuid_id: uuid.UUID, response: Response) -> str:
         time_delta = timedelta(days=self.config.refresh_token_expire_days)
         refresh_token = self.create_token({"sub": str(uuid_id)}, TokenType.REFRESH, time_delta)
 
-        if self.config.cookie.is_enable and self.response:
-            self.response.set_cookie(
-                key=self.config.cookie.refresh_key,
-                value=refresh_token,
-                httponly=self.config.cookie.httponly,
-                secure=self.config.cookie.secure,
-                samesite=self.config.cookie.samesite,
-            )
+        response.set_cookie(
+            key=self.config.cookie.refresh_key,
+            value=refresh_token,
+            httponly=self.config.cookie.httponly,
+            secure=self.config.cookie.secure,
+            samesite=self.config.cookie.samesite,
+        )
 
         return refresh_token
 
-    def delete_access_token(self) -> None:
-        if self.config.cookie.is_enable and self.response:
-            self.response.delete_cookie(self.config.cookie.access_key)
+    def delete_access_token(self, response: Response) -> None:
+        response.delete_cookie(self.config.cookie.access_key)
 
-    def delete_refresh_token(self) -> None:
-        if self.config.cookie.is_enable and self.response:
-            self.response.delete_cookie(self.config.cookie.refresh_key)
+    def delete_refresh_token(self, response: Response) -> None:
+        response.delete_cookie(self.config.cookie.refresh_key)

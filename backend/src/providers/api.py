@@ -23,16 +23,17 @@ class ApiProvider(Provider):
     async def get_access_token(
             self,
             request: Request,
-            config: Config,
             auth: Authenticator,
             oauth2_scheme: OAuth2PasswordBearer,
     ) -> dto.AccessToken:
-        if config.security.cookie.is_enable:
-            token = auth.get_access_token()
-        else:
-            token = await oauth2_scheme(request)
+        token = await oauth2_scheme(request)
+        if token:
             token = token.replace("Bearer", "").strip()
+        else:
+            token = auth.get_access_token()
 
+        if token is None:
+            raise ValueError("token not found")
         return dto.AccessToken(value=token)
 
     @provide(scope=Scope.REQUEST)
@@ -47,7 +48,7 @@ class ApiProvider(Provider):
             token: dto.AccessToken,
     ) -> dto.CurrentUser:
         user = await auth.get_current_user(interactor, token)
-        logging.info("current user: %d", user.id)
+        logging.info("current user id=%d: %s", user.id, user.user_name or user.email)
         return user
 
     @provide(scope=Scope.REQUEST)
@@ -58,5 +59,5 @@ class ApiProvider(Provider):
             token: dto.AccessToken,
     ) -> dto.AdminUser:
         user = await auth.get_current_admin_user(interactor, token)
-        logging.info("current admin user: %d", user.id)
+        logging.info("current admin user id=%d: %s", user.id, user.user_name or user.email)
         return user

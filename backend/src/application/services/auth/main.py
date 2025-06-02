@@ -2,7 +2,7 @@ from typing import Any
 
 from authlib.integrations.starlette_client import OAuth
 
-from fastapi import Request
+from fastapi import Request, Response
 
 from application import dto
 from application import interactors
@@ -49,6 +49,12 @@ class Authenticator:
     @property
     def scopes(self) -> str:
         return "openid email profile"
+
+    def process_refresh_token(self, response: Response) -> dto.AccessToken:
+        refresh_token = self.get_refresh_token()
+        uuid_id = self.get_uuid_from_token(token=refresh_token, token_type=TokenType.REFRESH)
+        access_token = self.set_access_token(uuid_id, response)
+        return dto.AccessToken(value=access_token)
 
     async def get_current_user(
             self,

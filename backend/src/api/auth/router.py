@@ -3,7 +3,7 @@ from typing import Optional
 
 from dishka.integrations.fastapi import DishkaRoute, FromDishka
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from application import dto
@@ -45,11 +45,12 @@ async def register_user(
 
 
 async def _common_login_logic(
+        response: Response,
         auth: Authenticator,
         interactor: interactors.GetUserByEmail,
         email: str,
         password: Optional[str] = None,
-) -> schemas.TokensResponse:
+) -> schemas.AccessTokenResponse:
     user = await interactor(email)
     if not user:
         raise HTTPException(
@@ -63,10 +64,10 @@ async def _common_login_logic(
             detail="incorrect email or password",
         )
 
-    access_token = auth.set_access_token(user.uuid_id)
-    refresh_token = auth.set_refresh_token(user.uuid_id)
+    access_token = auth.set_access_token(user.uuid_id, response)
+    auth.set_refresh_token(user.uuid_id, response)
 
-    return schemas.TokensResponse(access_token=access_token, refresh_token=refresh_token)
+    return schemas.AccessTokenResponse(access_token=access_token)
 
 
 @router.post(
@@ -78,9 +79,11 @@ async def _common_login_logic(
 async def login_by_form(
         auth: FromDishka[Authenticator],
         interactor: FromDishka[interactors.GetUserByEmail],
+        response: Response,
         form_data: OAuth2PasswordRequestForm = Depends(),
 ) -> schemas.TokenFormResponse:
     token_data = await _common_login_logic(
+        response=response,
         auth=auth,
         interactor=interactor,
         email=form_data.username,
@@ -94,14 +97,16 @@ async def login_by_form(
     "/login",
     description="Login using JSON body",
     status_code=status.HTTP_200_OK,
-    response_model=schemas.TokensResponse,
+    response_model=schemas.AccessTokenResponse,
 )
 async def login_by_json(
         auth: FromDishka[Authenticator],
         interactor: FromDishka[interactors.GetUserByEmail],
+        response: Response,
         data: schemas.UserLoginByPassword | schemas.UserGoogle,
-) -> schemas.TokensResponse:
+) -> schemas.AccessTokenResponse:
     return await _common_login_logic(
+        response=response,
         auth=auth,
         interactor=interactor,
         email=data.email,
@@ -118,9 +123,10 @@ async def login_by_json(
 async def logout_user(
         auth: FromDishka[Authenticator],
         user: FromDishka[dto.CurrentUser],
+        response: Response,
 ) -> schemas.UserMessageResponse:
-    auth.delete_access_token()
-    auth.delete_refresh_token()
+    auth.delete_access_token(response)
+    auth.delete_refresh_token(response)
 
     logging.info("user id=%s logout successfully", user.id)
     return schemas.UserMessageResponse(
@@ -135,7 +141,7 @@ async def logout_user(
     status_code=status.HTTP_200_OK,
     response_model=schemas.UserInfoResponse,
 )
-async def get_me_user(
+async def get_user_profile(
         user: FromDishka[dto.CurrentUser],
 ) -> schemas.UserInfoResponse:
     return schemas.UserInfoResponse(**user.dict())
@@ -145,19 +151,14 @@ async def get_me_user(
     "/refresh",
     description="Method for refresh user token",
     status_code=status.HTTP_200_OK,
-    response_model=schemas.UserMessageResponse,
+    response_model=schemas.AccessTokenResponse,
 )
 async def process_refresh_token(
         auth: FromDishka[Authenticator],
-        user: FromDishka[dto.CurrentUser],
-) -> schemas.UserMessageResponse:
-    auth.set_access_token(user.uuid_id)
-    auth.set_refresh_token(user.uuid_id)
-
-    return schemas.UserMessageResponse(
-        ok=True,
-        message="tokens successfully updated",
-    )
+        response: Response,
+) -> schemas.AccessTokenResponse:
+    access_token = auth.process_refresh_token(response)
+    return schemas.AccessTokenResponse(access_token=access_token.value)
 
 
 @router.put(

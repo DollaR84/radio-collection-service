@@ -8,6 +8,5 @@ class TokenFormResponse(BaseModel):
     token_type: Literal["bearer"] = "bearer"
 
 
-class TokensResponse(BaseModel):
+class AccessTokenResponse(BaseModel):
     access_token: str
-    refresh_token: str

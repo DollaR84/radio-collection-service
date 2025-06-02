@@ -51,8 +51,3 @@ class AdminUser(User):
 @dataclass(slots=True)
 class UpdateUser(BaseUser):
     email: Optional[str] = None
-
-
-@dataclass(slots=True)
-class AccessToken:
-    value: str

@@ -63,7 +63,6 @@ class CookieConfig(BaseSettings):
     refresh_key: str
     samesite: Literal["lax", "strict", "none"] | None = "lax"
 
-    is_enable: bool = False
     httponly: bool = True
     secure: bool = True
 
