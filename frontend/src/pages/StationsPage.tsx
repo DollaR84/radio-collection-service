@@ -19,11 +19,11 @@ export default function StationsPage({ token, onLogout }: StationsPageProps) {
         setLoading(true);
         
         // Loading stations
-        const stationsResponse = await api.get("/stations");
+        const stationsResponse = await api.get("/stations/");
         setStations(stationsResponse.data);
         
         // Loading favorites
-        const favResponse = await api.get("/favorites");
+        const favResponse = await api.get("/favorites/");
         setFavorites(favResponse.data.map((s: Station) => s.id));
       } catch (err) {
         setError("Failed to download data");
@@ -44,7 +44,7 @@ export default function StationsPage({ token, onLogout }: StationsPageProps) {
         setFavorites(prev => prev.filter(fid => fid !== id));
       } else {
         // Add to favorites
-        await api.post("/favorites", { station_id: id });
+        await api.post("/favorites/", { station_id: id });
         setFavorites(prev => [...prev, id]);
       }
     } catch (err) {

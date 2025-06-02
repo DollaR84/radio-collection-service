@@ -1,44 +1,55 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import api from '../api/client';
 
 interface AuthContextType {
   token: string | null;
   isLoading: boolean;
-  login: (token: string) => void;
+  login: (accessToken: string) => void;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
+
+// We declare global variables
+export let logoutUserGlobal: () => void = () => {};
+export let updateAuthContextGlobal: (token: string) => void = () => {};
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Imitation of a token check
     const verifyToken = async () => {
-      const storedToken = localStorage.getItem('token');
-      
-      // There should be a real test of token on the backing
-      // So far we just use the saved token
-      if (storedToken) {
-        setToken(storedToken);
-      }
-      
+      const storedToken = localStorage.getItem('access_token');
+      setToken(storedToken);
       setIsLoading(false);
     };
 
     verifyToken();
   }, []);
 
-  const login = (newToken: string) => {
-    localStorage.setItem('token', newToken);
-    setToken(newToken);
+  const login = (accessToken: string) => {
+    localStorage.setItem('access_token', accessToken);
+    setToken(accessToken);
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    api.post('/auth/logout').catch(() => {});
+    localStorage.removeItem('access_token');
     setToken(null);
   };
+
+  // Initialize global functions
+  useEffect(() => {
+    logoutUserGlobal = logout;
+    window.logoutUser = logout;
+    
+    updateAuthContextGlobal = (newToken: string) => {
+      setToken(newToken);
+      localStorage.setItem('access_token', newToken);
+    };
+    window.updateAuthContext = updateAuthContextGlobal;
+  }, []);
 
   return (
     <AuthContext.Provider value={{ token, isLoading, login, logout }}>

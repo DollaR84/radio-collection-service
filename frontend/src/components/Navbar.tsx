@@ -12,7 +12,7 @@ export default function Navbar() {
       <div className="container mx-auto flex justify-between items-center">
         <div className="flex space-x-4">
           <Link 
-            to="/" 
+            to="/stations" 
             className={`hover:bg-gray-700 px-3 py-2 rounded ${location.pathname === '/' ? 'bg-gray-700' : ''}`}
           >
             Stations

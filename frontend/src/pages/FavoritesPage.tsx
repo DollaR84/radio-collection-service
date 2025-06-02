@@ -9,7 +9,7 @@ export default function FavoritesPage() {
   useEffect(() => {
     const fetchFavorites = async () => {
       try {
-        const response = await api.get('/favorites');
+        const response = await api.get('/favorites/');
         setFavorites(response.data);
       } catch (error) {
         console.error('Failed to fetch favorites:', error);
