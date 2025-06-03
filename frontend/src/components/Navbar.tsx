@@ -2,41 +2,45 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function Navbar() {
-  const { token, logout } = useAuth();
+  const { logout } = useAuth();
   const location = useLocation();
 
-  if (!token) return null;
-
   return (
-    <nav className="bg-gray-800 text-white p-4">
-      <div className="container mx-auto flex justify-between items-center">
-        <div className="flex space-x-4">
-          <Link 
-            to="/stations" 
-            className={`hover:bg-gray-700 px-3 py-2 rounded ${location.pathname === '/' ? 'bg-gray-700' : ''}`}
-          >
-            Stations
-          </Link>
-          <Link 
-            to="/favorites" 
-            className={`hover:bg-gray-700 px-3 py-2 rounded ${location.pathname === '/favorites' ? 'bg-gray-700' : ''}`}
-          >
-            favorites
-          </Link>
-          <Link 
-            to="/profile" 
-            className={`hover:bg-gray-700 px-3 py-2 rounded ${location.pathname === '/profile' ? 'bg-gray-700' : ''}`}
-          >
-            Profile
-          </Link>
-        </div>
-        <button 
-          onClick={logout}
-          className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded"
-        >
-          logout
-        </button>
-      </div>
+    <nav className="flex flex-wrap items-center gap-2" role="navigation" aria-label="Main menu">
+      <Link 
+        to="/stations" 
+        className={`hover:bg-gray-700 px-3 py-2 rounded whitespace-nowrap ${
+          location.pathname.startsWith('/stations') ? 'bg-gray-700' : ''
+        }`}
+        aria-current={location.pathname.startsWith('/stations') ? 'page' : undefined}
+      >
+        Stations
+      </Link>
+      <Link 
+        to="/favorites" 
+        className={`hover:bg-gray-700 px-3 py-2 rounded whitespace-nowrap ${
+          location.pathname.startsWith('/favorites') ? 'bg-gray-700' : ''
+        }`}
+        aria-current={location.pathname.startsWith('/favorites') ? 'page' : undefined}
+      >
+        Favorites
+      </Link>
+      <Link 
+        to="/profile" 
+        className={`hover:bg-gray-700 px-3 py-2 rounded whitespace-nowrap ${
+          location.pathname.startsWith('/profile') ? 'bg-gray-700' : ''
+        }`}
+        aria-current={location.pathname.startsWith('/profile') ? 'page' : undefined}
+      >
+        Profile
+      </Link>
+      <button 
+        onClick={logout}
+        className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded whitespace-nowrap"
+        aria-label="Logout"
+      >
+        Logout
+      </button>
     </nav>
   );
 }

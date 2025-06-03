@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "../api/client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 interface LoginPageProps {
@@ -116,7 +116,19 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
           ) : "Login"}
         </button>
       </form>
-      
+
+      <div className="mt-4 text-center">
+        <p className="text-gray-600">
+          Don't have an account?{" "}
+          <Link 
+            to="/signup" 
+            className="text-blue-600 hover:underline font-medium"
+          >
+            Sign up
+          </Link>
+        </p>
+      </div>
+
       {error && (
         <div 
           id="error-message"

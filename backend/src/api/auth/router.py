@@ -19,13 +19,14 @@ router = APIRouter(prefix="/auth", route_class=DishkaRoute)
     "/register",
     description="Method for register new user by password",
     status_code=status.HTTP_201_CREATED,
-    response_model=schemas.UserResponse,
+    response_model=schemas.AccessTokenResponse,
 )
 async def register_user(
         auth: FromDishka[Authenticator],
         creator: FromDishka[interactors.CreateUser],
+        response: Response,
         data: schemas.UserCreateByPassword | schemas.UserGoogle,
-) -> schemas.UserResponse:
+) -> schemas.AccessTokenResponse:
     user_data = dto.NewUser(email=data.email)
     if isinstance(data, schemas.UserCreateByPassword):
         user_data.user_name = data.user_name
@@ -41,7 +42,10 @@ async def register_user(
             detail=f"Failed to create user: email '{data.email}' is exists",
         ) from error
 
-    return schemas.UserResponse(uuid_id=uuid_id)
+    access_token = auth.set_access_token(uuid_id, response)
+    auth.set_refresh_token(uuid_id, response)
+
+    return schemas.AccessTokenResponse(access_token=access_token)
 
 
 async def _common_login_logic(
@@ -161,17 +165,18 @@ async def process_refresh_token(
     return schemas.AccessTokenResponse(access_token=access_token.value)
 
 
-@router.put(
+@router.patch(
     "/update",
     description="Method for update user data",
     status_code=status.HTTP_200_OK,
-    response_model=schemas.UserMessageResponse,
+    response_model=schemas.UserInfoResponse,
 )
 async def update_user_data(
         user: FromDishka[dto.CurrentUser],
         updater: FromDishka[interactors.UpdateUserByUUID],
+        interactor: FromDishka[interactors.GetUserByUUID],
         data: schemas.UserUpdate,
-) -> schemas.UserMessageResponse:
+) -> schemas.UserInfoResponse:
     update_data = dto.UpdateUser(
         email=data.email,
         user_name=data.user_name,
@@ -180,7 +185,11 @@ async def update_user_data(
     )
     await updater(user.uuid_id, update_data)
 
-    return schemas.UserMessageResponse(
-        ok=True,
-        message="user data successfully updated",
-    )
+    update_user = await interactor(user.uuid_id)
+    if update_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="An error occurred while retrieving updated user data",
+        )
+
+    return schemas.UserInfoResponse(**update_user.dict())

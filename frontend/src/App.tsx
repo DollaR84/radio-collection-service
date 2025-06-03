@@ -1,10 +1,12 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
+import SignupPage from "./pages/SignupPage";
 import StationsPage from "./pages/StationsPage";
 import ProfilePage from "./pages/ProfilePage";
 import FavoritesPage from "./pages/FavoritesPage";
 import LoadingSpinner from "./components/LoadingSpinner";
-import Navbar from "./components/Navbar";
+import Header from "./components/Header";
+import Footer from "./components/Footer";
 import { useAuth } from "./context/AuthContext";
 
 export default function App() {
@@ -20,50 +22,62 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      {/* Add navbar to a common layout */}
-      {token && <Navbar />}
-      
-      <Routes>
-        <Route
-          path="/"
-          element={
-            token ? <Navigate to="/stations" replace /> : <Navigate to="/login" replace />
-          }
-        />
+      <div className="flex flex-col min-h-screen">
+        {token && <Header />}
+        
+        <main className="flex-grow container mx-auto px-4 py-6">
+          <Routes>
+            <Route
+              path="/"
+              element={
+                token ? <Navigate to="/stations" replace /> : <Navigate to="/login" replace />
+              }
+            />
 
-        <Route
-          path="/login"
-          element={
-            token ? <Navigate to="/stations" replace /> : <LoginPage />
-          }
-        />
-        
-        <Route
-          path="/stations"
-          element={
-            token ? <StationsPage /> : <Navigate to="/login" replace />
-          }
-        />
-        
-        <Route
-          path="/favorites"
-          element={
-            token ? <FavoritesPage /> : <Navigate to="/login" replace />
-          }
-        />
-        
-        <Route
-          path="/profile"
-          element={
-            token ? <ProfilePage /> : <Navigate to="/login" replace />
-          }
-        />
-        
-        <Route
-          path="*"
-          element={<Navigate to={token ? "/stations" : "/login"} replace />}
-        />
-      </Routes>
+            <Route
+              path="/stations"
+              element={
+                token ? <StationsPage /> : <Navigate to="/login" replace />
+              }
+            />
+
+            <Route
+              path="/favorites"
+              element={
+                token ? <FavoritesPage /> : <Navigate to="/login" replace />
+              }
+            />
+
+            <Route
+              path="/profile"
+              element={
+                token ? <ProfilePage /> : <Navigate to="/login" replace />
+              }
+            />
+
+            <Route
+              path="/login"
+              element={
+                token ? <Navigate to="/profile" replace /> : <LoginPage />
+              }
+            />
+
+            <Route
+              path="/signup"
+              element={
+                token ? <Navigate to="/profile" replace /> : <SignupPage />
+              }
+            />
+            
+            <Route
+              path="*"
+              element={<Navigate to={token ? "/stations" : "/login"} replace />}
+            />
+          </Routes>
+        </main>
+
+        {token && <Footer />}
+      </div>
     </BrowserRouter>
   );
 }
