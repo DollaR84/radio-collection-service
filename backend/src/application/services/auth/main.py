@@ -56,6 +56,9 @@ class Authenticator:
         access_token = self.set_access_token(uuid_id, response)
         return dto.AccessToken(value=access_token)
 
+    def check_access_token(self, token: dto.AccessToken) -> None:
+        self.check_expire_token(token=token.value, token_type=TokenType.ACCESS)
+
     async def get_current_user(
             self,
             interactor: interactors.GetUserByUUID,

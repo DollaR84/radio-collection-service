@@ -122,6 +122,7 @@ class SecurityTool:
             httponly=self.config.cookie.httponly,
             secure=self.config.cookie.secure,
             samesite=self.config.cookie.samesite,
+            max_age=int(time_delta.total_seconds()),
         )
 
         return access_token
@@ -136,6 +137,7 @@ class SecurityTool:
             httponly=self.config.cookie.httponly,
             secure=self.config.cookie.secure,
             samesite=self.config.cookie.samesite,
+            max_age=int(time_delta.total_seconds()),
         )
 
         return refresh_token

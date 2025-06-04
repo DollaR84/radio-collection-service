@@ -118,6 +118,30 @@ async def login_by_json(
     )
 
 
+@router.get(
+    "/validate",
+    description="Method for validate access token",
+    status_code=status.HTTP_200_OK,
+    response_model=schemas.UserMessageResponse,
+)
+async def validate_access_token(
+        token: FromDishka[dto.AccessToken],
+        auth: FromDishka[Authenticator],
+) -> schemas.UserMessageResponse:
+    try:
+        auth.check_access_token(token)
+    except Exception as error:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="token has expired",
+        ) from error
+
+    return schemas.UserMessageResponse(
+        ok=True,
+        message="access token is valid",
+    )
+
+
 @router.post(
     "/logout",
     description="Method for logout user",
