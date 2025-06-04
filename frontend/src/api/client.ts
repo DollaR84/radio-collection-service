@@ -8,46 +8,51 @@ const api = axios.create({
   withCredentials: true,
 });
 
-// Token interceptor
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-// Flag for tracking token update
+// Flag for tracking token refresh
 let isRefreshing = false;
-let failedQueue: { resolve: (value: unknown) => void; reject: (reason?: any) => void }[] = [];
+let failedQueue: Array<{ 
+  resolve: (token: string) => void; 
+  reject: (error: AxiosError) => void; 
+}> = [];
 
-const processQueue = (error: any, token: string | null = null) => {
+const processQueue = (error: AxiosError | null, token: string | null = null) => {
   failedQueue.forEach(prom => {
     if (error) {
       prom.reject(error);
     } else {
-      prom.resolve(token);
+      prom.resolve(token as string);
     }
   });
   failedQueue = [];
 };
 
-// Crossman for processing errors and updating token
+// Add token to requests
+api.interceptors.request.use(config => {
+  const token = sessionStorage.getItem('access_token');
+  if (token) {
+    config.headers = config.headers || {};
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Response interceptor
 api.interceptors.response.use(
   response => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
     
-    // If error is 401 and this is not a request for token update
+    // If error is 401 and this is not a refresh request
     if (error.response?.status === 401 && !originalRequest._retry) {
+      
+      // If we're already refreshing, add to queue
       if (isRefreshing) {
-        return new Promise((resolve, reject) => {
+        return new Promise<string>((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         })
           .then(token => {
-            if (originalRequest.headers) {
-              originalRequest.headers.Authorization = `Bearer ${token}`;
-            }
+            originalRequest.headers = originalRequest.headers || {};
+            originalRequest.headers.Authorization = `Bearer ${token}`;
             return api(originalRequest);
           })
           .catch(err => Promise.reject(err));
@@ -57,33 +62,43 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        // We update the token
-        const { data } = await axios.post('/api/auth/refresh', {}, { 
-          withCredentials: true 
+        console.log('Attempting token refresh...');
+        const response = await axios.post('/api/auth/refresh', {}, {
+          withCredentials: true
         });
         
-        const newAccessToken = data.access_token;
-        localStorage.setItem('access_token', newAccessToken);
+        const newToken = response.data.access_token;
+        sessionStorage.setItem('access_token', newToken);
         
-        // We update the authentication context
-        if (window.updateAuthContext) {
-          window.updateAuthContext(newAccessToken);
+        // Update AuthContext via global function
+        if (typeof window.updateAuthContext === 'function') {
+          console.log('Updating auth context with new token');
+          window.updateAuthContext(newToken);
         }
 
-        // We repeat the original request
+        // Update headers for retry
         if (originalRequest.headers) {
-          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
         }
         
-        processQueue(null, newAccessToken);
+        // Retry queued requests
+        processQueue(null, newToken);
+        
+        // Retry original request
         return api(originalRequest);
       } catch (refreshError) {
-        // It was not possible to update the token - we logout
-        processQueue(refreshError, null);
-        localStorage.removeItem('access_token');
-        if (window.logoutUser) {
+        console.error('Refresh token failed:', refreshError);
+        
+        // Clear token and logout on refresh failure
+        sessionStorage.removeItem('access_token');
+        
+        if (typeof window.logoutUser === 'function') {
+          console.log('Triggering logout via global function');
           window.logoutUser();
         }
+        
+        // Fail queued requests
+        processQueue(refreshError as AxiosError);
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

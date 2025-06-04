@@ -1,9 +1,16 @@
 import { useState, useEffect } from 'react';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useBeforeUnload } from '../hooks/useBeforeUnload';
 
 export default function ProfilePage() {
-  const { token, logout, user, setUser } = useAuth();
+  const { token, logout } = useAuth();
+  const [initialData, setInitialData] = useState({
+    user_name: '',
+    email: '',
+    first_name: '',
+    last_name: ''
+  });
   const [userData, setUserData] = useState({
     user_name: '',
     email: '',
@@ -11,20 +18,34 @@ export default function ProfilePage() {
     last_name: ''
   });
   const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [touched, setTouched] = useState(false);
+  const [validationErrors, setValidationErrors] = useState({
+    user_name: '',
+    first_name: '',
+    last_name: ''
+  });
+
+  // Check the changes before leaving the page
+  useBeforeUnload(
+    touched,
+    'You have unsaved changes. Are you sure you want to leave?'
+  );
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const response = await api.get('/auth/profile');
-        setUserData({
+        const data = {
           user_name: response.data.user_name || '',
           email: response.data.email || '',
           first_name: response.data.first_name || '',
           last_name: response.data.last_name || ''
-        });
+        };
+        setInitialData(data);
+        setUserData(data);
       } catch (error) {
         console.error('Failed to fetch user data:', error);
         setError('Failed to load user data');
@@ -36,18 +57,71 @@ export default function ProfilePage() {
     fetchUserData();
   }, [token]);
 
+  const hasChanges = () => {
+    return (
+      initialData.user_name !== userData.user_name ||
+      initialData.first_name !== userData.first_name ||
+      initialData.last_name !== userData.last_name
+    );
+  };
+
+  const validate = () => {
+    const errors = {
+      user_name: '',
+      first_name: '',
+      last_name: ''
+    };
+    let isValid = true;
+
+    if (!userData.user_name.trim()) {
+      errors.user_name = 'Username is required';
+      isValid = false;
+    } else if (userData.user_name.length < 3) {
+      errors.user_name = 'Username must be at least 3 characters';
+      isValid = false;
+    }
+
+    if (userData.user_name.length > 50) {
+      errors.last_name = 'Last name is too long';
+      isValid = false;
+    }
+
+    if (userData.first_name.length > 100) {
+      errors.first_name = 'First name is too long';
+      isValid = false;
+    }
+
+    if (userData.last_name.length > 100) {
+      errors.last_name = 'Last name is too long';
+      isValid = false;
+    }
+
+    setValidationErrors(errors);
+    return isValid;
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setUserData(prev => ({
       ...prev,
       [name]: value
     }));
+    
+    if (!touched) setTouched(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess('');
+
+    if (!validate()) return;
+    if (!hasChanges()) {
+      setSuccess('No changes to save');
+      return;
+    }
+
+    setIsSaving(true);
     
     try {
       const response = await api.patch('/auth/update', {
@@ -56,31 +130,36 @@ export default function ProfilePage() {
         last_name: userData.last_name
       });
 
-      // Обновляем данные в контексте аутентификации
-      setUser({
-        ...user,
-        userName: response.data.user_name,
-        firstName: response.data.first_name,
-        lastName: response.data.last_name
+      // We update only local data
+      setInitialData({
+        ...userData,
+        user_name: response.data.user_name,
+        first_name: response.data.first_name,
+        last_name: response.data.last_name
       });
 
-      setSuccess('Profile updated successfully!');
-      setIsEditing(false);
-      
-      // Обновляем локальные данные
+      // We update data for display
       setUserData({
         ...userData,
         user_name: response.data.user_name,
         first_name: response.data.first_name,
         last_name: response.data.last_name
       });
+
+      setSuccess('Profile updated successfully!');
+      setTouched(false);
     } catch (err: any) {
       console.error('Update failed:', err);
       setError(err.response?.data?.detail || 'Failed to update profile');
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleLogout = () => {
+    if (touched && !window.confirm('You have unsaved changes. Are you sure you want to leave?')) {
+      return;
+    }
     logout();
   };
 
@@ -112,7 +191,7 @@ export default function ProfilePage() {
       <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow">
         <div className="mb-4">
           <label htmlFor="user_name" className="block text-gray-700 mb-2">
-            Username
+            Username *
           </label>
           <input
             id="user_name"
@@ -120,10 +199,16 @@ export default function ProfilePage() {
             type="text"
             value={userData.user_name}
             onChange={handleInputChange}
-            disabled={!isEditing}
-            className={`w-full p-2 border rounded ${!isEditing ? 'bg-gray-100' : ''}`}
+            className={`w-full p-2 border rounded ${
+              validationErrors.user_name ? 'border-red-500' : ''
+            }`}
             aria-label="Username"
+            maxLength={50}
+            required
           />
+          {validationErrors.user_name && (
+            <p className="text-red-500 text-sm mt-1">{validationErrors.user_name}</p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -137,10 +222,15 @@ export default function ProfilePage() {
               type="text"
               value={userData.first_name}
               onChange={handleInputChange}
-              disabled={!isEditing}
-              className={`w-full p-2 border rounded ${!isEditing ? 'bg-gray-100' : ''}`}
+              className={`w-full p-2 border rounded ${
+                validationErrors.first_name ? 'border-red-500' : ''
+              }`}
               aria-label="First name"
+              maxLength={100}
             />
+            {validationErrors.first_name && (
+              <p className="text-red-500 text-sm mt-1">{validationErrors.first_name}</p>
+            )}
           </div>
           
           <div>
@@ -153,10 +243,15 @@ export default function ProfilePage() {
               type="text"
               value={userData.last_name}
               onChange={handleInputChange}
-              disabled={!isEditing}
-              className={`w-full p-2 border rounded ${!isEditing ? 'bg-gray-100' : ''}`}
+              className={`w-full p-2 border rounded ${
+                validationErrors.last_name ? 'border-red-500' : ''
+              }`}
               aria-label="Last name"
+              maxLength={100}
             />
+            {validationErrors.last_name && (
+              <p className="text-red-500 text-sm mt-1">{validationErrors.last_name}</p>
+            )}
           </div>
         </div>
 
@@ -176,38 +271,26 @@ export default function ProfilePage() {
         </div>
         
         <div className="flex flex-wrap justify-between gap-4">
-          {!isEditing ? (
-            <button
-              type="button"
-              onClick={() => setIsEditing(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex-1"
-              aria-label="Edit profile"
-            >
-              Edit Profile
-            </button>
-          ) : (
-            <>
-              <button
-                type="submit"
-                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex-1"
-                aria-label="Save changes"
-              >
-                Save Changes
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsEditing(false);
-                  setError('');
-                  setSuccess('');
-                }}
-                className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 flex-1"
-                aria-label="Cancel editing"
-              >
-                Cancel
-              </button>
-            </>
-          )}
+          <button
+            type="submit"
+            disabled={isSaving || (!hasChanges() && !touched)}
+            className={`bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex-1 ${
+              isSaving || (!hasChanges() && !touched) ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+            aria-label="Save changes"
+          >
+            {isSaving ? (
+              <span className="flex items-center justify-center">
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Saving...
+              </span>
+            ) : (
+              'Save Changes'
+            )}
+          </button>
           
           <button 
             onClick={handleLogout}

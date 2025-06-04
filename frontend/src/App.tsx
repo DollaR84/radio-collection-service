@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import StationsPage from "./pages/StationsPage";
+import StationDetailPage from './pages/StationDetailPage';
 import ProfilePage from "./pages/ProfilePage";
 import FavoritesPage from "./pages/FavoritesPage";
 import LoadingSpinner from "./components/LoadingSpinner";
@@ -38,6 +39,13 @@ export default function App() {
               path="/stations"
               element={
                 token ? <StationsPage /> : <Navigate to="/login" replace />
+              }
+            />
+
+            <Route
+              path="/station/:id"
+              element={
+                <StationDetailPage />
               }
             />
 
