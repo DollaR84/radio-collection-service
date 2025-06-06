@@ -26,7 +26,7 @@ def setup_container(app: FastAPI | TaskManager, config: Config) -> None:
     )
 
     if isinstance(app, FastAPI):
-        setup_fastapi_dishka(container, app)
+        setup_fastapi_dishka(container, app=app)
 
     elif isinstance(app, TaskManager):
         app.dishka_container = container

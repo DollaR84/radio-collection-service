@@ -7,6 +7,15 @@ from .base import BaseData
 
 
 @dataclass(slots=True)
+class CreateStationModel(BaseData):
+    name: str
+    url: str
+
+    status: StationStatusType = StationStatusType.NOT_VERIFIED
+    tags: list[str] = field(default_factory=list)
+
+
+@dataclass(slots=True)
 class StationModel(BaseData):
     id: int
 

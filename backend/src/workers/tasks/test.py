@@ -2,9 +2,6 @@ import asyncio
 from datetime import datetime, timedelta
 import logging
 
-from dishka import FromDishka
-from dishka.integrations.arq import inject
-
 from apscheduler.triggers.interval import IntervalTrigger
 
 from application import dto
@@ -20,13 +17,12 @@ class BaseTestTask(BaseTask, is_abstract=True):
     get_stations: GetStations
     updater: UpdateStationStatus
 
-    @inject
-    async def initialize(
+    def __init__(
             self,
-            tester: FromDishka[RadioTester],
-            get_stations: FromDishka[GetStations],
-            updater: FromDishka[UpdateStationStatus],
-    ) -> None:
+            tester: RadioTester,
+            get_stations: GetStations,
+            updater: UpdateStationStatus,
+    ):
         self.tester: RadioTester = tester
         self.get_stations: GetStations = get_stations
         self.updater: UpdateStationStatus = updater

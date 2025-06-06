@@ -10,9 +10,6 @@ from ..m3u import M3UParser
 class FileSystemCollection(BaseCollection):
     order_id: int = 4
 
-    def __init__(self, name: str, **kwargs: Any):
-        super().__init__(name, **kwargs)
-
     def make_url(self, **kwargs: Any) -> str:
         return ""
 

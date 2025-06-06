@@ -40,9 +40,7 @@ class TaskProvider(Provider):
             get_urls: GetStationUrls,
             creator: CreateStation,
     ) -> RadioBrowserTask:
-        task = RadioBrowserTask()
-        await task.initialize(parser, get_urls, creator)
-        return task
+        return RadioBrowserTask(parser, get_urls, creator)
 
     @provide(scope=Scope.REQUEST)
     async def get_internet_radio_streams_task(
@@ -51,9 +49,7 @@ class TaskProvider(Provider):
             get_urls: GetStationUrls,
             creator: CreateStation,
     ) -> InternetRadioStreamsTask:
-        task = InternetRadioStreamsTask()
-        await task.initialize(parser, get_urls, creator)
-        return task
+        return InternetRadioStreamsTask(parser, get_urls, creator)
 
     @provide(scope=Scope.REQUEST)
     async def get_mp3_radio_stations_task(
@@ -62,9 +58,7 @@ class TaskProvider(Provider):
             get_urls: GetStationUrls,
             creator: CreateStation,
     ) -> Mp3RadioStationsTask:
-        task = Mp3RadioStationsTask()
-        await task.initialize(parser, get_urls, creator)
-        return task
+        return Mp3RadioStationsTask(parser, get_urls, creator)
 
     @provide(scope=Scope.REQUEST)
     async def get_test_not_verified_task(
@@ -73,9 +67,7 @@ class TaskProvider(Provider):
             get_stations: GetStations,
             updater: UpdateStationStatus,
     ) -> TestNotVerifiedTask:
-        task = TestNotVerifiedTask()
-        await task.initialize(tester, get_stations, updater)
-        return task
+        return TestNotVerifiedTask(tester, get_stations, updater)
 
     @provide(scope=Scope.REQUEST)
     async def get_test_not_work_task(
@@ -84,6 +76,4 @@ class TaskProvider(Provider):
             get_stations: GetStations,
             updater: UpdateStationStatus,
     ) -> TestNotWorkTask:
-        task = TestNotWorkTask()
-        await task.initialize(tester, get_stations, updater)
-        return task
+        return TestNotWorkTask(tester, get_stations, updater)

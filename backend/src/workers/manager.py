@@ -1,17 +1,20 @@
 from typing import Any, Optional, Type
 
-from apscheduler.job import Job
+from apscheduler.job import Job as schedulerJob
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from arq import ArqRedis
 from arq.connections import RedisSettings, create_pool
+from arq.jobs import JobDef, JobStatus, JobResult
 from arq.jobs import Job as ArqJob
+
+from application import dto
 
 from config import Config
 
 from dishka import AsyncContainer
 
-from .exceptions import SchedulerNotInitializedError, ContainerNotInitializedError
+from .exceptions import SchedulerNotInitializedError, ContainerNotInitializedError, RedisPoolNotInitializedError
 from .tasks import BaseTask
 
 
@@ -20,7 +23,7 @@ class TaskManager:
     def __init__(self) -> None:
         self.redis_pool: Optional[ArqRedis] = None
 
-        self._scheduled_tasks: list[Job] = []
+        self._scheduled_tasks: list[schedulerJob] = []
         self._on_demand_tasks: dict[str, Type[BaseTask]] = {}
         self._arq_context: dict[Any, Any] = {}
 
@@ -60,6 +63,10 @@ class TaskManager:
             database=config.worker.redis_database,
         ))
 
+    async def close(self) -> None:
+        if self.redis_pool:
+            await self.redis_pool.close()
+
     @staticmethod
     def get_all_tasks_names() -> list[str]:
         return BaseTask.get_all_tasks_names()
@@ -74,7 +81,7 @@ class TaskManager:
             if task_cls.trigger:
                 self._scheduled_tasks.append(self._create_scheduled_job(task_cls))
 
-    def _create_scheduled_job(self, task_cls: Type[BaseTask]) -> Job:
+    def _create_scheduled_job(self, task_cls: Type[BaseTask]) -> schedulerJob:
         if self.scheduler is None:
             raise SchedulerNotInitializedError()
 
@@ -108,3 +115,43 @@ class TaskManager:
         async with self.dishka_container() as container:
             task = await container.get(task_cls)
             return task
+
+    def get_job(self, job_id: str) -> ArqJob:
+        if self.redis is None:
+            raise RedisPoolNotInitializedError()
+
+        return ArqJob(job_id, redis=self.redis)
+
+    async def get_job_status(self, job_id: str) -> str:
+        job = self.get_job(job_id)
+        status = await job.status()
+        return status.name
+
+    async def get_job_info(self, job_id: str) -> dto.JobResult:
+        job = self.get_job(job_id)
+        info: Optional[JobDef] = await job.info()
+        if info is None:
+            raise ValueError(f"job result for for job_id: '{job_id}' not found")
+
+        status: JobStatus = await job.status()
+        result_info: Optional[JobResult] = await job.result_info()
+
+        result = None
+        success = status == JobStatus.complete
+        if success and result_info and result_info.result is None:
+            try:
+                result = await job.result(timeout=0.1)
+            except Exception as error:
+                result = str(error)
+
+        return dto.JobResult(
+            job_id=job_id,
+            task_name=info.args[0] if info.args and len(info.args) > 0 else "unknown",
+            success=success,
+            job_try=result_info.job_try if result_info else 0,
+            start_time=result_info.start_time if result_info else None,
+            finish_time=result_info.finish_time if result_info else None,
+            enqueue_time=info.enqueue_time,
+            score=info.score,
+            result=result,
+        )

@@ -92,7 +92,7 @@ class ParserConfig(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="PARSER_")
 
     max_workers: int = 4
-    batch_size: int = 25
+    batch_size: int = 5000
     default_sleep_timeout: float = 0.5
 
 

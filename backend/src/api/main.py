@@ -11,6 +11,8 @@ from fastapi.openapi.utils import get_openapi
 
 from config import APIConfig
 
+from workers import TaskManager
+
 from . import auth
 from . import favorite
 from . import station
@@ -23,6 +25,10 @@ from .exception_handlers import register_exception_handlers
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     yield
+    async with app.state.dishka_container() as container:
+        task_manager = await container.get(TaskManager)
+        await task_manager.close()
+
     await app.state.dishka_container.close()
 
 

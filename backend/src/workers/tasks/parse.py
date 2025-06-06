@@ -1,9 +1,6 @@
 from datetime import datetime, timedelta
 import logging
 
-from dishka import FromDishka
-from dishka.integrations.arq import inject
-
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
@@ -19,13 +16,12 @@ class BaseCollectionTask(BaseTask, is_abstract=True):
     get_all_urls: GetStationUrls
     creator: CreateStation
 
-    @inject
-    async def initialize(
+    def __init__(
             self,
-            parser: FromDishka[CollectionParser],
-            get_all_urls: FromDishka[GetStationUrls],
-            creator: FromDishka[CreateStation],
-    ) -> None:
+            parser: CollectionParser,
+            get_all_urls: GetStationUrls,
+            creator: CreateStation,
+    ):
         self.parser: CollectionParser = parser
         self.get_all_urls: GetStationUrls = get_all_urls
         self.creator: CreateStation = creator
@@ -33,13 +29,29 @@ class BaseCollectionTask(BaseTask, is_abstract=True):
     async def execute(self) -> None:
         logging.info("starting task: %s", self.__class__.__name__)
 
-        collection = self.parser.get_collection(self.get_name())
-        data = await collection.parse()
+        collection = self.parser.get_collection(self.get_name(), parser=self.parser)
+        parse_data = await collection.parse()
 
-        exists_urls = await self.get_all_urls()
-        data = [collection_item for collection_item in data if collection_item.url not in exists_urls]
+        exists_urls_to_parse_data: set[str] = set()
+        exists_urls_to_db = await self.get_all_urls()
+        for chunk_data in parse_data:
+            data = []
+            for item in chunk_data:
+                if item.url not in exists_urls_to_db and not exists_urls_to_parse_data:
+                    data.append(item)
+                    exists_urls_to_parse_data.add(item.url)
 
-        await self.creator([Station(**item.dict()) for item in data])
+            if not data:
+                continue
+
+            await self.creator([
+                Station(
+                    name=item.name,
+                    url=item.url,
+                    tags=item.info_data,
+                ) for item in data
+            ])
+
         logging.info("task completed: %s", self.__class__.__name__)
 
 

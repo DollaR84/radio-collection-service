@@ -9,14 +9,14 @@ class CreateStationInterface(Protocol):
     @abstractmethod
     async def create_station(
             self,
-            data: domain.StationModel,
+            data: domain.CreateStationModel,
     ) -> int:
         ...
 
     @abstractmethod
     async def create_stations(
             self,
-            data: list[domain.StationModel],
+            data: list[domain.CreateStationModel],
     ) -> list[int]:
         ...
 

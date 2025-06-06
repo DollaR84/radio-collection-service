@@ -11,7 +11,7 @@ class CreateStationGateway(BaseGateway[int, Station]):
 
     async def create_station(
             self,
-            data: domain.StationModel,
+            data: domain.CreateStationModel,
     ) -> int:
         stmt = insert(Station).values(**data.dict(exclude_unset=True)).returning(Station.id)
         error_message = "Error creating new station"
@@ -20,7 +20,7 @@ class CreateStationGateway(BaseGateway[int, Station]):
 
     async def create_stations(
             self,
-            data: list[domain.StationModel],
+            data: list[domain.CreateStationModel],
     ) -> list[int]:
         stations_data = [
             item.dict(exclude_unset=True)

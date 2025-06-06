@@ -26,3 +26,12 @@ class ContainerNotInitializedError(RuntimeError):
             message = "not initialized 'container' in 'TaskManager'"
 
         super().__init__(message)
+
+
+class RedisPoolNotInitializedError(RuntimeError):
+
+    def __init__(self, message: Optional[str] = None):
+        if message is None:
+            message = "not initialized 'redis pool' in 'TaskManager'"
+
+        super().__init__(message)

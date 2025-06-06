@@ -10,7 +10,7 @@ from application.services import NoService
 
 
 oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl="/auth/login/form",
+    tokenUrl="/api/auth/login/form",
     scheme_name="Bearer",
     scopes={},
 )

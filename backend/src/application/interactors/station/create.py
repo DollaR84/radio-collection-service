@@ -15,12 +15,12 @@ class CreateStation:
     ) -> int | list[int]:
         if isinstance(data, list):
             domain_data_list = [
-                domain.StationModel(**item.dict())
+                domain.CreateStationModel(**item.dict())
                 for item in data
             ]
             return await self.gateway.create_stations(domain_data_list)
 
-        domain_data = domain.StationModel(**data.dict())
+        domain_data = domain.CreateStationModel(**data.dict())
         return await self.gateway.create_station(domain_data)
 
 

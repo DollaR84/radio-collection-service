@@ -10,6 +10,8 @@ class ServiceProvider(Provider):
 
     config = from_context(provides=Config, scope=Scope.APP)
 
+    no_service = provide(NoService, scope=Scope.REQUEST)
+
     @provide(scope=Scope.REQUEST)
     async def get_collection_parser(self, config: Config) -> CollectionParser:
         return CollectionParser(config.parser)
@@ -17,7 +19,3 @@ class ServiceProvider(Provider):
     @provide(scope=Scope.REQUEST)
     async def get_radio_tester(self, config: Config) -> RadioTester:
         return RadioTester(config.tester)
-
-    @provide(scope=Scope.REQUEST)
-    async def get_no_service(self) -> NoService:
-        return NoService()

@@ -37,13 +37,30 @@ class BaseCollection(ABC):
         data = dict(sorted(cls._collections.items(), key=lambda item: item[1].order_id))
         return list(data.keys())
 
-    def __init__(self, name: str, parser: BaseParser, **kwargs: Any):
-        super().__init__(**kwargs)
+    def __init__(self, name: str, **kwargs: Any):
         self.name = name
+        parser = kwargs.get("parser")
+        if not isinstance(parser, BaseParser):
+            raise ValueError(f"parser can't be '{type(parser)}'")
         self.parser: BaseParser = parser
 
-    async def parse(self) -> list[CollectionData]:
-        return await self.process_data(self.make_url())
+        if self.parser is None:
+            raise RuntimeError("for parse collections need set parser")
+
+    async def parse(self) -> list[list[CollectionData]]:
+        full_data = await self.process_data(self.make_url())
+        data = []
+        chunk_data: list[CollectionData] = []
+
+        for item in full_data:
+            if len(chunk_data) >= self.parser.config.batch_size:
+                data.append(chunk_data)
+                chunk_data = []
+
+            chunk_data.append(item)
+        data.append(chunk_data)
+
+        return data
 
     @abstractmethod
     def make_url(self, **kwargs: Any) -> str:
