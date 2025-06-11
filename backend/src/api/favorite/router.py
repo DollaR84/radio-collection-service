@@ -15,22 +15,44 @@ router = APIRouter(prefix="/favorites", route_class=DishkaRoute)
 
 
 @router.get(
-    "/",
-    description="Method for get list favorites radio stations",
+    "/all",
+    description="Method for get all list favorites radio stations",
     status_code=status.HTTP_200_OK,
     response_model=list[schemas.StationResponse],
 )
-async def get_favorites(
+async def get_favorites_all(
         user: FromDishka[dto.CurrentUser],
         interactor: FromDishka[interactors.GetUserFavorites],
-        offset: Optional[int] = None,
-        limit: Optional[int] = None,
 ) -> list[schemas.StationResponse]:
-    stations = await interactor(user.id, offset, limit)
+    stations = await interactor(user.id)
+
     return [
         schemas.StationResponse(**station.dict())
         for station in stations
     ]
+
+
+@router.get(
+    "/",
+    description="Method for get list favorites radio stations",
+    status_code=status.HTTP_200_OK,
+    response_model=schemas.StationsResponse,
+)
+async def get_favorites(
+        user: FromDishka[dto.CurrentUser],
+        interactor: FromDishka[interactors.GetUserFavoritesWithCount],
+        offset: Optional[int] = None,
+        limit: Optional[int] = None,
+) -> schemas.StationsResponse:
+    data = await interactor(user.id, offset, limit)
+
+    return schemas.StationsResponse(
+        items=[
+            schemas.StationResponse(**station.dict())
+            for station in data.stations
+        ],
+        total=data.count,
+    )
 
 
 @router.post(

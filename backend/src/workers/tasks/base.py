@@ -46,5 +46,5 @@ class BaseTask(ABC):
         return list(cls._tasks.keys())
 
     @abstractmethod
-    async def execute(self) -> None:
+    async def execute(self, ctx: dict[Any, Any]) -> None:
         raise NotImplementedError

@@ -4,6 +4,8 @@ from typing import Literal
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from application.types import CheckerType
+
 
 class DBConfig(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="POSTGRES_")
@@ -92,7 +94,7 @@ class ParserConfig(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="PARSER_")
 
     max_workers: int = 4
-    batch_size: int = 5000
+    batch_size: int = 3000
     default_sleep_timeout: float = 0.5
 
 
@@ -109,8 +111,16 @@ class WorkerConfig(BaseSettings):
 class TesterConfig(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="TESTER_")
 
+    checker_type: CheckerType
     repeat_count: int
     repeat_timeout: int
+
+    max_concurrent_tasks: int
+    batch_size: int
+    batch_limit: int
+
+    queue_timeout: float
+    update_timeout: float
 
 
 class Config(BaseSettings):

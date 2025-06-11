@@ -9,8 +9,9 @@ class StationResponse(BaseModel):
     id: int
     name: str
     url: str
+
     tags: list[str] = Field(default_factory=list)
-    status: StationStatusType = StationStatusType.NOT_VERIFIED
+    status: StationStatusType
 
     created_at: datetime
     updated_at: datetime
@@ -18,3 +19,8 @@ class StationResponse(BaseModel):
 
 class AddFavorite(BaseModel):
     station_id: int
+
+
+class StationsResponse(BaseModel):
+    items: list[StationResponse] = Field(default_factory=list)
+    total: int

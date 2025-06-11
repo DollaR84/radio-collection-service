@@ -1,14 +1,17 @@
 from .station import (
     CreateStation,
+    CreateStations,
     DeleteStation,
     GetStation,
     GetStations,
+    GetStationsWithCount,
     GetStationUrls,
     UpdateStationStatus,
     UpdateStationsStatus,
     CreateFavorite,
     DeleteFavorite,
     GetUserFavorites,
+    GetUserFavoritesWithCount,
 )
 
 from .user import (
@@ -38,14 +41,17 @@ __all__ = [
     "UpdateUserByEmail",
 
     "CreateStation",
+    "CreateStations",
     "DeleteStation",
     "UpdateStationStatus",
     "UpdateStationsStatus",
     "GetStation",
     "GetStations",
+    "GetStationsWithCount",
     "GetStationUrls",
 
     "CreateFavorite",
     "DeleteFavorite",
     "GetUserFavorites",
+    "GetUserFavoritesWithCount",
 ]

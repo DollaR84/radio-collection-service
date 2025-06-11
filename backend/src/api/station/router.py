@@ -18,29 +18,31 @@ router = APIRouter(prefix="/stations", route_class=DishkaRoute)
     "/",
     description="Method for get list radio stations",
     status_code=status.HTTP_200_OK,
-    response_model=list[schemas.StationResponse],
+    response_model=schemas.StationsResponse,
 )
 async def get_stations(
         user: FromDishka[dto.CurrentUser],
-        interactor: FromDishka[interactors.GetStations],
+        interactor: FromDishka[interactors.GetStationsWithCount],
         name: Optional[str] = None,
         info: Optional[str] = None,
         status_type: Optional[StationStatusType] = None,
         offset: Optional[int] = None,
         limit: Optional[int] = None,
-) -> list[schemas.StationResponse]:
+) -> schemas.StationsResponse:
     try:
-        stations = await interactor(name, info, status_type, offset, limit)
+        data = await interactor(name, info, status_type, offset, limit)
     except Exception as error:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"error get radio stations for user id={user.id}",
         ) from error
 
-    return [
+    stations = [
         schemas.StationResponse(**station.dict())
-        for station in stations
+        for station in data.stations
     ]
+
+    return schemas.StationsResponse(items=stations, total=data.count)
 
 
 @router.get(

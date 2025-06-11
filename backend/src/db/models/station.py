@@ -9,7 +9,7 @@ from ..mixins import TimeCreateMixin, TimeUpdateMixin
 
 class Station(TimeCreateMixin, TimeUpdateMixin, Base):
 
-    name: so.Mapped[str] = so.mapped_column(sa.String(255), nullable=False)
+    name: so.Mapped[str] = so.mapped_column(sa.String, nullable=False)
     url: so.Mapped[str] = so.mapped_column(sa.String, unique=True, nullable=False)
 
     tags: so.Mapped[list[str]] = so.mapped_column(
@@ -32,6 +32,11 @@ class Station(TimeCreateMixin, TimeUpdateMixin, Base):
 
 class Favorite(TimeCreateMixin, Base):
 
-    id: so.Mapped[int] = so.mapped_column(primary_key=False, autoincrement=True)
+    id: so.Mapped[int] = so.mapped_column(
+        primary_key=False,
+        autoincrement=True,
+        server_default=sa.Sequence('favorites_id_seq').next_value()
+    )
+
     user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
     station_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey("stations.id", ondelete="CASCADE"), primary_key=True)

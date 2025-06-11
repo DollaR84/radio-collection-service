@@ -1,6 +1,6 @@
 from .base import BaseTask
 from .parse import RadioBrowserTask, InternetRadioStreamsTask, Mp3RadioStationsTask
-from .test import TestNotVerifiedTask, TestNotWorkTask
+from .test import TestNotVerifiedTask, TestNotWorkTask, TestWorksTask
 
 
 __all__ = [
@@ -12,4 +12,5 @@ __all__ = [
 
     "TestNotVerifiedTask",
     "TestNotWorkTask",
+    "TestWorksTask",
 ]

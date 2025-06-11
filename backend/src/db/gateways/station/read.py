@@ -1,6 +1,7 @@
 from typing import Optional
 
-from sqlalchemy import select, exists, func
+from sqlalchemy import func, literal, select
+from sqlalchemy.sql import Select, operators
 
 from application.types import StationStatusType
 
@@ -33,16 +34,8 @@ class GetStationGateway(BaseGateway[int, Station]):
         error_message = "Error get stations"
         stmt = select(Station)
 
-        if name:
-            stmt = stmt.where(Station.name.icontains(name))
-        if info:
-            stmt = stmt.where(
-                exists().where(
-                    func.unnest(Station.tags).icontains(info)
-                )
-            )
-        if status:
-            stmt = stmt.where(Station.status == status)
+        stmt = self._build_conditions(stmt, name, info, status)
+        stmt = stmt.order_by(Station.id)
 
         if offset:
             stmt = stmt.offset(offset)
@@ -55,12 +48,53 @@ class GetStationGateway(BaseGateway[int, Station]):
             for station in stations
         ]
 
+    async def get_count(
+            self,
+            name: Optional[str] = None,
+            info: Optional[str] = None,
+            status: Optional[StationStatusType] = None,
+    ) -> int:
+        error_message = "error getting stations count"
+        stmt = select(func.count(Station.id))  # pylint: disable=not-callable
+        stmt = self._build_conditions(stmt, name, info, status)
+        return await self._get_count(stmt, error_message)
+
+    def _build_conditions(
+            self,
+            stmt: Select,
+            name: Optional[str] = None,
+            info: Optional[str] = None,
+            status: Optional[StationStatusType] = None,
+    ) -> Select:
+        if name:
+            stmt = stmt.where(Station.name.icontains(name))
+        if info:
+            stmt = stmt.where(
+                Station.tags.any(
+                    literal(f"%{info}%"),
+                    operator=operators.ilike_op
+                )
+            )
+        if status:
+            stmt = stmt.where(Station.status == status)
+
+        return stmt
+
 
 class GetStationsUrlsGateway(BaseGateway[int, str]):
 
-    async def get_stations_urls(self) -> list[str]:
+    async def get_stations_urls(
+            self,
+            offset: Optional[int] = None,
+            limit: Optional[int] = None,
+    ) -> list[str]:
         error_message = "Error get stations"
         stmt = select(Station.url)
+
+        if offset:
+            stmt = stmt.offset(offset)
+        if limit:
+            stmt = stmt.limit(limit)
 
         urls = await self._get(stmt, error_message, is_multiple=True)
         return urls
@@ -75,10 +109,10 @@ class GetFavoriteGateway(BaseGateway[int, Station]):
             limit: Optional[int] = None,
     ) -> list[domain.StationModel]:
         error_message = f"Error get favorites for user id={user_id}"
-
         stmt = select(Station)
-        stmt = stmt.join(Favorite, Favorite.station_id == Station.id)
-        stmt = stmt.where(Favorite.user_id == user_id)
+
+        stmt = self._build_conditions(stmt, user_id)
+        stmt = stmt.order_by(Favorite.id)
 
         if offset:
             stmt = stmt.offset(offset)
@@ -90,3 +124,18 @@ class GetFavoriteGateway(BaseGateway[int, Station]):
             domain.StationModel(**station.dict())
             for station in stations
         ]
+
+    async def get_count(self, user_id: int) -> int:
+        error_message = f"error getting favorites count for user id={user_id}"
+        stmt = select(func.count(Station.id))  # pylint: disable=not-callable
+        stmt = self._build_conditions(stmt, user_id)
+        return await self._get_count(stmt, error_message)
+
+    def _build_conditions(
+            self,
+            stmt: Select,
+            user_id: int,
+    ) -> Select:
+        stmt = stmt.join(Favorite, Favorite.station_id == Station.id)
+        stmt = stmt.where(Favorite.user_id == user_id)
+        return stmt

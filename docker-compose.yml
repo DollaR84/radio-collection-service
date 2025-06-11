@@ -2,6 +2,10 @@ services:
   db:
     image: postgres
     env_file: .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB_NAME}
+      POSTGRES_USER: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
@@ -72,6 +76,7 @@ services:
     entrypoint: ["python", "-m"]
     command: "workers.worker"
     volumes:
+      - /etc/ssl/certs:/etc/ssl/certs:ro
       - shared_data:/app/data
     depends_on:
       db:

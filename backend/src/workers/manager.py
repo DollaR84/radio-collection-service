@@ -136,6 +136,15 @@ class TaskManager:
         status: JobStatus = await job.status()
         result_info: Optional[JobResult] = await job.result_info()
 
+        progress = None
+        if status == JobStatus.in_progress:
+            try:
+                progress_data = await job.result(timeout=0.1, poll_delay=0)
+                if isinstance(progress_data, dict) and "progress" in progress_data:
+                    progress = progress_data["progress"]
+            except Exception:
+                pass
+
         result = None
         success = status == JobStatus.complete
         if success and result_info and result_info.result is None:
@@ -154,4 +163,5 @@ class TaskManager:
             enqueue_time=info.enqueue_time,
             score=info.score,
             result=result,
+            progress=progress,
         )

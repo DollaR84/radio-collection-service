@@ -24,7 +24,7 @@ async def execute_register_task(ctx: dict[Any, Any], task_name: str) -> Any:
 
     task = await task_manager.get_task(task_name)
     try:
-        await task.execute()
+        await task.execute(ctx)
     except Exception as error:
         logging.error("task '%s' failed: %s", task.get_name(), str(error))
 
@@ -40,7 +40,7 @@ def get_worker_settings(config: Config, loop: Optional[asyncio.AbstractEventLoop
 
         health_check_interval: int = config.worker.health_check_interval
         max_jobs: int = config.worker.max_jobs
-        job_timeout: int = config.worker.job_timeout
+        default_timeout: int = config.worker.job_timeout
 
         functions: list[WorkerCoroutine] = [execute_register_task]
         cron_jobs: list[CronJob] = []

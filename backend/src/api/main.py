@@ -104,7 +104,7 @@ class FastAPIApp:
         register_exception_handlers(self._app)
         main_router = APIRouter(prefix="/api", route_class=DishkaRoute)
 
-        main_router.include_router(auth.router, tags=["auth", "user"])
+        main_router.include_router(auth.router, tags=["auth"])
         main_router.include_router(service.router, tags=["service"])
         main_router.include_router(station.router, tags=["station"])
         main_router.include_router(favorite.router, tags=["favorite"])

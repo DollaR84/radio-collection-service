@@ -6,7 +6,7 @@ import Pagination from '../components/Pagination';
 import { formatDate } from '../utils/dateUtils';
 import { FaHeart, FaCopy } from "react-icons/fa";
 
-const PAGE_LIMIT_OPTIONS = [10, 20, 50];
+const PAGE_LIMIT_OPTIONS = [10, 25, 50];
 
 export default function FavoritesPage() {
   const navigate = useNavigate();

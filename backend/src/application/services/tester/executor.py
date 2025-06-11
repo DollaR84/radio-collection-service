@@ -1,56 +1,42 @@
 ﻿import asyncio
-from contextlib import suppress
-import time
-from types import TracebackType
-from typing import Optional, Self, Type
+import logging
+from concurrent.futures import ThreadPoolExecutor
 
-import vlc
+from application.types import CheckerType
 
+from .checkers import BaseChecker, CheckerProtocol
 from .data import RadioTestData
 
 
 class RadioTestExecutor:
+    _executor = ThreadPoolExecutor(max_workers=10)
 
-    def __init__(self, data: RadioTestData, repeat_count: int, repeat_timeout: int):
+    def __init__(self, data: RadioTestData, checker_type: CheckerType, repeat_count: int, repeat_timeout: int):
         self.data = data
-        self.repeat_count = repeat_count
-        self.repeat_timeout = repeat_timeout
+        self.timeout = repeat_timeout
+        self.retries = repeat_count
 
-        self.instance = vlc.Instance("--no-video", "--input-repeat=-1")
-        self.player = self.instance.media_player_new()
+        checker_cls = BaseChecker.get_checker(checker_type)
+        self.checker: CheckerProtocol = checker_cls(self.data.url, self.timeout)
 
-    def __enter__(self) -> Self:
-        return self
+    async def check_stream(self) -> bool:
+        for attempt in range(1, self.retries + 1):
+            try:
+                result = await asyncio.get_event_loop().run_in_executor(
+                    self._executor,
+                    self.checker
+                )
+                if result:
+                    return True
+                if attempt < self.retries:
+                    await asyncio.sleep(self.timeout)
+            except Exception as error:
+                logging.warning("attempt %d failed for %s: %s", attempt, self.data.url, str(error))
 
-    def __exit__(
-            self,
-            exc_type: Optional[Type[BaseException]],
-            exc_val: Optional[BaseException],
-            exc_tb: Optional[TracebackType],
-    ) -> None:
-        self._release_resources()
+        return False
 
-    def run(self) -> None:
-        self.player.set_media(self.instance.media_new(self.data.url))
-        self.player.audio_set_mute(True)
-        self.player.play()
+    async def run(self) -> None:
+        await asyncio.sleep(self.timeout)
 
-        for _ in range(self.repeat_count):
-            state = self.player.get_state()
-            self.data.is_success = state == vlc.State.Playing
-            if self.data.is_success:
-                break
-            time.sleep(self.repeat_timeout)
-
-        asyncio.run_coroutine_threadsafe(
-            self.data.callback_after(self.data),
-            loop=asyncio.get_event_loop()
-        )
-
-    def _release_resources(self) -> None:
-        with suppress(Exception):
-            self.player.stop()
-            self.player.release()
-
-        with suppress(Exception):
-            self.instance.release()
+        self.data.is_success = await self.check_stream()
+        await self.data.callback_after(self.data)

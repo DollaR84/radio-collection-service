@@ -1,4 +1,5 @@
-from sqlalchemy import case, update
+from sqlalchemy import bindparam, func, literal_column, select, update, union_all
+from sqlalchemy.dialects.postgresql import ENUM
 
 from db import domain
 
@@ -24,14 +25,23 @@ class UpdateStationGateway(BaseGateway[int, Station]):
         if not update_data:
             return []
 
-        whens = {
-            Station.id == item.id: item.status
-            for item in update_data
-        }
+        temp_updates = union_all(
+            *[
+                select(
+                    literal_column(str(item.id)).label("id"),
+                    bindparam(
+                        "status_val",
+                        item.status.name,
+                        type_=ENUM(name="station_status_type", create_type=False)
+                    ).label("status")
+                )
+                for item in update_data
+            ]
+        ).alias("temp_updates")
 
         stmt = update(Station)
-        stmt = stmt.where(Station.id.in_([item.id for item in update_data]))
-        stmt = stmt.values(status=case(whens, value=Station.id))
+        stmt = stmt.where(Station.id == temp_updates.c.id)
+        stmt = stmt.values(status=temp_updates.c.status, updated_at=func.now())  # pylint: disable=not-callable
         stmt = stmt.returning(Station.id)
 
         return await self._update(stmt, error_message, is_multiple=True)

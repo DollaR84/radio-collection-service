@@ -27,3 +27,9 @@ class StationData(Station):
 class UpdateStationStatus(BaseData):
     id: int
     status: StationStatusType
+
+
+@dataclass(slots=True)
+class StationsWithCount(BaseData):
+    stations: list[StationData] = field(default_factory=list)
+    count: int = 0

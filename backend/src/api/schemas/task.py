@@ -28,3 +28,4 @@ class TaskJobResult(TaskResponse):
 
     score: Optional[int] = None
     result: Optional[Any] = None
+    progress: Optional[Any] = None

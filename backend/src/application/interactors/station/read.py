@@ -13,9 +13,9 @@ class BaseGetStation:
 
 class GetStation(BaseGetStation):
 
-    async def __call__(self, station_id: int) -> Optional[dto.Station]:
+    async def __call__(self, station_id: int) -> Optional[dto.StationData]:
         station = await self.gateway.get_station(station_id)
-        return dto.Station(**station.dict(exclude=["id", "created_at", "updated_at"])) if station else None
+        return dto.StationData(**station.dict()) if station else None
 
 
 class GetStations(BaseGetStation):
@@ -35,13 +35,35 @@ class GetStations(BaseGetStation):
         ]
 
 
+class GetStationsWithCount(BaseGetStation):
+
+    async def __call__(
+            self,
+            name: Optional[str] = None,
+            info: Optional[str] = None,
+            status: Optional[StationStatusType] = None,
+            offset: Optional[int] = None,
+            limit: Optional[int] = None,
+    ) -> dto.StationsWithCount:
+        count = await self.gateway.get_count(name, info, status)
+        stations = await self.gateway.get_stations(name, info, status, offset, limit)
+
+        return dto.StationsWithCount(
+            [
+                dto.StationData(**station.dict())
+                for station in stations
+            ],
+            count,
+        )
+
+
 class GetStationUrls:
 
     def __init__(self, gateway: interfaces.GetStationsUrlsInterface):
         self.gateway = gateway
 
-    async def __call__(self) -> list[str]:
-        return await self.gateway.get_stations_urls()
+    async def __call__(self, offset: Optional[int] = None, limit: Optional[int] = None) -> list[str]:
+        return await self.gateway.get_stations_urls(offset=offset, limit=limit)
 
 
 class GetUserFavorites:
@@ -60,3 +82,26 @@ class GetUserFavorites:
             dto.StationData(**station.dict())
             for station in stations
         ]
+
+
+class GetUserFavoritesWithCount:
+
+    def __init__(self, gateway: interfaces.GetFavoriteInterface):
+        self.gateway = gateway
+
+    async def __call__(
+            self,
+            user_id: int,
+            offset: Optional[int] = None,
+            limit: Optional[int] = None,
+    ) -> dto.StationsWithCount:
+        count = await self.gateway.get_count(user_id)
+        stations = await self.gateway.get_favorites(user_id, offset, limit)
+
+        return dto.StationsWithCount(
+            [
+                dto.StationData(**station.dict())
+                for station in stations
+            ],
+            count,
+        )

@@ -43,8 +43,8 @@ class BaseGateway(Generic[T, M]):
         try:
             result = await self.session.execute(stmt)
             await self.session.commit()
-
             return list(result.scalars().all()) if is_multiple else result.scalar_one()
+
         except SQLAlchemyError as error:
             logging.error(error, exc_info=True)
             raise ValueError(error_message) from error
@@ -53,6 +53,7 @@ class BaseGateway(Generic[T, M]):
         try:
             await self.session.execute(stmt)
             await self.session.commit()
+
         except SQLAlchemyError as error:
             logging.error(error, exc_info=True)
             raise ValueError(error_message) from error
@@ -120,14 +121,22 @@ class BaseGateway(Generic[T, M]):
         try:
             result = await self.session.execute(stmt)
             await self.session.commit()
-
             return list(result.scalars().all()) if is_multiple else result.scalar_one()
+
         except NoResultFound as error:
             logging.error(error, exc_info=True)
             raise NoResultFound(f"no records updated: {error_message}") from error
         except MultipleResultsFound as error:
             logging.error(error, exc_info=True)
             raise MultipleResultsFound(f"multiple records updated: {error_message}") from error
+        except SQLAlchemyError as error:
+            logging.error(error, exc_info=True)
+            raise ValueError(error_message) from error
+
+    async def _get_count(self, stmt: Select, error_message: str) -> int:
+        try:
+            result = await self.session.scalar(stmt)
+            return result or 0
         except SQLAlchemyError as error:
             logging.error(error, exc_info=True)
             raise ValueError(error_message) from error

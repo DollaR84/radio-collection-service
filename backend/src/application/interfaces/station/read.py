@@ -23,11 +23,24 @@ class GetStationInterface(Protocol):
     ) -> list[domain.StationModel]:
         ...
 
+    @abstractmethod
+    async def get_count(
+            self,
+            name: Optional[str] = None,
+            info: Optional[str] = None,
+            status: Optional[StationStatusType] = None,
+    ) -> int:
+        ...
+
 
 class GetStationsUrlsInterface(Protocol):
 
     @abstractmethod
-    async def get_stations_urls(self) -> list[str]:
+    async def get_stations_urls(
+            self,
+            offset: Optional[int] = None,
+            limit: Optional[int] = None,
+    ) -> list[str]:
         ...
 
 
@@ -40,4 +53,11 @@ class GetFavoriteInterface(Protocol):
             offset: Optional[int] = None,
             limit: Optional[int] = None,
     ) -> list[domain.StationModel]:
+        ...
+
+    @abstractmethod
+    async def get_count(
+            self,
+            user_id: int,
+    ) -> int:
         ...

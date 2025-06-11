@@ -17,9 +17,11 @@ class AppProvider(Provider):
     update_user_by_email_interactor = provide(interactors.UpdateUserByEmail, scope=Scope.REQUEST)
 
     create_station_interactor = provide(interactors.CreateStation, scope=Scope.REQUEST)
+    create_stations_interactor = provide(interactors.CreateStations, scope=Scope.REQUEST)
     delete_station_interactor = provide(interactors.DeleteStation, scope=Scope.REQUEST)
     get_station_interactor = provide(interactors.GetStation, scope=Scope.REQUEST)
     get_stations_interactor = provide(interactors.GetStations, scope=Scope.REQUEST)
+    get_stations_with_count_interactor = provide(interactors.GetStationsWithCount, scope=Scope.REQUEST)
     get_station_urls_interactor = provide(interactors.GetStationUrls, scope=Scope.REQUEST)
     update_station_status_interactor = provide(interactors.UpdateStationStatus, scope=Scope.REQUEST)
     update_stations_status_interactor = provide(interactors.UpdateStationsStatus, scope=Scope.REQUEST)
@@ -27,3 +29,4 @@ class AppProvider(Provider):
     create_favorite_interactor = provide(interactors.CreateFavorite, scope=Scope.REQUEST)
     delete_favorite_interactor = provide(interactors.DeleteFavorite, scope=Scope.REQUEST)
     get_user_favorites_interactor = provide(interactors.GetUserFavorites, scope=Scope.REQUEST)
+    get_user_favorites_with_count_interactor = provide(interactors.GetUserFavoritesWithCount, scope=Scope.REQUEST)

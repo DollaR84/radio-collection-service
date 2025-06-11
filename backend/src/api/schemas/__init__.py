@@ -1,4 +1,4 @@
-from .station import StationResponse, AddFavorite
+from .station import AddFavorite, StationResponse, StationsResponse
 from .task import TaskRequest, TaskResponse, TaskJobStatus, TaskJobResult
 from .token import AccessTokenResponse, TokenFormResponse
 from .user import (
@@ -14,6 +14,7 @@ from .user import (
 
 __all__ = [
     "StationResponse",
+    "StationsResponse",
     "AddFavorite",
 
     "UserCreateByPassword",

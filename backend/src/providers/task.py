@@ -2,7 +2,7 @@ from typing import Optional
 
 from dishka import AsyncContainer, from_context, Provider, Scope, provide
 
-from application.interactors import CreateStation, GetStations, GetStationUrls, UpdateStationStatus
+from application.interactors import CreateStations, GetStations, GetStationUrls, UpdateStationsStatus
 from application.services import CollectionParser, RadioTester
 
 from config import Config
@@ -14,6 +14,7 @@ from workers.tasks import (
     Mp3RadioStationsTask,
     TestNotVerifiedTask,
     TestNotWorkTask,
+    TestWorksTask,
 )
 
 
@@ -38,7 +39,7 @@ class TaskProvider(Provider):
             self,
             parser: CollectionParser,
             get_urls: GetStationUrls,
-            creator: CreateStation,
+            creator: CreateStations,
     ) -> RadioBrowserTask:
         return RadioBrowserTask(parser, get_urls, creator)
 
@@ -47,7 +48,7 @@ class TaskProvider(Provider):
             self,
             parser: CollectionParser,
             get_urls: GetStationUrls,
-            creator: CreateStation,
+            creator: CreateStations,
     ) -> InternetRadioStreamsTask:
         return InternetRadioStreamsTask(parser, get_urls, creator)
 
@@ -56,7 +57,7 @@ class TaskProvider(Provider):
             self,
             parser: CollectionParser,
             get_urls: GetStationUrls,
-            creator: CreateStation,
+            creator: CreateStations,
     ) -> Mp3RadioStationsTask:
         return Mp3RadioStationsTask(parser, get_urls, creator)
 
@@ -65,7 +66,7 @@ class TaskProvider(Provider):
             self,
             tester: RadioTester,
             get_stations: GetStations,
-            updater: UpdateStationStatus,
+            updater: UpdateStationsStatus,
     ) -> TestNotVerifiedTask:
         return TestNotVerifiedTask(tester, get_stations, updater)
 
@@ -74,6 +75,15 @@ class TaskProvider(Provider):
             self,
             tester: RadioTester,
             get_stations: GetStations,
-            updater: UpdateStationStatus,
+            updater: UpdateStationsStatus,
     ) -> TestNotWorkTask:
         return TestNotWorkTask(tester, get_stations, updater)
+
+    @provide(scope=Scope.REQUEST)
+    async def get_test_works_task(
+            self,
+            tester: RadioTester,
+            get_stations: GetStations,
+            updater: UpdateStationsStatus,
+    ) -> TestWorksTask:
+        return TestWorksTask(tester, get_stations, updater)

@@ -4,6 +4,9 @@ FROM python:3.12-slim
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
+ENV VLC_PLUGIN_PATH /usr/lib/vlc/plugins
+ENV VLC_DISABLE_ENV 1
+
 # Create a user and group
 RUN addgroup --gid 1000 appgroup && adduser --uid 1000 --gid 1000 --disabled-password appuser
 
@@ -23,6 +26,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   curl \
   postgresql-client \
   build-essential \
+  vlc \
+  libvlc-dev \
+  libvlccore-dev \
+  ffmpeg \
+  libavcodec-dev \
+  libavformat-dev \
+  libswscale-dev \
+  alsa-utils \
+  ca-certificates \
+  gnutls-bin \
+  && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
 # Install any needed packages specified in requirements.txt
