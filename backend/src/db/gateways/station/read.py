@@ -1,7 +1,7 @@
 from typing import Optional
 
-from sqlalchemy import func, literal, select
-from sqlalchemy.sql import Select, operators
+from sqlalchemy import func, select
+from sqlalchemy.sql import Select
 
 from application.types import StationStatusType
 
@@ -70,10 +70,7 @@ class GetStationGateway(BaseGateway[int, Station]):
             stmt = stmt.where(Station.name.icontains(name))
         if info:
             stmt = stmt.where(
-                Station.tags.any(
-                    literal(f"%{info}%"),
-                    operator=operators.ilike_op
-                )
+                func.array_to_string(Station.tags, ',').ilike(f"%{info}%")
             )
         if status:
             stmt = stmt.where(Station.status == status)
