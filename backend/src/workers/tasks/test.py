@@ -100,7 +100,7 @@ class BaseTestTask(BaseTask, is_abstract=True):
 
 
 class TestNotVerifiedTask(BaseTestTask):
-    trigger = IntervalTrigger(days=1, start_date=datetime.utcnow() + timedelta(hours=2))
+    trigger = IntervalTrigger(hours=2, start_date=datetime.utcnow() + timedelta(minutes=30))
 
     async def execute(self, ctx: dict[Any, Any]) -> None:
         stations = await self.get_stations(
@@ -111,7 +111,7 @@ class TestNotVerifiedTask(BaseTestTask):
 
 
 class TestNotWorkTask(BaseTestTask):
-    trigger = IntervalTrigger(days=3, start_date=datetime.utcnow() + timedelta(hours=3))
+    trigger = IntervalTrigger(hours=5, start_date=datetime.utcnow() + timedelta(hours=1))
 
     async def execute(self, ctx: dict[Any, Any]) -> None:
         stations = await self.get_stations(
@@ -122,7 +122,7 @@ class TestNotWorkTask(BaseTestTask):
 
 
 class TestWorksTask(BaseTestTask):
-    trigger = IntervalTrigger(days=7, start_date=datetime.utcnow() + timedelta(hours=1))
+    trigger = IntervalTrigger(days=1, start_date=datetime.utcnow() + timedelta(hours=1, minutes=45))
 
     async def execute(self, ctx: dict[Any, Any]) -> None:
         stations = await self.get_stations(

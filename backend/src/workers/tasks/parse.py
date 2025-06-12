@@ -1,9 +1,7 @@
-from datetime import datetime, timedelta
 import logging
 from typing import Any
 
 from apscheduler.triggers.cron import CronTrigger
-from apscheduler.triggers.interval import IntervalTrigger
 
 from application.dto import Station
 from application.interactors import CreateStations, GetStationUrls
@@ -61,14 +59,14 @@ class BaseCollectionTask(BaseTask, is_abstract=True):
 
 class RadioBrowserTask(BaseCollectionTask):
     order_id = 1
-    trigger = IntervalTrigger(days=7, start_date=datetime.utcnow() + timedelta(hours=1))
+    trigger = CronTrigger(hour=0, minute=0, timezone="UTC")
 
 
 class InternetRadioStreamsTask(BaseCollectionTask):
     order_id = 2
-    trigger = CronTrigger(day=1, hour=0, minute=0)
+    trigger = CronTrigger(hour=1, minute=0, timezone="UTC")
 
 
 class Mp3RadioStationsTask(BaseCollectionTask):
     order_id = 3
-    trigger = CronTrigger(day=1, hour=0, minute=0)
+    trigger = CronTrigger(hour=2, minute=0, timezone="UTC")
