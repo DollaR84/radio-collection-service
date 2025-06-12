@@ -1,10 +1,21 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import api from '../api/client';
+import { StationStatusType } from '../types';
 
 interface AuthContextType {
   token: string | null;
   isLoading: boolean;
+  searchParams: {
+    name: string;
+    tag: string;
+    status_type: StationStatusType | "";
+  };
+  setSearchParams: (params: {
+    name: string;
+    tag: string;
+    status_type: StationStatusType | "";
+  }) => void;
   login: (accessToken: string) => void;
   logout: () => Promise<void>;
   refreshToken: () => Promise<string | null>;
@@ -15,8 +26,12 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchParams, setSearchParams] = useState({
+    name: "",
+    tag: "",
+    status_type: "" as StationStatusType | ""
+  });
 
-  // Token refresh function
   const refreshToken = useCallback(async (): Promise<string | null> => {
     try {
       const response = await axios.post('/api/auth/refresh', {}, {
@@ -37,7 +52,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  // logout function
   const logout = useCallback(async () => {
     try {
       await api.post('/auth/logout');
@@ -49,13 +63,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  // Login function
   const login = useCallback((accessToken: string) => {
     sessionStorage.setItem('access_token', accessToken);
     setToken(accessToken);
   }, []);
 
-  // Token check when loading the application
   useEffect(() => {
     const verifyToken = async () => {
       const storedToken = sessionStorage.getItem('access_token');
@@ -66,7 +78,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       try {
-        // Check the validity of the token
         await api.get('/auth/validate', {
           headers: { Authorization: `Bearer ${storedToken}` }
         });
@@ -90,18 +101,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     verifyToken();
   }, [logout, refreshToken]);
 
-  // Installation of global functions for the API interceptor
   useEffect(() => {
-    // Global logout function
     window.logoutUser = logout;
-    
-    // Global context update function
     window.updateAuthContext = (newToken: string) => {
       sessionStorage.setItem('access_token', newToken);
       setToken(newToken);
     };
 
-    // Cleaning during brushing
     return () => {
       window.logoutUser = () => {};
       window.updateAuthContext = () => {};
@@ -112,6 +118,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     <AuthContext.Provider value={{ 
       token, 
       isLoading, 
+      searchParams,
+      setSearchParams,
       login, 
       logout,
       refreshToken

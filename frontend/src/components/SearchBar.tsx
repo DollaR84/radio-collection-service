@@ -1,67 +1,106 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { StationStatusType } from "../types";
+import { useDebounce } from "../hooks/useDebounce";
 
 interface SearchBarProps {
-  onSearch: (params: {
+  initialValues: {
+    name: string;
+    tag: string;
+    status_type: StationStatusType | "";
+  };
+  onSearchChange: (params: {
     name: string;
     tag: string;
     status_type: StationStatusType | "";
   }) => void;
 }
 
-export default function SearchBar({ onSearch }: SearchBarProps) {
-  const [name, setName] = useState("");
-  const [tag, setTag] = useState("");
-  const [statusType, setStatusType] = useState<StationStatusType | "">("");
+export default function SearchBar({ initialValues, onSearchChange }: SearchBarProps) {
+  // We combine all the search parameters in one state
+  const [searchParams, setSearchParams] = useState({
+    name: initialValues.name,
+    tag: initialValues.tag,
+    status_type: initialValues.status_type
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSearch({ name, tag, status_type: statusType });
+  // Debowsim only text fields
+  const debouncedName = useDebounce(searchParams.name, 500);
+  const debouncedTag = useDebounce(searchParams.tag, 500);
+
+  // Synchronization with external changes in Initialvalvues
+  useEffect(() => {
+    setSearchParams({
+      name: initialValues.name,
+      tag: initialValues.tag,
+      status_type: initialValues.status_type
+    });
+  }, [initialValues]);
+
+  // Sending changes when updating parameters
+  useEffect(() => {
+    onSearchChange({
+      name: debouncedName,
+      tag: debouncedTag,
+      status_type: searchParams.status_type
+    });
+  }, [debouncedName, debouncedTag, searchParams.status_type, onSearchChange]);
+
+  // Changes for all fields
+  const handleChange = (field: keyof typeof searchParams, value: string) => {
+    setSearchParams(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  // Full filter reset
+  const handleReset = () => {
+    const resetParams = {
+      name: "",
+      tag: "",
+      status_type: ""
+    };
+    setSearchParams(resetParams);
+    onSearchChange(resetParams);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-4 rounded-lg shadow-md mb-6">
+    <div className="bg-white p-4 rounded-lg shadow-md mb-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label htmlFor="name-search" className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
             Search by name
           </label>
           <input
-            id="name-search"
             type="text"
-            placeholder="Partial station name..."
-            className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            aria-label="Search stations by name"
+            placeholder="Station name..."
+            className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            value={searchParams.name}
+            onChange={(e) => handleChange('name', e.target.value)}
           />
         </div>
         
         <div>
-          <label htmlFor="tag-search" className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
             Search by tag
           </label>
           <input
-            id="tag-search"
             type="text"
-            placeholder="Partial tag..."
-            className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            value={tag}
-            onChange={(e) => setTag(e.target.value)}
-            aria-label="Search stations by tag"
+            placeholder="Tag..."
+            className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            value={searchParams.tag}
+            onChange={(e) => handleChange('tag', e.target.value)}
           />
         </div>
 
         <div>
-          <label htmlFor="status-filter" className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
             Filter by status
           </label>
           <select
-            id="status-filter"
-            className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            value={statusType}
-            onChange={(e) => setStatusType(e.target.value as StationStatusType | "")}
-            aria-label="Filter stations by status"
+            className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            value={searchParams.status_type}
+            onChange={(e) => handleChange('status_type', e.target.value as StationStatusType | "")}
           >
             <option value="">All statuses</option>
             <option value="works">Working</option>
@@ -70,12 +109,15 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
           </select>
         </div>
       </div>
-      <button 
-        type="submit" 
-        className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        Apply Filters
-      </button>
-    </form>
+
+      <div className="flex justify-end mt-4">
+        <button
+          onClick={handleReset}
+          className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500"
+        >
+          Reset Filters
+        </button>
+      </div>
+    </div>
   );
 }
