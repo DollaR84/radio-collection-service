@@ -37,7 +37,7 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await api.get('/auth/profile');
+        const response = await api.get('/user/profile');
         const data = {
           user_name: response.data.user_name || '',
           email: response.data.email || '',
@@ -124,7 +124,7 @@ export default function ProfilePage() {
     setIsSaving(true);
     
     try {
-      const response = await api.patch('/auth/update', {
+      const response = await api.patch('/user/update', {
         user_name: userData.user_name,
         first_name: userData.first_name,
         last_name: userData.last_name

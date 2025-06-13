@@ -9,6 +9,7 @@ from .user import (
     UserResponse,
     UserInfoResponse,
     UserMessageResponse,
+    UserAccessRightsSchema,
 )
 
 
@@ -24,6 +25,7 @@ __all__ = [
     "UserResponse",
     "UserInfoResponse",
     "UserMessageResponse",
+    "UserAccessRightsSchema",
 
     "TokenFormResponse",
     "AccessTokenResponse",

@@ -2,7 +2,7 @@ from .collection import CollectionData
 from .station import Station, StationData, UpdateStationStatus, StationsWithCount
 from .task import JobResult
 from .token import AccessToken
-from .user import NewUser, User, AdminUser, CurrentUser, UpdateUser
+from .user import NewUser, User, AdminUser, CurrentUser, UpdateUser, PlusUser, ProUser, FullUser
 
 
 __all__ = [
@@ -17,6 +17,9 @@ __all__ = [
     "AdminUser",
     "CurrentUser",
     "UpdateUser",
+    "PlusUser",
+    "ProUser",
+    "FullUser",
 
     "AccessToken",
 

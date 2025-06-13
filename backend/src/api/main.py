@@ -17,6 +17,7 @@ from . import auth
 from . import favorite
 from . import station
 from . import tasks
+from . import user
 
 from . import service
 from .exception_handlers import register_exception_handlers
@@ -109,6 +110,7 @@ class FastAPIApp:
         main_router.include_router(station.router, tags=["station"])
         main_router.include_router(favorite.router, tags=["favorite"])
         main_router.include_router(tasks.router, tags=["task"])
+        main_router.include_router(user.router, tags=["user"])
 
         self._app.include_router(main_router)
 

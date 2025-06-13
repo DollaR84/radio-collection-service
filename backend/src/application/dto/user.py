@@ -1,7 +1,9 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
+from typing import Literal, Optional
 import uuid
+
+from application.types import UserAccessRights
 
 from .base import BaseData
 
@@ -37,17 +39,36 @@ class User(BaseEmailUser):
     created_at: datetime
     updated_at: datetime
 
+    access_rights: UserAccessRights = UserAccessRights.DEFAULT
+
 
 @dataclass(slots=True)
 class CurrentUser(User):
-    pass
+    is_admin: Literal[False]
 
 
 @dataclass(slots=True)
 class AdminUser(User):
-    pass
+    is_admin: Literal[True]
+    access_rights: Literal[UserAccessRights.OWNER]
 
 
 @dataclass(slots=True)
 class UpdateUser(BaseUser):
     email: Optional[str] = None
+    access_rights: Optional[UserAccessRights] = None
+
+
+@dataclass(slots=True)
+class PlusUser(User):
+    access_rights: Literal[UserAccessRights.PLUS]
+
+
+@dataclass(slots=True)
+class ProUser(User):
+    access_rights: Literal[UserAccessRights.PRO]
+
+
+@dataclass(slots=True)
+class FullUser(User):
+    access_rights: Literal[UserAccessRights.FULL]

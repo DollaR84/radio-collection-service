@@ -5,6 +5,8 @@ import sqlalchemy as sa
 import sqlalchemy.orm as so
 from sqlalchemy.dialects.postgresql import UUID as PgUUID
 
+from application.types import UserAccessRights
+
 from ..base import Base
 from ..mixins import TimeCreateMixin, TimeUpdateMixin
 
@@ -28,3 +30,10 @@ class User(TimeCreateMixin, TimeUpdateMixin, Base):
 
     is_active: so.Mapped[bool] = so.mapped_column(default=True)
     is_admin: so.Mapped[bool] = so.mapped_column(default=False)
+
+    access_rights: so.Mapped[UserAccessRights] = so.mapped_column(
+        sa.Enum(UserAccessRights, name="user_access_rights", create_constraint=True, validate_strings=True),
+        default=UserAccessRights.DEFAULT,
+        server_default=UserAccessRights.DEFAULT.name,
+        nullable=False,
+    )

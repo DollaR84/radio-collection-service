@@ -6,6 +6,7 @@ from fastapi import Request, Response
 
 from application import dto
 from application import interactors
+from application.types import UserAccessRights
 
 from config import Config, GoogleConfig
 
@@ -78,7 +79,52 @@ class Authenticator:
             token: dto.AccessToken,
     ) -> dto.AdminUser:
         user = await self.get_current_user(interactor, token)
-        if not user.is_admin:
+        if not user.is_admin or user.access_rights != UserAccessRights.OWNER:
             raise ForbiddenException()
 
         return dto.AdminUser(**user.dict())
+
+    async def get_current_plus_user(
+            self,
+            interactor: interactors.GetUserByUUID,
+            token: dto.AccessToken,
+    ) -> dto.PlusUser:
+        user = await self.get_current_user(interactor, token)
+        if user.access_rights not in (
+            UserAccessRights.PLUS,
+            UserAccessRights.PRO,
+            UserAccessRights.FULL,
+            UserAccessRights.OWNER,
+        ):
+            raise ForbiddenException()
+
+        return dto.PlusUser(**user.dict())
+
+    async def get_current_pro_user(
+            self,
+            interactor: interactors.GetUserByUUID,
+            token: dto.AccessToken,
+    ) -> dto.ProUser:
+        user = await self.get_current_user(interactor, token)
+        if user.access_rights not in (
+            UserAccessRights.PRO,
+            UserAccessRights.FULL,
+            UserAccessRights.OWNER,
+        ):
+            raise ForbiddenException()
+
+        return dto.ProUser(**user.dict())
+
+    async def get_current_full_user(
+            self,
+            interactor: interactors.GetUserByUUID,
+            token: dto.AccessToken,
+    ) -> dto.FullUser:
+        user = await self.get_current_user(interactor, token)
+        if user.access_rights not in (
+            UserAccessRights.FULL,
+            UserAccessRights.OWNER,
+        ):
+            raise ForbiddenException()
+
+        return dto.FullUser(**user.dict())

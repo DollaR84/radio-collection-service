@@ -4,6 +4,8 @@ from typing_extensions import Self
 
 from pydantic import BaseModel, EmailStr, Field, model_validator
 
+from application.types import UserAccessRights
+
 
 class BaseUser(BaseModel):
     email: EmailStr
@@ -34,6 +36,7 @@ class UserUpdate(BaseModel):
     user_name: Optional[str] = None
     first_name: Optional[str] = None
     last_name: Optional[str] = None
+    access_rights: Optional[UserAccessRights] = None
 
 
 class UserResponse(BaseModel):
@@ -52,7 +55,13 @@ class UserInfoResponse(UserResponse):
     is_active: bool
     is_admin: bool
 
+    access_rights: UserAccessRights = UserAccessRights.DEFAULT
+
 
 class UserMessageResponse(BaseModel):
     ok: bool
     message: str
+
+
+class UserAccessRightsSchema(UserResponse):
+    access_rights: UserAccessRights = UserAccessRights.DEFAULT

@@ -11,3 +11,11 @@ class CheckerType(str, Enum):
     FFPLAY = "ffplay"
     FFPROBE = "ffprobe"
     VLC = "vlc"
+
+
+class UserAccessRights(str, Enum):
+    DEFAULT = "default"
+    PLUS = "plus"
+    PRO = "pro"
+    FULL = "full"
+    OWNER = "owner"

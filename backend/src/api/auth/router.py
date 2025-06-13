@@ -163,18 +163,6 @@ async def logout_user(
     )
 
 
-@router.get(
-    "/profile",
-    description="Method for get user info",
-    status_code=status.HTTP_200_OK,
-    response_model=schemas.UserInfoResponse,
-)
-async def get_user_profile(
-        user: FromDishka[dto.CurrentUser],
-) -> schemas.UserInfoResponse:
-    return schemas.UserInfoResponse(**user.dict())
-
-
 @router.post(
     "/refresh",
     description="Method for refresh user token",
@@ -187,33 +175,3 @@ async def process_refresh_token(
 ) -> schemas.AccessTokenResponse:
     access_token = auth.process_refresh_token(response)
     return schemas.AccessTokenResponse(access_token=access_token.value)
-
-
-@router.patch(
-    "/update",
-    description="Method for update user data",
-    status_code=status.HTTP_200_OK,
-    response_model=schemas.UserInfoResponse,
-)
-async def update_user_data(
-        user: FromDishka[dto.CurrentUser],
-        updater: FromDishka[interactors.UpdateUserByUUID],
-        interactor: FromDishka[interactors.GetUserByUUID],
-        data: schemas.UserUpdate,
-) -> schemas.UserInfoResponse:
-    update_data = dto.UpdateUser(
-        email=data.email,
-        user_name=data.user_name,
-        first_name=data.first_name,
-        last_name=data.last_name,
-    )
-    await updater(user.uuid_id, update_data)
-
-    update_user = await interactor(user.uuid_id)
-    if update_user is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="An error occurred while retrieving updated user data",
-        )
-
-    return schemas.UserInfoResponse(**update_user.dict())

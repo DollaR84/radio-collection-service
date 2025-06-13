@@ -3,6 +3,8 @@ from datetime import datetime
 from typing import Optional
 import uuid
 
+from application.types import UserAccessRights
+
 from .base import BaseData
 
 
@@ -37,7 +39,10 @@ class UserModel(BaseEmailUserModel):
     is_active: bool
     is_admin: bool
 
+    access_rights: UserAccessRights = UserAccessRights.DEFAULT
+
 
 @dataclass(slots=True)
 class UpdateUserModel(BaseUserModel):
     email: Optional[str] = None
+    access_rights: Optional[UserAccessRights] = None

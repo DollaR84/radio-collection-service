@@ -61,3 +61,36 @@ class ApiProvider(Provider):
         user = await auth.get_current_admin_user(interactor, token)
         logging.info("current admin user id=%d: %s", user.id, user.user_name or user.email)
         return user
+
+    @provide(scope=Scope.REQUEST)
+    async def get_current_plus_user(
+            self,
+            auth: Authenticator,
+            interactor: interactors.GetUserByUUID,
+            token: dto.AccessToken,
+    ) -> dto.PlusUser:
+        user = await auth.get_current_plus_user(interactor, token)
+        logging.info("current plus user id=%d: %s", user.id, user.user_name or user.email)
+        return user
+
+    @provide(scope=Scope.REQUEST)
+    async def get_current_pro_user(
+            self,
+            auth: Authenticator,
+            interactor: interactors.GetUserByUUID,
+            token: dto.AccessToken,
+    ) -> dto.ProUser:
+        user = await auth.get_current_pro_user(interactor, token)
+        logging.info("current pro user id=%d: %s", user.id, user.user_name or user.email)
+        return user
+
+    @provide(scope=Scope.REQUEST)
+    async def get_current_full_user(
+            self,
+            auth: Authenticator,
+            interactor: interactors.GetUserByUUID,
+            token: dto.AccessToken,
+    ) -> dto.FullUser:
+        user = await auth.get_current_full_user(interactor, token)
+        logging.info("current full user id=%d: %s", user.id, user.user_name or user.email)
+        return user
