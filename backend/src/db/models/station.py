@@ -28,15 +28,3 @@ class Station(TimeCreateMixin, TimeUpdateMixin, Base):
     __table_args__ = (
         sa.Index("ix_tags_gin", tags, postgresql_using="gin"),
     )
-
-
-class Favorite(TimeCreateMixin, Base):
-
-    id: so.Mapped[int] = so.mapped_column(
-        primary_key=False,
-        autoincrement=True,
-        server_default=sa.Sequence('favorites_id_seq').next_value()
-    )
-
-    user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
-    station_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey("stations.id", ondelete="CASCADE"), primary_key=True)
