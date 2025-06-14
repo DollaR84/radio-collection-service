@@ -17,10 +17,6 @@ class StationResponse(BaseModel):
     updated_at: datetime
 
 
-class AddFavorite(BaseModel):
-    station_id: int
-
-
 class StationsResponse(BaseModel):
     items: list[StationResponse] = Field(default_factory=list)
     total: int

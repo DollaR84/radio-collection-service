@@ -1,4 +1,5 @@
-from .station import AddFavorite, StationResponse, StationsResponse
+from .favorite import AddFavorite
+from .station import StationResponse, StationsResponse
 from .task import TaskRequest, TaskResponse, TaskJobStatus, TaskJobResult
 from .token import AccessTokenResponse, TokenFormResponse
 from .user import (
