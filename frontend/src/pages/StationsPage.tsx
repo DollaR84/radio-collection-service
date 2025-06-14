@@ -165,15 +165,10 @@ export default function StationsPage() {
                 </div>
                 
                 {station.tags.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-1">
-                    {station.tags.slice(0, 3).map((tag, index) => (
-                      <span key={index} className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">
-                        {tag}
-                      </span>
-                    ))}
-                    {station.tags.length > 3 && (
-                      <span className="text-gray-500 text-xs">+{station.tags.length - 3}</span>
-                    )}
+                  <div className="mt-3">
+                    <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">
+                      {station.tags[0]}
+                    </span>
                   </div>
                 )}
               </div>
