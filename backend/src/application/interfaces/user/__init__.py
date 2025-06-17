@@ -1,7 +1,7 @@
-from .create import CreateUserInterface
-from .delete import DeleteUserInterface
-from .read import GetUserInterface
-from .update import UpdateUserInterface
+from .create import CreateUserInterface, CreateAccessPermissionInterface
+from .delete import DeleteUserInterface, DeleteAccessPermissionInterface
+from .read import GetUserInterface, GetAccessPermissionInterface
+from .update import UpdateUserInterface, UpdateAccessPermissionInterface
 
 
 __all__ = [
@@ -9,4 +9,9 @@ __all__ = [
     "DeleteUserInterface",
     "GetUserInterface",
     "UpdateUserInterface",
+
+    "CreateAccessPermissionInterface",
+    "DeleteAccessPermissionInterface",
+    "GetAccessPermissionInterface",
+    "UpdateAccessPermissionInterface",
 ]

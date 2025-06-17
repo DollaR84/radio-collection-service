@@ -12,3 +12,10 @@ class DeleteUserInterface(Protocol):
             uuid_id: Optional[uuid.UUID] = None,
     ) -> None:
         ...
+
+
+class DeleteAccessPermissionInterface(Protocol):
+
+    @abstractmethod
+    async def delete_permission(self, permission_id: int) -> None:
+        ...

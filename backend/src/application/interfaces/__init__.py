@@ -9,7 +9,16 @@ from .station import (
     GetFavoriteInterface,
 )
 
-from .user import CreateUserInterface, DeleteUserInterface, GetUserInterface, UpdateUserInterface
+from .user import (
+    CreateUserInterface,
+    DeleteUserInterface,
+    GetUserInterface,
+    UpdateUserInterface,
+    CreateAccessPermissionInterface,
+    DeleteAccessPermissionInterface,
+    GetAccessPermissionInterface,
+    UpdateAccessPermissionInterface,
+)
 
 
 __all__ = [
@@ -22,6 +31,11 @@ __all__ = [
     "CreateFavoriteInterface",
     "DeleteFavoriteInterface",
     "GetFavoriteInterface",
+
+    "CreateAccessPermissionInterface",
+    "DeleteAccessPermissionInterface",
+    "GetAccessPermissionInterface",
+    "UpdateAccessPermissionInterface",
 
     "CreateUserInterface",
     "DeleteUserInterface",

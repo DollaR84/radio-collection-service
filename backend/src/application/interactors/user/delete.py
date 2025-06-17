@@ -15,3 +15,12 @@ class DeleteUser:
             uuid_id: Optional[uuid.UUID] = None,
     ) -> None:
         await self.gateway.delete_user(user_id, uuid_id)
+
+
+class DeleteAccessPermission:
+
+    def __init__(self, gateway: interfaces.DeleteAccessPermissionInterface):
+        self.gateway = gateway
+
+    async def __call__(self, permission_id: int) -> None:
+        await self.gateway.delete_permission(permission_id)

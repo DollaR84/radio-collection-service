@@ -5,7 +5,7 @@ from sqlalchemy import delete
 
 from ..base import BaseGateway
 
-from ...models import User
+from ...models import AccessPermission, User
 
 
 class DeleteUserGateway(BaseGateway[int, User]):
@@ -26,4 +26,14 @@ class DeleteUserGateway(BaseGateway[int, User]):
 
         id_str = f"uuid_id={uuid_id}" if uuid_id else f"id={user_id}"
         error_message = f"Error deleting User {id_str}"
+        await self._delete(stmt, error_message)
+
+
+class DeleteAccessPermissionGateway(BaseGateway[int, AccessPermission]):
+
+    async def delete_permission(self, permission_id: int) -> None:
+        stmt = delete(AccessPermission)
+        stmt = stmt.where(AccessPermission.id == permission_id)
+
+        error_message = f"Error deleting access permission with id={permission_id} for user"
         await self._delete(stmt, error_message)

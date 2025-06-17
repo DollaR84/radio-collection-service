@@ -9,7 +9,16 @@ from .station import (
     GetFavoriteGateway,
 )
 
-from .user import CreateUserGateway, DeleteUserGateway, GetUserGateway, UpdateUserGateway
+from .user import (
+    CreateUserGateway,
+    DeleteUserGateway,
+    GetUserGateway,
+    UpdateUserGateway,
+    CreateAccessPermissionGateway,
+    DeleteAccessPermissionGateway,
+    GetAccessPermissionGateway,
+    UpdateAccessPermissionGateway,
+)
 
 
 __all__ = [
@@ -22,6 +31,11 @@ __all__ = [
     "CreateFavoriteGateway",
     "DeleteFavoriteGateway",
     "GetFavoriteGateway",
+
+    "CreateAccessPermissionGateway",
+    "DeleteAccessPermissionGateway",
+    "GetAccessPermissionGateway",
+    "UpdateAccessPermissionGateway",
 
     "CreateUserGateway",
     "DeleteUserGateway",

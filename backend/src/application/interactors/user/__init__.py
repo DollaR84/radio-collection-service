@@ -1,7 +1,14 @@
-from .create import CreateUser
-from .delete import DeleteUser
-from .read import GetUserByID, GetUserByUUID, GetUserByGoogle, GetUserByEmail
-from .update import UpdateUserByID, UpdateUserByUUID, UpdateUserByGoogle, UpdateUserByEmail
+from .create import CreateUser, CreateAccessPermission
+from .delete import DeleteUser, DeleteAccessPermission
+from .read import (
+    GetUserByID,
+    GetUserByUUID,
+    GetUserByGoogle,
+    GetUserByEmail,
+    GetAccessPermission,
+    GetAccessPermissions,
+)
+from .update import UpdateUserByID, UpdateUserByUUID, UpdateUserByGoogle, UpdateUserByEmail, UpdateAccessPermission
 
 
 __all__ = [
@@ -15,4 +22,10 @@ __all__ = [
     "UpdateUserByUUID",
     "UpdateUserByGoogle",
     "UpdateUserByEmail",
+
+    "CreateAccessPermission",
+    "DeleteAccessPermission",
+    "GetAccessPermission",
+    "GetAccessPermissions",
+    "UpdateAccessPermission",
 ]

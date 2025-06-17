@@ -1,5 +1,5 @@
-from .access import AccessPermission
 from .favorite import Favorite
+from .permission import AccessPermission
 from .station import Station
 from .user import User
 

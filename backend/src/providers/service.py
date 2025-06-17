@@ -1,6 +1,7 @@
 from dishka import from_context, Provider, Scope, provide
 
-from application.services import CollectionParser, RadioTester, NoService
+from application import interactors
+from application.services import CollectionParser, NoService, RadioTester, Resolver
 
 from config import Config
 
@@ -19,3 +20,14 @@ class ServiceProvider(Provider):
     @provide(scope=Scope.REQUEST)
     async def get_radio_tester(self, config: Config) -> RadioTester:
         return RadioTester(config.tester)
+
+    @provide(scope=Scope.REQUEST)
+    async def get_resolver(
+            self,
+            config: Config,
+            creator: interactors.CreateAccessPermission,
+            getter: interactors.GetAccessPermission,
+            getters: interactors.GetAccessPermissions,
+            updator: interactors.UpdateAccessPermission,
+    ) -> Resolver:
+        return Resolver(config.resolver, creator, getter, getters, updator)

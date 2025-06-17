@@ -81,6 +81,14 @@ class SecurityConfig(BaseSettings):
     cookie: CookieConfig = Field(default_factory=CookieConfig)
 
 
+class ResolverConfig(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix="RESOLVER_")
+
+    plus: int
+    pro: int
+    full: int
+
+
 class GoogleConfig(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="GOOGLE_")
 
@@ -130,6 +138,7 @@ class Config(BaseSettings):
     redis: RedisConfig = Field(default_factory=RedisConfig)
     api: APIConfig = Field(default_factory=APIConfig)
     security: SecurityConfig = Field(default_factory=SecurityConfig)
+    resolver: ResolverConfig = Field(default_factory=ResolverConfig)
     google: GoogleConfig = Field(default_factory=GoogleConfig)
     parser: ParserConfig = Field(default_factory=ParserConfig)
     worker: WorkerConfig = Field(default_factory=WorkerConfig)

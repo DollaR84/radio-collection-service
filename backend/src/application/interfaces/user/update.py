@@ -22,3 +22,10 @@ class UpdateUserInterface(Protocol):
     @abstractmethod
     async def update_user_by_email(self, email: str, update_data: domain.UpdateUserModel) -> int:
         ...
+
+
+class UpdateAccessPermissionInterface(Protocol):
+
+    @abstractmethod
+    async def update_permission(self, permission_id: int, update_data: domain.UpdateAccessPermissionModel) -> int:
+        ...

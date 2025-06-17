@@ -25,10 +25,21 @@ from .user import (
     UpdateUserByUUID,
     UpdateUserByGoogle,
     UpdateUserByEmail,
+    CreateAccessPermission,
+    DeleteAccessPermission,
+    GetAccessPermission,
+    GetAccessPermissions,
+    UpdateAccessPermission,
 )
 
 
 __all__ = [
+    "CreateAccessPermission",
+    "DeleteAccessPermission",
+    "GetAccessPermissions",
+    "GetAccessPermission",
+    "UpdateAccessPermission",
+
     "CreateUser",
     "DeleteUser",
     "GetUserByEmail",

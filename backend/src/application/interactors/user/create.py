@@ -17,3 +17,13 @@ class CreateUser:
     ) -> uuid.UUID:
         domain_data = domain.NewUserModel(**data.dict())
         return await self.gateway.create_user(domain_data)
+
+
+class CreateAccessPermission:
+
+    def __init__(self, gateway: interfaces.CreateAccessPermissionInterface):
+        self.gateway = gateway
+
+    async def __call__(self, data: dto.CreateAccessPermission) -> int:
+        domain_data = domain.CreateAccessPermissionModel(**data.dict())
+        return await self.gateway.create_permission(domain_data)

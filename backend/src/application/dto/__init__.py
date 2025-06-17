@@ -1,4 +1,5 @@
 from .collection import CollectionData
+from .permission import CreateAccessPermission, AccessPermission, UpdateAccessPermission
 from .station import Station, StationData, UpdateStationStatus, StationsWithCount
 from .task import JobResult
 from .token import AccessToken
@@ -11,6 +12,10 @@ __all__ = [
     "StationData",
     "UpdateStationStatus",
     "StationsWithCount",
+
+    "CreateAccessPermission",
+    "AccessPermission",
+    "UpdateAccessPermission",
 
     "NewUser",
     "User",

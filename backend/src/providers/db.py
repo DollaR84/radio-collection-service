@@ -74,3 +74,19 @@ class DBProvider(Provider):
     @provide(scope=Scope.REQUEST)
     async def favorite_getter(self, session: AsyncSession) -> interfaces.GetFavoriteInterface:
         return gateways.GetFavoriteGateway(session)
+
+    @provide(scope=Scope.REQUEST)
+    async def access_permission_creator(self, session: AsyncSession) -> interfaces.CreateAccessPermissionInterface:
+        return gateways.CreateAccessPermissionGateway(session)
+
+    @provide(scope=Scope.REQUEST)
+    async def access_permission_deleter(self, session: AsyncSession) -> interfaces.DeleteAccessPermissionInterface:
+        return gateways.DeleteAccessPermissionGateway(session)
+
+    @provide(scope=Scope.REQUEST)
+    async def access_permission_getter(self, session: AsyncSession) -> interfaces.GetAccessPermissionInterface:
+        return gateways.GetAccessPermissionGateway(session)
+
+    @provide(scope=Scope.REQUEST)
+    async def access_permission_updater(self, session: AsyncSession) -> interfaces.UpdateAccessPermissionInterface:
+        return gateways.UpdateAccessPermissionGateway(session)

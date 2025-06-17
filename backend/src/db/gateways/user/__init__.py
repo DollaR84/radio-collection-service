@@ -1,7 +1,7 @@
-from .create import CreateUserGateway
-from .delete import DeleteUserGateway
-from .read import GetUserGateway
-from .update import UpdateUserGateway
+from .create import CreateUserGateway, CreateAccessPermissionGateway
+from .delete import DeleteUserGateway, DeleteAccessPermissionGateway
+from .read import GetUserGateway, GetAccessPermissionGateway
+from .update import UpdateUserGateway, UpdateAccessPermissionGateway
 
 
 __all__ = [
@@ -9,4 +9,9 @@ __all__ = [
     "DeleteUserGateway",
     "GetUserGateway",
     "UpdateUserGateway",
+
+    "CreateAccessPermissionGateway",
+    "DeleteAccessPermissionGateway",
+    "GetAccessPermissionGateway",
+    "UpdateAccessPermissionGateway",
 ]

@@ -13,3 +13,10 @@ class CreateUserInterface(Protocol):
             data: domain.NewUserModel,
     ) -> uuid.UUID:
         ...
+
+
+class CreateAccessPermissionInterface(Protocol):
+
+    @abstractmethod
+    async def create_permission(self, data: domain.CreateAccessPermissionModel) -> int:
+        ...

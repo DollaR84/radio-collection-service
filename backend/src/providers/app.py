@@ -30,3 +30,9 @@ class AppProvider(Provider):
     delete_favorite_interactor = provide(interactors.DeleteFavorite, scope=Scope.REQUEST)
     get_user_favorites_interactor = provide(interactors.GetUserFavorites, scope=Scope.REQUEST)
     get_user_favorites_with_count_interactor = provide(interactors.GetUserFavoritesWithCount, scope=Scope.REQUEST)
+
+    create_access_permission_interactor = provide(interactors.CreateAccessPermission, scope=Scope.REQUEST)
+    delete_access_permission_interactor = provide(interactors.DeleteAccessPermission, scope=Scope.REQUEST)
+    get_access_permission_interactor = provide(interactors.GetAccessPermission, scope=Scope.REQUEST)
+    get_access_permissions_interactor = provide(interactors.GetAccessPermissions, scope=Scope.REQUEST)
+    update_access_permission_interactor = provide(interactors.UpdateAccessPermission, scope=Scope.REQUEST)
