@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 import uuid
 
 import sqlalchemy as sa
@@ -9,6 +9,10 @@ from application.types import UserAccessRights
 
 from ..base import Base
 from ..mixins import TimeCreateMixin, TimeUpdateMixin
+
+if TYPE_CHECKING:
+    from .favorite import Favorite
+    from .permission import AccessPermission
 
 
 class User(TimeCreateMixin, TimeUpdateMixin, Base):
@@ -37,3 +41,6 @@ class User(TimeCreateMixin, TimeUpdateMixin, Base):
         server_default=UserAccessRights.DEFAULT.name,
         nullable=False,
     )
+
+    access_permissions: so.Mapped["AccessPermission"] = so.relationship("AccessPermission", back_populates="user")
+    favorites: so.Mapped["Favorite"] = so.relationship("Favorite", back_populates="user")

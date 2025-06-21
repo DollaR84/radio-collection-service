@@ -37,6 +37,7 @@ services:
     command: ["--workers", "4"]
     volumes:
       - ./backend/src/migration/versions:/app/migration/versions
+      - ./backend/src/templates:/app/templates
       - shared_data:/app/data
     user: "1000:1000"
     ports:

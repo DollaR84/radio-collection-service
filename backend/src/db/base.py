@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, AsyncContextManager, Dict, List
 
-from sqlalchemy.ext.asyncio import AsyncAttrs, AsyncSession
+from sqlalchemy.ext.asyncio import AsyncAttrs, AsyncEngine, AsyncSession
 from sqlalchemy.orm import DeclarativeBase, declared_attr
 import sqlalchemy.orm as so
 
@@ -36,6 +36,11 @@ class Base(AsyncAttrs, DeclarativeBase):
 
 
 class BaseDbConnector(ABC):
+    _engine: AsyncEngine
+
+    @property
+    def engine(self) -> AsyncEngine:
+        return self._engine
 
     @abstractmethod
     def get_session(self) -> AsyncContextManager[AsyncSession]:

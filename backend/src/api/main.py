@@ -2,14 +2,16 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from typing import Any
 
+from admin import AdminApp
+
+from config import APIConfig
+
 from dishka.integrations.fastapi import DishkaRoute
 
 from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.openapi.utils import get_openapi
-
-from config import APIConfig
 
 from workers import TaskManager
 
@@ -25,7 +27,9 @@ from .exception_handlers import register_exception_handlers
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    await AdminApp.create(app)
     yield
+
     async with app.state.dishka_container() as container:
         task_manager = await container.get(TaskManager)
         await task_manager.close()
@@ -56,7 +60,7 @@ class FastAPIApp:
             allow_headers=self.config.allow_headers,
         )
 
-        self.app.mount("/static", StaticFiles(directory="./static"), name="static")
+        self.app.mount("/static", StaticFiles(directory="/app/static"), name="static")
         self.register_routers()
 
         self.configure_openapi()

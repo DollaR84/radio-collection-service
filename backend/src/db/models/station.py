@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 import sqlalchemy as sa
 import sqlalchemy.orm as so
 
@@ -5,6 +7,9 @@ from application.types import StationStatusType
 
 from ..base import Base
 from ..mixins import TimeCreateMixin, TimeUpdateMixin
+
+if TYPE_CHECKING:
+    from .favorite import Favorite
 
 
 class Station(TimeCreateMixin, TimeUpdateMixin, Base):
@@ -28,3 +33,5 @@ class Station(TimeCreateMixin, TimeUpdateMixin, Base):
     __table_args__ = (
         sa.Index("ix_tags_gin", tags, postgresql_using="gin"),
     )
+
+    favorites: so.Mapped["Favorite"] = so.relationship("Favorite", back_populates="station")

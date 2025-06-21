@@ -1,0 +1,90 @@
+/* styles.css */
+
+/* Hide the original input, keep it accessible */
+.tags-original-input {
+    display: none;
+}
+
+/* Visual container */
+.tags-wrapper {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px;
+    background: white;
+    transition: border-color 0.3s;
+}
+
+.tags-wrapper:focus-within {
+    border-color: #4285f4;
+    box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+}
+
+.tags-visible-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    min-height: 38px;
+    outline: none;
+}
+
+.tags-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+/* Tag styles */
+.tag {
+    display: inline-flex;
+    align-items: center;
+    background: #e0f2fe;
+    border-radius: 16px;
+    padding: 4px 12px;
+    font-size: 14px;
+    outline: none;
+}
+
+.tag:focus {
+    box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.5);
+}
+
+.tag-text {
+    margin-right: 6px;
+}
+
+.tag-remove {
+    background: none;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    padding: 0;
+}
+
+.tag-remove:hover {
+    color: #ef4444;
+}
+
+/* Input for new tags */
+.tags-new-input {
+    border: none;
+    outline: none;
+    flex-grow: 1;
+    min-width: 120px;
+    padding: 6px;
+    font-size: 14px;
+}
+
+.tags-instructions {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 4px;
+}
+
+/* Visually hidden aria-live */
+.sr-status {
+    position: absolute;
+    left: -9999px;
+}

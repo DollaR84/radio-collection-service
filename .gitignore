@@ -1,6 +1,7 @@
 __pycache__/
 .ruff_cache/
 wsl2win/
+shared_data/
 dist/
 _env/
 .env

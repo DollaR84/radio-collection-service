@@ -131,6 +131,14 @@ class TesterConfig(BaseSettings):
     update_timeout: float
 
 
+class AdminConfig(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix="ADMIN_")
+
+    title: str
+    base_url: str
+    templates_dir: str
+
+
 class Config(BaseSettings):
     model_config = SettingsConfigDict(env_nested_delimiter="__")
 
@@ -143,6 +151,7 @@ class Config(BaseSettings):
     parser: ParserConfig = Field(default_factory=ParserConfig)
     worker: WorkerConfig = Field(default_factory=WorkerConfig)
     tester: TesterConfig = Field(default_factory=TesterConfig)
+    admin: AdminConfig = Field(default_factory=AdminConfig)
 
 
 @lru_cache(maxsize=1)

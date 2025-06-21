@@ -2,7 +2,7 @@ from typing import AsyncGenerator
 
 from dishka import from_context, Provider, Scope, provide
 
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 
 from application import interfaces
 
@@ -14,13 +14,16 @@ from db import gateways
 
 
 class DBProvider(Provider):
-    scope = Scope.REQUEST
 
     config = from_context(provides=Config, scope=Scope.APP)
 
-    @provide(scope=Scope.REQUEST)
+    @provide(scope=Scope.APP)
     async def get_db(self, config: Config) -> BaseDbConnector:
         return PostgresDbConnector(config.db)
+
+    @provide(scope=Scope.APP)
+    async def get_db_engine(self, db: BaseDbConnector) -> AsyncEngine:
+        return db.engine
 
     @provide(scope=Scope.REQUEST)
     async def db_session(self, connector: BaseDbConnector) -> AsyncGenerator[AsyncSession, None]:

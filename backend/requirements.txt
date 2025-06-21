@@ -21,3 +21,4 @@ aioredis
 arq
 apscheduler
 python-vlc
+sqladmin
