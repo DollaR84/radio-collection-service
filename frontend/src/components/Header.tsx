@@ -1,9 +1,7 @@
 import Navbar from './Navbar';
-import { useAuth } from '../context/AuthContext';
 
 export default function Header() {
-  const { token } = useAuth();
-  
+
   return (
     <header className="bg-gray-800 text-white">
       <div className="container mx-auto p-4 flex flex-col md:flex-row justify-between items-center">
@@ -27,7 +25,7 @@ export default function Header() {
           </div>
         </div>
         
-        {token && <Navbar />}
+        <Navbar />
       </div>
     </header>
   );

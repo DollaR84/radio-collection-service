@@ -1,5 +1,13 @@
+x-default-logging: &default-logging
+  logging:
+    driver: "json-file"
+    options:
+      max-size: "10m"
+      max-file: "3"
+
 services:
   db:
+    <<: *default-logging
     image: postgres
     env_file: .env
     environment:
@@ -29,6 +37,7 @@ services:
       retries: 5
 
   api:
+    <<: *default-logging
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -54,11 +63,13 @@ services:
       retries: 3
 
   web:
+    <<: *default-logging
     build:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
       - "3000:80"
+      - "80:80"
     volumes:
       - ./frontend/src:/app/web/src
       - /app/web/node_modules
@@ -72,6 +83,7 @@ services:
       retries: 3
 
   worker:
+    <<: *default-logging
     image: radio-collection-service-api
     env_file: .env
     entrypoint: ["python", "-m"]
@@ -85,7 +97,43 @@ services:
       redis:
         condition: service_healthy
 
+  loki:
+    image: grafana/loki
+    ports:
+      - "3100:3100"
+    command:
+      -config.file=/etc/loki/config.yaml
+    volumes:
+      - ./loki:/etc/loki
+      - loki_data:/var/loki
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:3100/ready || exit 1"]
+      interval: 30s
+      timeout: 3s
+      retries: 5
+
+  promtail:
+    image: grafana/promtail
+    command:
+      -config.file=/etc/promtail/config.yml
+    volumes:
+      - /var/log:/var/log
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - ./promtail-config.yaml:/etc/promtail/config.yml
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      loki:
+        condition: service_healthy
+
 volumes:
   postgres_data:
   redis_data:
   shared_data:
+  loki_data:
+  grafana_data:
