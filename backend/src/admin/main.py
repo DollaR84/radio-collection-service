@@ -10,6 +10,7 @@ from sqladmin import Admin
 
 from sqlalchemy.ext.asyncio import AsyncEngine
 
+from .auth import AdminAuth
 from .middlewares import DishkaAdminMiddleware, InjectStaticMiddleware
 from .models import (
     AccessPermissionAdmin,
@@ -26,12 +27,13 @@ class AdminApp:
         config = await app.state.container.get(Config)
         engine = await app.state.container.get(AsyncEngine)
 
-        admin_app = cls(config.admin, app, engine)
+        admin_auth = AdminAuth(config)
+        admin_app = cls(config.admin, app, engine, admin_auth)
         app.state.admin_app = admin_app
 
         app.mount("/", admin_app.app)
 
-    def __init__(self, config: AdminConfig, app: FastAPI, engine: AsyncEngine):
+    def __init__(self, config: AdminConfig, app: FastAPI, engine: AsyncEngine, admin_auth: AdminAuth):
         self.config = config
 
         css_urls = [
@@ -53,6 +55,7 @@ class AdminApp:
         admin = Admin(
             self._app,
             engine,
+            authentication_backend=admin_auth,
             title=self.config.title,
             base_url=self.config.base_url,
             templates_dir=self.config.templates_dir,

@@ -79,7 +79,7 @@ class Authenticator:
             token: dto.AccessToken,
     ) -> dto.AdminUser:
         user = await self.get_current_user(interactor, token)
-        if not user.is_admin or user.access_rights != UserAccessRights.OWNER:
+        if not user.is_admin and (user.access_rights not in (UserAccessRights.FULL, UserAccessRights.OWNER,)):
             raise ForbiddenException()
 
         return dto.AdminUser(**user.dict())
@@ -128,3 +128,14 @@ class Authenticator:
             raise ForbiddenException()
 
         return dto.FullUser(**user.dict())
+
+    async def get_current_owner_user(
+            self,
+            interactor: interactors.GetUserByUUID,
+            token: dto.AccessToken,
+    ) -> dto.OwnerUser:
+        user = await self.get_current_user(interactor, token)
+        if user.access_rights != UserAccessRights.OWNER:
+            raise ForbiddenException()
+
+        return dto.OwnerUser(**user.dict())

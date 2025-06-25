@@ -50,7 +50,7 @@ class CurrentUser(User):
 @dataclass(slots=True)
 class AdminUser(User):
     is_admin: Literal[True]
-    access_rights: Literal[UserAccessRights.OWNER]
+    access_rights: Literal[UserAccessRights.FULL, UserAccessRights.OWNER]
 
 
 @dataclass(slots=True)
@@ -72,3 +72,8 @@ class ProUser(User):
 @dataclass(slots=True)
 class FullUser(User):
     access_rights: Literal[UserAccessRights.FULL]
+
+
+@dataclass(slots=True)
+class OwnerUser(User):
+    access_rights: Literal[UserAccessRights.OWNER]

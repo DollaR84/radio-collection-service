@@ -1,11 +1,23 @@
 import { useState, useEffect } from "react";
 import api from "../api/client";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 interface LoginPageProps {
   onLogin: (token: string) => void;
 }
+
+function getSafeReturnUrl(searchParams: URLSearchParams): string {
+  const raw = searchParams.get("return_url") || "";
+  if (
+    raw.startsWith("/") &&
+    !raw.startsWith("//")
+  ) {
+    return raw;
+  }
+  return "/profile";
+}
+
 
 export default function LoginPage({ onLogin }: LoginPageProps) {
   const [email, setEmail] = useState("");
@@ -14,6 +26,9 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
+
+  const [searchParams] = useSearchParams();
+  const returnUrl = getSafeReturnUrl(searchParams);
 
   // Focus on the title when loading page
   useEffect(() => {
@@ -41,7 +56,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
           onLogin(response.data.access_token);
         }        
 
-        navigate("/profile");
+        navigate(returnUrl);
       } else {
         setError("Server didn't return authentication token");
       }

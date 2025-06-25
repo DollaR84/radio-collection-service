@@ -1,4 +1,4 @@
-from typing import Any, Optional, Type
+from typing import Any
 
 from application.services import Resolver
 from application.types import UserAccessRights
@@ -8,8 +8,6 @@ from db.models import User
 from sqladmin import ModelView
 
 from starlette.requests import Request
-
-from wtforms import Form
 
 from ..formatters import BooleanFormatter
 
@@ -44,16 +42,6 @@ class UserAdmin(ModelView, model=User):
         "is_admin",
     ]
 
-    form_args = {
-        "access_rights": {
-            "choices": [
-                (level.value, level.name)
-                for level in UserAccessRights
-                if level != UserAccessRights.OWNER
-            ]
-        }
-    }
-
     column_labels = {
         "email": "eMail",
         "access_rights": "Access rights now",
@@ -77,15 +65,6 @@ class UserAdmin(ModelView, model=User):
         bool: BooleanFormatter(),
     }
 
-    async def scaffold_form(self, rules: Optional[Any] = None) -> Type[Form]:
-        form = await super().scaffold_form(rules)
-
-        if rules and hasattr(rules, "access_rights") and hasattr(form, "access_rights"):
-            if rules.access_rights == UserAccessRights.OWNER:
-                form.access_rights.render_kw = {"disabled": True}
-
-        return form
-
     async def on_model_change(
             self,
             data: dict[str, Any],
@@ -93,18 +72,24 @@ class UserAdmin(ModelView, model=User):
             is_created: bool,
             request: Request,
     ) -> None:
-        if not is_created and model.access_rights == UserAccessRights.OWNER and "access_rights" in data:
+        old_rights = getattr(model, "access_rights", None)
+
+        access_rights_value = data.get("access_rights")
+        new_rights = UserAccessRights[access_rights_value] if access_rights_value else old_rights
+
+        if not is_created and old_rights == UserAccessRights.OWNER and new_rights:
             data.pop("access_rights")
+            new_rights = old_rights
 
         await super().on_model_change(data, model, is_created, request)
 
-        if "access_rights" in data:
-            if data["access_rights"] == UserAccessRights.OWNER:
-                raise ValueError("no one can be appointed as the owner")
+        if not is_created and new_rights and new_rights != UserAccessRights.DEFAULT and new_rights != old_rights:
+            await self._create_access_permission(model.id, new_rights, request)
 
-            if data["access_rights"] != UserAccessRights.DEFAULT:
-                await self._create_access_permission(model, request)
+    async def _create_access_permission(self, user_id: int, access_rights: UserAccessRights, request: Request) -> None:
+        if access_rights == UserAccessRights.DEFAULT:
+            return
 
-    async def _create_access_permission(self, model: User, request: Request) -> None:
-        resolver = await request.state.container.get(Resolver)
-        await resolver.create(model.id, model.access_rights)
+        async with request.state.container() as container:
+            resolver = await container.get(Resolver)
+            await resolver.create(user_id, access_rights)

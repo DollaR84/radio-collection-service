@@ -24,3 +24,7 @@ scrape_configs:
             log: log
       - drop:
           expression: ".*(GET|HEAD) /api/health.*"
+          expression: ".*start worker process.*"
+          expression: ".*worker process.*"
+          expression: ".*GET / HTTP/1.1.*"
+          expression: ".*client 127.0.0.1 closed keepalive connection.*"

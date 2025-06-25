@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+import logging
 from typing import Optional
 
 from application import dto
@@ -25,7 +26,13 @@ class Resolver:
         self.updator = updator
 
     async def create(self, user_id: int, access_rights: UserAccessRights, reason: Optional[str] = None) -> None:
-        time_delta = timedelta(days=getattr(self.config, access_rights.value))
+        try:
+            days = getattr(self.config, access_rights.value)
+        except AttributeError as error:
+            logging.error("error creating permission for user %d with rights %s", user_id, access_rights.value)
+            raise ValueError(f"Missing config for access level: {access_rights.value}") from error
+
+        time_delta = timedelta(days=days)
         expires_at = datetime.now(timezone.utc) + time_delta
 
         permission = dto.CreateAccessPermission(

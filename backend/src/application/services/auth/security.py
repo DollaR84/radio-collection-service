@@ -123,6 +123,7 @@ class SecurityTool:
             secure=self.config.cookie.secure,
             samesite=self.config.cookie.samesite,
             max_age=int(time_delta.total_seconds()),
+            path="/",
         )
 
         return access_token
@@ -138,6 +139,7 @@ class SecurityTool:
             secure=self.config.cookie.secure,
             samesite=self.config.cookie.samesite,
             max_age=int(time_delta.total_seconds()),
+            path="/",
         )
 
         return refresh_token
