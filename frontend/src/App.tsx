@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import HomePage from "./pages/HomePage";
+import DonatePage from "./pages/DonatePage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import StationsPage from "./pages/StationsPage";
@@ -27,11 +28,23 @@ export default function App() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {(token || isPublicHome) && <Header />}
+      <Header />
 
       <main className="flex-grow container mx-auto px-4 py-6">
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route
+            path="/"
+            element={
+              <HomePage />
+            }
+          />
+
+          <Route
+            path="/donate"
+            element={
+              <DonatePage />
+            }
+          />
 
           <Route
             path="/stations"
@@ -77,7 +90,7 @@ export default function App() {
         </Routes>
       </main>
 
-      {(token || isPublicHome) && <Footer />}
+      <Footer />
     </div>
   );
 }

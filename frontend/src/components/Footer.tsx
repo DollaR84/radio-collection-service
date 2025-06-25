@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export default function Footer() {
   return (
     <footer className="bg-gray-800 text-white py-4 mt-auto">
@@ -8,6 +10,7 @@ export default function Footer() {
           </div>
           <div className="text-center">
             <p className="text-sm">Created by ElrusApps</p>
+            <p className="text-sm">Author: Dolovaniuk Ruslan</p>
             <p className="text-xs text-gray-400">Accessibility-first design</p>
           </div>
           <div className="mt-4 md:mt-0">
@@ -17,6 +20,13 @@ export default function Footer() {
                 Send Email ElrusApps
               </a>
             </p>
+            <Link
+              to="/donate"
+              className="ml-0 md:ml-4 px-3 py-1 bg-yellow-500 hover:bg-yellow-600 rounded
+text-black text-sm transition"              
+            >
+              Donate...
+            </Link>
           </div>
         </div>
       </div>
