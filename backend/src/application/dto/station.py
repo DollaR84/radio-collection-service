@@ -33,3 +33,8 @@ class UpdateStationStatus(BaseData):
 class StationsWithCount(BaseData):
     stations: list[StationData] = field(default_factory=list)
     count: int = 0
+
+
+@dataclass(slots=True)
+class Stations(BaseData):
+    items: list[Station] = field(default_factory=list)

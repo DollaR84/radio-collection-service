@@ -1,7 +1,7 @@
 from dishka import from_context, Provider, Scope, provide
 
 from application import interactors
-from application.services import CollectionParser, NoService, RadioTester, Resolver
+from application.services import CollectionParser, NoService, RadioTester, Resolver, Uploader
 
 from config import Config
 
@@ -31,3 +31,12 @@ class ServiceProvider(Provider):
             updator: interactors.UpdateAccessPermission,
     ) -> Resolver:
         return Resolver(config.resolver, creator, getter, getters, updator)
+
+    @provide(scope=Scope.REQUEST)
+    async def get_uploader(
+            self,
+            config: Config,
+            get_urls: interactors.GetStationUrls,
+            creator: interactors.CreateStations,
+    ) -> Uploader:
+        return Uploader(config.parser, get_urls, creator)

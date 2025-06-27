@@ -1,18 +1,35 @@
-﻿from application.dto import CollectionData
+﻿from typing import Optional
+
+from application.dto import CollectionData
 from config import ParserConfig
 
 from .base import BaseParser
 
 
 class PLSParser(BaseParser):
+    _ext: str = ".pls"
 
-    def __init__(self, config: ParserConfig, url: str):
+    def __init__(self, config: ParserConfig, url: Optional[str] = None):
         super().__init__(config)
-        self.url: str = url
+        self.url: Optional[str] = url
 
     async def get_data(self) -> list[CollectionData]:
+        if not self.url:
+            raise ValueError("need set url,")
+
+        global_name = self.url.rsplit(r"/", 1)[1].replace(self._ext, "")
+
         results = []
         data = await self.get_content(self.url)
+
+        for url, name in zip(*data):
+            if not name:
+                name = global_name
+            results.append(CollectionData(name=name, url=url))
+
+        return results
+
+    def get_data_from_file_data(self, data: str) -> tuple[list[str], list[str | None]]:
         urls = {}
         titles = {}
 
@@ -30,9 +47,10 @@ class PLSParser(BaseParser):
                 index = var.lower().replace("title", "")
                 titles[index] = title
 
+        result_urls = []
+        result_names = []
         for index, url in urls.items():
-            title = titles.get(index, "")
-
-            results.append(CollectionData(name=title, url=url))
-
-        return results
+            name: str | None = titles.get(index)
+            result_urls.append(url)
+            result_names.append(name)
+        return result_urls, result_names

@@ -1,5 +1,6 @@
 __pycache__/
 .ruff_cache/
+.mypy_cache/
 wsl2win/
 shared_data/
 dist/

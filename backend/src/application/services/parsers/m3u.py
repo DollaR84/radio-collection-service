@@ -11,6 +11,7 @@ from .base import BaseParser
 
 
 class M3UParser(BaseParser):
+    _ext: str = ".m3u"
 
     def __init__(
             self,
@@ -25,7 +26,7 @@ class M3UParser(BaseParser):
         self.base_path = base_path
 
         if self.url and not self.name:
-            self.name = self.url.rsplit(r"/", 1)[1].replace(".m3u", "")
+            self.name = self.url.rsplit(r"/", 1)[1].replace(self._ext, "")
 
     async def get_data(self) -> list[CollectionData]:
         results: list[CollectionData] = []
@@ -50,7 +51,7 @@ class M3UParser(BaseParser):
             raise ValueError("need to specify 'url' and 'name' on m3u file")
 
         data = await self.get_content(self.url)
-        return {self.name: self.get_data_from_m3u(data)}
+        return {self.name: self.get_data_from_file_data(data)}
 
     async def get_data_from_path(self, folder: str) -> dict[str, tuple[list[str], list[str | None]]]:
         results = {}
@@ -65,7 +66,7 @@ class M3UParser(BaseParser):
                     continue
 
                 async with aiofiles.open(os.path.join(folder, file), mode="r", encoding="utf-8") as file_data:
-                    results[file_name] = self.get_data_from_m3u(await file_data.read())
+                    results[file_name] = self.get_data_from_file_data(await file_data.read())
             except Exception as error:
                 logger = logging.getLogger()
                 logger.error("Error read file: %s in %s", file, folder)
@@ -76,7 +77,7 @@ class M3UParser(BaseParser):
 
         return results
 
-    def get_data_from_m3u(self, data: str) -> tuple[list[str], list[str | None]]:
+    def get_data_from_file_data(self, data: str) -> tuple[list[str], list[str | None]]:
         urls = []
         names = []
 
