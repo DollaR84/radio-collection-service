@@ -1,3 +1,4 @@
+from .file import CreateFileInterface, DeleteFileInterface, GetFileInterface, UpdateFileInterface
 from .station import (
     CreateStationInterface,
     DeleteStationInterface,
@@ -22,6 +23,11 @@ from .user import (
 
 
 __all__ = [
+    "CreateFileInterface",
+    "GetFileInterface",
+    "DeleteFileInterface",
+    "UpdateFileInterface",
+
     "CreateStationInterface",
     "DeleteStationInterface",
     "GetStationsUrlsInterface",

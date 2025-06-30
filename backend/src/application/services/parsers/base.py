@@ -46,22 +46,36 @@ class BaseParser(ABC):
 
         return content
 
-    def get_data_from_file(self, file_path: str) -> list[CollectionData]:
-        results: list[CollectionData] = []
+    def get_data_from_file(self, file_path: str) -> list[list[CollectionData]]:
+        full_data: list[CollectionData] = []
 
         file_name, file_ext = os.path.splitext(file_path)
         if file_ext.lower() != self._ext.lower():
-            return results
+            return [full_data]
 
         with open(file_path, "r", encoding="utf-8") as file_data:
             data = self.get_data_from_file_data(file_data.read())
 
-            for url, name in zip(*data):
+            for url, name, tags in zip(*data):
                 if not name:
                     name = file_name
-                results.append(CollectionData(name=name, url=url))
+                full_data.append(CollectionData(name=name, url=url, info_data=tags))
 
-        return results
+        return self.get_batch_data(full_data)
 
-    def get_data_from_file_data(self, _: str) -> tuple[list[str], list[str | None]]:
-        return [], []
+    def get_data_from_file_data(self, _: str) -> tuple[list[str], list[str | None], list[list[str]]]:
+        return [], [], []
+
+    def get_batch_data(self, full_data: list[CollectionData]) -> list[list[CollectionData]]:
+        data = []
+        batch_data: list[CollectionData] = []
+
+        for item in full_data:
+            if len(batch_data) >= self.config.batch_size:
+                data.append(batch_data)
+                batch_data = []
+
+            batch_data.append(item)
+        data.append(batch_data)
+
+        return data

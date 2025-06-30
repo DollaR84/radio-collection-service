@@ -2,8 +2,16 @@ from typing import Optional
 
 from dishka import AsyncContainer, from_context, Provider, Scope, provide
 
-from application.interactors import CreateStations, GetStations, GetStationUrls, UpdateStationsStatus
-from application.services import CollectionParser, RadioTester
+from application.interactors import (
+    CreateStations,
+    GetStations,
+    GetStationUrls,
+    UpdateStationsStatus,
+    GetM3uFilesForParse,
+    GetPlsFilesForParse,
+    UpdateFileLoadStatus,
+)
+from application.services import CollectionParser, M3UParser, PLSParser, RadioTester
 
 from config import Config
 
@@ -12,6 +20,8 @@ from workers.tasks import (
     RadioBrowserTask,
     InternetRadioStreamsTask,
     Mp3RadioStationsTask,
+    M3uPlaylistTask,
+    PlsPlaylistTask,
     TestNotVerifiedTask,
     TestNotWorkTask,
     TestWorksTask,
@@ -60,6 +70,28 @@ class TaskProvider(Provider):
             creator: CreateStations,
     ) -> Mp3RadioStationsTask:
         return Mp3RadioStationsTask(parser, get_urls, creator)
+
+    @provide(scope=Scope.REQUEST)
+    async def get_m3u_playlist_task(
+            self,
+            parser: M3UParser,
+            get_m3u_files: GetM3uFilesForParse,
+            get_urls: GetStationUrls,
+            creator: CreateStations,
+            update_status: UpdateFileLoadStatus,
+    ) -> M3uPlaylistTask:
+        return M3uPlaylistTask(parser, get_m3u_files, get_urls, creator, update_status)
+
+    @provide(scope=Scope.REQUEST)
+    async def get_pls_playlist_task(
+            self,
+            parser: PLSParser,
+            get_pls_files: GetPlsFilesForParse,
+            get_urls: GetStationUrls,
+            creator: CreateStations,
+            update_status: UpdateFileLoadStatus,
+    ) -> PlsPlaylistTask:
+        return PlsPlaylistTask(parser, get_pls_files, get_urls, creator, update_status)
 
     @provide(scope=Scope.REQUEST)
     async def get_test_not_verified_task(

@@ -1,0 +1,5 @@
+#EXTM3U
+{% for item in data %}
+#EXTINF:-1,{{ item.name_tags }}
+{{ item.url }}
+{% endfor %}

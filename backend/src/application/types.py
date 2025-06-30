@@ -19,3 +19,8 @@ class UserAccessRights(str, Enum):
     PRO = "pro"
     FULL = "full"
     OWNER = "owner"
+
+
+class FilePlaylistType(str, Enum):
+    M3U = "m3u"
+    PLS = "pls"

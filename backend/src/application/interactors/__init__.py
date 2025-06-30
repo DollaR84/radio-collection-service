@@ -1,3 +1,13 @@
+from .file import (
+    CreateFile,
+    DeleteFile,
+    GetFileByID,
+    GetUserFiles,
+    GetM3uFilesForParse,
+    GetPlsFilesForParse,
+    UpdateFileLoadStatus,
+)
+
 from .station import (
     CreateStation,
     CreateStations,
@@ -39,6 +49,14 @@ __all__ = [
     "GetAccessPermissions",
     "GetAccessPermission",
     "UpdateAccessPermission",
+
+    "CreateFile",
+    "DeleteFile",
+    "UpdateFileLoadStatus",
+    "GetM3uFilesForParse",
+    "GetPlsFilesForParse",
+    "GetFileByID",
+    "GetUserFiles",
 
     "CreateUser",
     "DeleteUser",

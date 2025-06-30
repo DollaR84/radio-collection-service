@@ -1,7 +1,10 @@
+from typing import Optional
+
 from dishka import from_context, Provider, Scope, provide
 
 from application import interactors
-from application.services import CollectionParser, NoService, RadioTester, Resolver, Uploader
+from application import Templater
+from application.services import CollectionParser, M3UParser, PLSParser, NoService, RadioTester, Resolver, Uploader
 
 from config import Config
 
@@ -12,10 +15,25 @@ class ServiceProvider(Provider):
     config = from_context(provides=Config, scope=Scope.APP)
 
     no_service = provide(NoService, scope=Scope.REQUEST)
+    templater: Optional[Templater] = None
+
+    @provide(scope=Scope.APP)
+    async def get_templater(self) -> Templater:
+        if self.templater is None:
+            self.templater = Templater()
+        return self.templater
 
     @provide(scope=Scope.REQUEST)
     async def get_collection_parser(self, config: Config) -> CollectionParser:
         return CollectionParser(config.parser)
+
+    @provide(scope=Scope.REQUEST)
+    async def get_m3u_parser(self, config: Config) -> M3UParser:
+        return M3UParser(config.parser)
+
+    @provide(scope=Scope.REQUEST)
+    async def get_pls_parser(self, config: Config) -> PLSParser:
+        return PLSParser(config.parser)
 
     @provide(scope=Scope.REQUEST)
     async def get_radio_tester(self, config: Config) -> RadioTester:
@@ -35,8 +53,7 @@ class ServiceProvider(Provider):
     @provide(scope=Scope.REQUEST)
     async def get_uploader(
             self,
-            config: Config,
-            get_urls: interactors.GetStationUrls,
-            creator: interactors.CreateStations,
+            templater: Templater,
+            create_file: interactors.CreateFile,
     ) -> Uploader:
-        return Uploader(config.parser, get_urls, creator)
+        return Uploader(templater, create_file)

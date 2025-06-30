@@ -1,7 +1,15 @@
 from .collection import CollectionData
-from .file import UploadFile, UploadM3UFile, UploadPLSFile
+from .file import File, NewFile
 from .permission import CreateAccessPermission, AccessPermission, UpdateAccessPermission
-from .station import Station, StationData, UpdateStationStatus, StationsWithCount, Stations
+from .station import (
+    Station,
+    StationData,
+    UpdateStationStatus,
+    StationsWithCount,
+    UploadStation,
+    UploadStations,
+    UploadPlaylist,
+)
 from .task import JobResult
 from .token import AccessToken
 from .user import NewUser, User, AdminUser, CurrentUser, UpdateUser, PlusUser, ProUser, FullUser, OwnerUser
@@ -13,11 +21,12 @@ __all__ = [
     "StationData",
     "UpdateStationStatus",
     "StationsWithCount",
-    "Stations",
+    "UploadStation",
+    "UploadStations",
+    "UploadPlaylist",
 
-    "UploadFile",
-    "UploadM3UFile",
-    "UploadPLSFile",
+    "File",
+    "NewFile",
 
     "CreateAccessPermission",
     "AccessPermission",

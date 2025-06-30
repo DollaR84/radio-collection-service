@@ -12,6 +12,7 @@ from ..mixins import TimeCreateMixin, TimeUpdateMixin
 
 if TYPE_CHECKING:
     from .favorite import Favorite
+    from .file import File
     from .permission import AccessPermission
 
 
@@ -44,3 +45,4 @@ class User(TimeCreateMixin, TimeUpdateMixin, Base):
 
     access_permissions: so.Mapped["AccessPermission"] = so.relationship("AccessPermission", back_populates="user")
     favorites: so.Mapped["Favorite"] = so.relationship("Favorite", back_populates="user")
+    files: so.Mapped["File"] = so.relationship("File", back_populates="user")

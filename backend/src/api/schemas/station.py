@@ -33,5 +33,7 @@ class StationsRequest(BaseModel):
     items: list[StationRequest] = Field(default_factory=list)
 
 
-class StationsSavingResponse(BaseModel):
-    count: int
+class PlaylistSavingResponse(BaseModel):
+    ok: bool
+    message: str
+    job_id: str

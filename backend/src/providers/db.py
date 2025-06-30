@@ -93,3 +93,19 @@ class DBProvider(Provider):
     @provide(scope=Scope.REQUEST)
     async def access_permission_updater(self, session: AsyncSession) -> interfaces.UpdateAccessPermissionInterface:
         return gateways.UpdateAccessPermissionGateway(session)
+
+    @provide(scope=Scope.REQUEST)
+    async def file_creator(self, session: AsyncSession) -> interfaces.CreateFileInterface:
+        return gateways.CreateFileGateway(session)
+
+    @provide(scope=Scope.REQUEST)
+    async def file_deleter(self, session: AsyncSession) -> interfaces.DeleteFileInterface:
+        return gateways.DeleteFileGateway(session)
+
+    @provide(scope=Scope.REQUEST)
+    async def file_getter(self, session: AsyncSession) -> interfaces.GetFileInterface:
+        return gateways.GetFileGateway(session)
+
+    @provide(scope=Scope.REQUEST)
+    async def file_updater(self, session: AsyncSession) -> interfaces.UpdateFileInterface:
+        return gateways.UpdateFileGateway(session)

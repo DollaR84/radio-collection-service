@@ -1,3 +1,4 @@
+from .file import CreateFileGateway, DeleteFileGateway, GetFileGateway, UpdateFileGateway
 from .station import (
     CreateStationGateway,
     DeleteStationGateway,
@@ -27,6 +28,11 @@ __all__ = [
     "GetStationsUrlsGateway",
     "GetStationGateway",
     "UpdateStationGateway",
+
+    "CreateFileGateway",
+    "DeleteFileGateway",
+    "GetFileGateway",
+    "UpdateFileGateway",
 
     "CreateFavoriteGateway",
     "DeleteFavoriteGateway",

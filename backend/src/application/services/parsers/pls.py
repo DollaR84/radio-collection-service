@@ -22,16 +22,17 @@ class PLSParser(BaseParser):
         results = []
         data = await self.get_content(self.url)
 
-        for url, name in zip(*data):
+        for url, name, tags in zip(*data):
             if not name:
                 name = global_name
-            results.append(CollectionData(name=name, url=url))
+            results.append(CollectionData(name=name, url=url, info_data=tags))
 
         return results
 
-    def get_data_from_file_data(self, data: str) -> tuple[list[str], list[str | None]]:
+    def get_data_from_file_data(self, data: str) -> tuple[list[str], list[str | None], list[list[str]]]:
         urls = {}
         titles = {}
+        info_data: list[list[str]] = []
 
         for line in data.splitlines():
             line = line.strip()
@@ -53,4 +54,6 @@ class PLSParser(BaseParser):
             name: str | None = titles.get(index)
             result_urls.append(url)
             result_names.append(name)
-        return result_urls, result_names
+            info_data.append([])
+
+        return result_urls, result_names, info_data

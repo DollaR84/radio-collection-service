@@ -38,22 +38,22 @@ class M3UParser(BaseParser):
         else:
             return results
 
-        for global_name, urls_names in data.items():
-            for url, name in zip(*urls_names):
+        for global_name, data_items in data.items():
+            for url, name, tags in zip(*data_items):
                 if not name:
                     name = global_name
-                results.append(CollectionData(name=name, url=url))
+                results.append(CollectionData(name=name, url=url, info_data=tags))
 
         return results
 
-    async def get_data_from_url(self) -> dict[str, tuple[list[str], list[str | None]]]:
+    async def get_data_from_url(self) -> dict[str, tuple[list[str], list[str | None], list[list[str]]]]:
         if not isinstance(self.url, str) or not isinstance(self.name, str):
             raise ValueError("need to specify 'url' and 'name' on m3u file")
 
         data = await self.get_content(self.url)
         return {self.name: self.get_data_from_file_data(data)}
 
-    async def get_data_from_path(self, folder: str) -> dict[str, tuple[list[str], list[str | None]]]:
+    async def get_data_from_path(self, folder: str) -> dict[str, tuple[list[str], list[str | None], list[list[str]]]]:
         results = {}
 
         subfolders = [subfolder for subfolder in os.listdir(folder) if os.path.isdir(os.path.join(folder, subfolder))]
@@ -77,12 +77,14 @@ class M3UParser(BaseParser):
 
         return results
 
-    def get_data_from_file_data(self, data: str) -> tuple[list[str], list[str | None]]:
+    def get_data_from_file_data(self, data: str) -> tuple[list[str], list[str | None], list[list[str]]]:
         urls = []
         names = []
+        info_data = []
 
+        current_name = None
+        tags = []
         for line in data.splitlines():
-            current_name = None
             line = line.strip()
             line_start = line[:8]
 
@@ -90,9 +92,13 @@ class M3UParser(BaseParser):
                 extinfo = line.split(",")
                 if len(extinfo) > 1:
                     current_name = extinfo[1]
+                    tags.extend(extinfo[2:] if len(extinfo) > 2 else [])
 
             if line_start.lower().startswith("http"):
                 urls.append(line)
                 names.append(current_name)
+                info_data.append(tags.copy())
+                current_name = None
+                tags.clear()
 
-        return urls, names
+        return urls, names, info_data

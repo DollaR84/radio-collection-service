@@ -1,105 +1,76 @@
+from datetime import datetime
 from functools import singledispatchmethod
-import logging
-from typing import Optional
+import os
+import shutil
 
 from application import dto
 from application import interactors
-
-from config import ParserConfig
-
-from fastapi import UploadFile
-
-from .parsers import M3UParser, PLSParser
+from application import Templater
+from application.types import FilePlaylistType
 
 
 class Uploader:
 
     def __init__(
             self,
-            config: ParserConfig,
-            get_all_urls: interactors.GetStationUrls,
-            creator: interactors.CreateStations,
+            templater: Templater,
+            create_file: interactors.CreateFile,
     ):
-        self.config = config
-        self.get_all_urls = get_all_urls
-        self.creator = creator
+        self.templater = templater
+        self.create_file = create_file
 
-        self.items: list[dto.CollectionData] = []
+    def write(self, file_path: str, file_id: str, data: list[dto.Station]) -> None:
+        content = self.templater("m3u", data=data)
 
-    def add(self, name: str, url: str, tags: Optional[list[str]] = None) -> None:
-        item = dto.CollectionData(name=name, url=url)
+        with open(os.path.join(file_path, file_id + ".m3u"), "w", encoding="utf-8") as file_data:
+            file_data.write(content)
 
-        if tags:
-            item.add_info(*tags)
+    def create_file_data(self, user_id: int, file_path: str, filename: str) -> dto.NewFile:
+        file_id = "".join(str(datetime.utcnow().timestamp()).split("."))
+        _, ext = os.path.splitext(filename)
+        file_type = FilePlaylistType(ext[1:])
 
-        self.items.append(item)
+        new_file = dto.NewFile(
+            user_id=user_id,
+            file_id=file_id,
+            file_path=file_path,
+            filename=filename,
+            fileext=file_type.value,
+        )
 
-    def _parse(self, filename: str, parser: M3UParser | PLSParser) -> None:
-        data = parser.get_data_from_file(filename)
-        self.items.extend(data)
+        return new_file
 
     @singledispatchmethod
-    def load(self, data: dto.Station | dto.Stations | dto.UploadM3UFile | dto.UploadPLSFile) -> None:
+    def load(self, data: dto.UploadStation | dto.UploadStations | dto.UploadPlaylist) -> dto.NewFile:
         raise NotImplementedError("Cannot load station data")
 
     @load.register
-    def _(self, data: dto.Station) -> None:
-        self.add(data.name, data.url, data.tags)
+    def _(self, data: dto.UploadStation) -> dto.NewFile:
+        new_file = self.create_file_data(data.user_id, data.file_path, f"user{data.user_id}_1station.m3u")
+        self.write(data.file_path, new_file.file_id, [data.station])
+        return new_file
 
     @load.register
-    def _(self, data: dto.Stations) -> None:
-        for item in data.items:
-            self.add(item.name, item.url, item.tags)
+    def _(self, data: dto.UploadStations) -> dto.NewFile:
+        new_file = self.create_file_data(
+            data.user_id,
+            data.file_path,
+            f"user{data.user_id}_{len(data.stations)}stations.m3u",
+        )
+        self.write(data.file_path, new_file.file_id, data.stations)
+        return new_file
 
     @load.register
-    def _(self, data: dto.UploadM3UFile) -> None:
-        self._parse(data.filename, M3UParser(self.config))
+    def _(self, data: dto.UploadPlaylist) -> dto.NewFile:
+        if data.file.filename is None:
+            raise ValueError("file has not filename")
 
-    @load.register
-    def _(self, data: dto.UploadPLSFile) -> None:
-        self._parse(data.filename, PLSParser(self.config))
+        new_file = self.create_file_data(data.user_id, data.file_path, data.file.filename)
 
-    @property
-    def batch_items(self) -> list[list[dto.CollectionData]]:
-        data = []
-        batch: list[dto.CollectionData] = []
+        with open(new_file.file_path_with_id, "wb") as buffer:
+            shutil.copyfileobj(data.file.file, buffer)
 
-        for item in self.items:
-            if len(batch) >= self.config.batch_size:
-                data.append(batch)
-                batch = []
+        return new_file
 
-            batch.append(item)
-        data.append(batch)
-
-        return data
-
-    async def process(self) -> int:
-        exists_urls_in_parse_data: set[str] = set()
-        exists_urls_in_db = await self.get_all_urls()
-        total = len(self.items)
-        saving_count = 0
-
-        for index, batch in enumerate(self.batch_items, start=1):
-            data = []
-            for item in batch:
-                if item.url not in exists_urls_in_db and item.url not in exists_urls_in_parse_data:
-                    data.append(item)
-                    exists_urls_in_parse_data.add(item.url)
-
-            if not data:
-                continue
-
-            await self.creator([
-                dto.Station(
-                    name=item.name,
-                    url=item.url,
-                    tags=item.info_data,
-                ) for item in data
-            ])
-
-            count = len(data)
-            saving_count += count
-            logging.info("saving %d batch part: %d stations from %d", index, count, total)
-
-        return saving_count
+    async def process(self, data: dto.NewFile) -> None:
+        await self.create_file(data)

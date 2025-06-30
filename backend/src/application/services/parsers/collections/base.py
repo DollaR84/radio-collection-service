@@ -49,18 +49,7 @@ class BaseCollection(ABC):
 
     async def parse(self) -> list[list[CollectionData]]:
         full_data = await self.process_data(self.make_url())
-        data = []
-        chunk_data: list[CollectionData] = []
-
-        for item in full_data:
-            if len(chunk_data) >= self.parser.config.batch_size:
-                data.append(chunk_data)
-                chunk_data = []
-
-            chunk_data.append(item)
-        data.append(chunk_data)
-
-        return data
+        return self.parser.get_batch_data(full_data)
 
     @abstractmethod
     def make_url(self, **kwargs: Any) -> str:

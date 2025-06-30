@@ -3,6 +3,8 @@ from datetime import datetime
 
 from application.types import StationStatusType
 
+from fastapi import UploadFile
+
 from .base import BaseData
 
 
@@ -13,6 +15,12 @@ class Station(BaseData):
 
     tags: list[str] = field(default_factory=list)
     status: StationStatusType = StationStatusType.NOT_VERIFIED
+
+    @property
+    def name_tags(self) -> str:
+        if self.tags:
+            return ",".join([self.name, *self.tags])
+        return self.name
 
 
 @dataclass(slots=True)
@@ -36,5 +44,21 @@ class StationsWithCount(BaseData):
 
 
 @dataclass(slots=True)
-class Stations(BaseData):
-    items: list[Station] = field(default_factory=list)
+class BaseUploadStation(BaseData):
+    user_id: int
+    file_path: str
+
+
+@dataclass(slots=True)
+class UploadStation(BaseUploadStation):
+    station: Station
+
+
+@dataclass(slots=True)
+class UploadStations(BaseUploadStation):
+    stations: list[Station] = field(default_factory=list)
+
+
+@dataclass(slots=True)
+class UploadPlaylist(BaseUploadStation):
+    file: UploadFile

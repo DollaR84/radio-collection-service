@@ -15,6 +15,7 @@ from .middlewares import DishkaAdminMiddleware, InjectStaticMiddleware
 from .models import (
     AccessPermissionAdmin,
     FavoriteAdmin,
+    FileAdmin,
     StationAdmin,
     UserAdmin,
 )
@@ -76,6 +77,7 @@ class AdminApp:
             AccessPermissionAdmin,
             StationAdmin,
             FavoriteAdmin,
+            FileAdmin,
         )
 
         for view in views:

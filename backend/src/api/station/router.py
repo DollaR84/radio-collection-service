@@ -1,6 +1,4 @@
 import logging
-import os
-import shutil
 from typing import Optional
 
 from config import Config
@@ -12,7 +10,9 @@ from fastapi import APIRouter, HTTPException, status, File, UploadFile
 from application import dto
 from application import interactors
 from application.services import Uploader
-from application.types import StationStatusType
+from application.types import StationStatusType, FilePlaylistType
+
+from workers import TaskManager
 
 from .. import schemas
 
@@ -76,69 +76,96 @@ async def get_station(
     "/",
     description="Method for send radio station on server",
     status_code=status.HTTP_200_OK,
-    response_model=schemas.StationsSavingResponse,
+    response_model=schemas.PlaylistSavingResponse,
 )
 async def send_station(
         user: FromDishka[dto.PlusUser],
         uploader: FromDishka[Uploader],
+        config: FromDishka[Config],
+        manager: FromDishka[TaskManager],
         data: schemas.StationRequest,
-) -> schemas.StationsSavingResponse:
+) -> schemas.PlaylistSavingResponse:
     logging.info("user %d '%s' send station", user.id, user.user_name)
 
     station = dto.Station(**data.dict())
-    uploader.load(station)
+    new_file = uploader.load(dto.UploadStation(user_id=user.id, file_path=config.api.upload_folder, station=station))
+    await uploader.process(new_file)
 
-    saving_count = await uploader.process()
-    return schemas.StationsSavingResponse(count=saving_count)
+    try:
+        task_name = "M3u Playlist" if new_file.fileext == FilePlaylistType.M3U.value else "Pls Playlist"
+        job_id = await manager.execute_task(task_name)
+        return schemas.PlaylistSavingResponse(ok=True, message="station saving...", job_id=job_id)
+
+    except Exception as error:
+        logging.error(error, exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"error to run task parsing station for user with id='{user.id}'",
+        ) from error
 
 
 @router.post(
     "/list",
     description="Method for send radio stations on server",
     status_code=status.HTTP_200_OK,
-    response_model=schemas.StationsSavingResponse,
+    response_model=schemas.PlaylistSavingResponse,
 )
 async def send_stations(
         user: FromDishka[dto.PlusUser],
         uploader: FromDishka[Uploader],
+        config: FromDishka[Config],
+        manager: FromDishka[TaskManager],
         data: schemas.StationsRequest,
-) -> schemas.StationsSavingResponse:
+) -> schemas.PlaylistSavingResponse:
     logging.info("user %d '%s' send stations", user.id, user.user_name)
 
     stations = [dto.Station(**item.dict()) for item in data.items]
-    uploader.load(dto.Stations(items=stations))
+    new_file = uploader.load(
+        dto.UploadStations(user_id=user.id, file_path=config.api.upload_folder, stations=stations)
+    )
+    await uploader.process(new_file)
 
-    saving_count = await uploader.process()
-    return schemas.StationsSavingResponse(count=saving_count)
+    try:
+        task_name = "M3u Playlist" if new_file.fileext == FilePlaylistType.M3U.value else "Pls Playlist"
+        job_id = await manager.execute_task(task_name)
+        return schemas.PlaylistSavingResponse(ok=True, message="stations saving...", job_id=job_id)
+
+    except Exception as error:
+        logging.error(error, exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"error to run task parsing stations for user with id='{user.id}'",
+        ) from error
 
 
 @router.post(
     "/playlist",
     description="Method for send radio stations playlist (m3u, pls) on server",
     status_code=status.HTTP_200_OK,
-    response_model=schemas.StationsSavingResponse,
+    response_model=schemas.PlaylistSavingResponse,
 )
 async def send_playlist(
         user: FromDishka[dto.PlusUser],
         uploader: FromDishka[Uploader],
         config: FromDishka[Config],
+        manager: FromDishka[TaskManager],
         file: UploadFile = File(...),
-) -> schemas.StationsSavingResponse:
+) -> schemas.PlaylistSavingResponse:
     if file.filename is None:
         raise ValueError(f"file '{file}' has not filename")
 
-    file_path = os.path.join(config.api.upload_folder, file.filename)
-    logging.info("user %d '%s' send playlist '%s'", user.id, user.user_name, file_path)
+    new_file = uploader.load(dto.UploadPlaylist(user_id=user.id, file_path=config.api.upload_folder, file=file))
+    await uploader.process(new_file)
+    logging.info("user %d '%s' send playlist '%s'", user.id, user.user_name, new_file.filename)
 
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+    try:
+        task_name = "M3u Playlist" if new_file.fileext == FilePlaylistType.M3U.value else "Pls Playlist"
+        job_id = await manager.execute_task(task_name)
+        return schemas.PlaylistSavingResponse(ok=True, message="playlist saving...", job_id=job_id)
 
-    if file.filename.lower().endswith(".m3u"):
-        uploader.load(dto.UploadM3UFile(filename=file_path))
-    elif file.filename.lower().endswith(".pls"):
-        uploader.load(dto.UploadPLSFile(filename=file_path))
-    else:
-        raise ValueError("unsupported file format extension")
-
-    saving_count = await uploader.process()
-    return schemas.StationsSavingResponse(count=saving_count)
+    except Exception as error:
+        logging.error(error, exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"error to run task parsing playlist for user with id='{user.id}'",
+        ) from error

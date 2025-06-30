@@ -36,3 +36,11 @@ class AppProvider(Provider):
     get_access_permission_interactor = provide(interactors.GetAccessPermission, scope=Scope.REQUEST)
     get_access_permissions_interactor = provide(interactors.GetAccessPermissions, scope=Scope.REQUEST)
     update_access_permission_interactor = provide(interactors.UpdateAccessPermission, scope=Scope.REQUEST)
+
+    create_file_interactor = provide(interactors.CreateFile, scope=Scope.REQUEST)
+    delete_file_interactor = provide(interactors.DeleteFile, scope=Scope.REQUEST)
+    get_file_by_id_interactor = provide(interactors.GetFileByID, scope=Scope.REQUEST)
+    get_user_files_interactor = provide(interactors.GetUserFiles, scope=Scope.REQUEST)
+    get_m3u_files_for_parse_interactor = provide(interactors.GetM3uFilesForParse, scope=Scope.REQUEST)
+    get_pls_files_for_parse_interactor = provide(interactors.GetPlsFilesForParse, scope=Scope.REQUEST)
+    update_file_load_status_interactor = provide(interactors.UpdateFileLoadStatus, scope=Scope.REQUEST)
