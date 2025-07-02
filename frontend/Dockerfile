@@ -1,5 +1,7 @@
 FROM node:20-alpine AS build
 
+ARG TARGETARCH
+
 WORKDIR /app/web
 
 COPY ./src /app/web/src/
