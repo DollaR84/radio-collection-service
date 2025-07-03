@@ -1,14 +1,4 @@
 services:
-  - type: psql
-    name: db
-    plan: free
-    databaseName: ${POSTGRES_DB_NAME:-mydatabase}
-    user: ${POSTGRES_USERNAME:-myuser}
-
-  - type: redis
-    name: redis
-    plan: free
-
   - type: web
     name: api
     env: python
