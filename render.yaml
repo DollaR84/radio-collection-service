@@ -83,14 +83,3 @@ services:
         value: 1.0
       - key: TESTER_UPDATE_TIMEOUT
         value: 0.1
-
-  - type: static_site
-    name: web
-    buildCommand: npm install && npm run build
-    staticPublishPath: frontend/dist
-    autoDeploy: true
-    envVars:
-      - key: REACT_APP_API_URL
-        fromService:
-          name: api
-          property: internalUrl
