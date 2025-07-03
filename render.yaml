@@ -10,14 +10,6 @@ services:
     healthCheckPath: /api/health
     autoDeploy: true
     envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: db
-          property: connectionString
-      - key: REDIS_URL
-        fromService:
-          name: redis
-          property: connectionString
       - key: FASTAPI_TITLE
         value: Radio Collection Service API
       - key: FASTAPI_DESCRIPTION
@@ -47,10 +39,6 @@ services:
     startCommand: python -m workers.worker
     autoDeploy: true
     envVars:
-      - key: REDIS_URL
-        fromService:
-          name: redis
-          property: connectionString
       - key: PARSER_MAX_WORKERS
         value: 4
       - key: PARSER_BATCH_SIZE
