@@ -29,23 +29,23 @@ services:
           name: redis
           property: connectionString
       - key: FASTAPI_TITLE
-          value: Radio Collection Service API
+        value: Radio Collection Service API
       - key: FASTAPI_DESCRIPTION
-          value: API for radio collections service
+        value: API for radio collections service
       - key: FASTAPI_VERSION
-          value: 1.0.0
+        value: 1.0.0
       - key: RESOLVER_PLUS
-          value: 30
+        value: 30
       - key: RESOLVER_PRO
-          value: 30
+        value: 30
       - key: RESOLVER_FULL
-          value: 30
+        value: 30
       - key: ADMIN_TITLE
-          value: Radio Collection Service Admin App
+        value: Radio Collection Service Admin App
       - key: ADMIN_BASE_URL
-          value: /admin
+        value: /admin
       - key: ADMIN_TEMPLATES_DIR
-          value: templates
+        value: templates
 
   - type: worker
     name: worker
@@ -62,37 +62,37 @@ services:
           name: redis
           property: connectionString
       - key: PARSER_MAX_WORKERS
-          value: 4
+        value: 4
       - key: PARSER_BATCH_SIZE
-          value: 3000
+        value: 3000
       - key: PARSER_DEFAULT_SLEEP_TIMEOUT
-          value: 0.5
+        value: 0.5
       - key: WORKER_REDIS_DATABASE
-          value: 0
+        value: 0
       - key: WORKER_HANDLE_SIGNALS
-          value: false
+        value: false
       - key: WORKER_HEALTH_CHECK_INTERVAL
-          value: 60
+        value: 60
       - key: WORKER_MAX_JOBS
-          value: 10
+        value: 10
       - key: WORKER_JOB_TIMEOUT
-          value: 600
+        value: 600
       - key: TESTER_CHECKER_TYPE
-          value: vlc
+        value: vlc
       - key: TESTER_REPEAT_COUNT
-          value: 3
+        value: 3
       - key: TESTER_REPEAT_TIMEOUT
-          value: 1
+        value: 1
       - key: TESTER_MAX_CONCURRENT_TASKS
-          value: 20
+        value: 20
       - key: TESTER_BATCH_SIZE
-          value: 1000
+        value: 1000
       - key: TESTER_BATCH_LIMIT
-          value: 2000
+        value: 2000
       - key: TESTER_QUEUE_TIMEOUT
-          value: 1.0
+        value: 1.0
       - key: TESTER_UPDATE_TIMEOUT
-          value: 0.1
+        value: 0.1
 
   - type: static_site
     name: web
@@ -103,4 +103,4 @@ services:
       - key: REACT_APP_API_URL
         fromService:
           name: api
-          property: url
+          property: internalUrl
