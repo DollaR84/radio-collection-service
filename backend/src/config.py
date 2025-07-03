@@ -1,5 +1,5 @@
 from functools import lru_cache
-from typing import Literal
+from typing import Literal, Optional
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -17,6 +17,8 @@ class DBConfig(BaseSettings):
     port: int = 5432
     debug: bool = False
 
+    url: Optional[str] = None
+
     @field_validator("port")
     @classmethod
     def validate_port(cls, value: int) -> int:
@@ -26,7 +28,8 @@ class DBConfig(BaseSettings):
 
     @property
     def uri(self) -> str:
-        return f"postgresql+asyncpg://{self.username}:{self.password}@{self.host}:{self.port}/{self.db_name}"
+        uri = f"postgresql+asyncpg://{self.username}:{self.password}@{self.host}:{self.port}/{self.db_name}"
+        return self.url if self.url else uri
 
 
 class RedisConfig(BaseSettings):
@@ -34,6 +37,8 @@ class RedisConfig(BaseSettings):
 
     host: str
     port: int = 6379
+
+    url: Optional[str] = None
 
     @field_validator("port")
     @classmethod

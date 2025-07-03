@@ -14,6 +14,8 @@ from config import Config
 
 from dishka import AsyncContainer
 
+from redis.connection import parse_url
+
 from .exceptions import SchedulerNotInitializedError, ContainerNotInitializedError, RedisPoolNotInitializedError
 from .tasks import BaseTask
 
@@ -57,10 +59,13 @@ class TaskManager:
         self._arq_context["dishka_container"] = container
 
     async def create_redis_pool(self, config: Config) -> None:
+        parsed_params = parse_url(config.redis.url) if config.redis.url else {}
+
         self.redis_pool = await create_pool(RedisSettings(
-            host=config.redis.host,
-            port=config.redis.port,
-            database=config.worker.redis_database,
+            host=parsed_params.get("host", config.redis.host),
+            port=parsed_params.get("port", config.redis.port),
+            password=parsed_params.get("password", None),
+            database=parsed_params.get("db", config.worker.redis_database),
         ))
 
     async def close(self) -> None:

@@ -13,6 +13,8 @@ from config import Config, get_config
 
 from container import setup_container
 
+from redis.connection import parse_url
+
 from .exceptions import TaskManagerNotInitializedError
 from .manager import TaskManager
 
@@ -30,11 +32,14 @@ async def execute_register_task(ctx: dict[Any, Any], task_name: str) -> Any:
 
 
 def get_worker_settings(config: Config, loop: Optional[asyncio.AbstractEventLoop] = None) -> Type[WorkerSettingsBase]:
+    parsed_params = parse_url(config.redis.url) if config.redis.url else {}
+
     class WorkerSettings(WorkerSettingsBase):
         redis_settings = RedisSettings(
-            host=config.redis.host,
-            port=config.redis.port,
-            database=config.worker.redis_database,
+            host=parsed_params.get("host", config.redis.host),
+            port=parsed_params.get("port", config.redis.port),
+            password=parsed_params.get("password", None),
+            database=parsed_params.get("db", config.worker.redis_database),
         )
         handle_signals: bool = config.worker.handle_signals
 
