@@ -3,6 +3,7 @@
 import asyncio
 import importlib
 from logging.config import fileConfig
+import ssl
 
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
@@ -76,10 +77,16 @@ async def run_async_migrations() -> None:
 
     """
 
+    connect_args = {}
+    if settings.db.ssl:
+        ssl_context = ssl.create_default_context()
+        connect_args["ssl"] = ssl_context
+
     connectable = async_engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
+        connect_args=connect_args,
     )
 
     async with connectable.connect() as connection:
