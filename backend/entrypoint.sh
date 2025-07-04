@@ -9,11 +9,6 @@ graceful_shutdown() {
 }
 trap graceful_shutdown SIGTERM SIGINT
 
-until pg_isready -h $POSTGRES_HOST -p $POSTGRES_PORT; do
-  echo "Waiting for PostgreSQL..."
-  sleep 2
-done
-
 echo "Applying database migrations..."
 for i in {1..5}; do
     alembic upgrade head && break
