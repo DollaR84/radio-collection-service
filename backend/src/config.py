@@ -17,6 +17,7 @@ class DBConfig(BaseSettings):
     port: int = 5432
     debug: bool = False
 
+    ssl: bool = False
     url: Optional[str] = None
 
     @field_validator("port")

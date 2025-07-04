@@ -1,6 +1,7 @@
 from asyncio import current_task
 from contextlib import asynccontextmanager
 import logging
+import ssl
 from typing import AsyncIterator
 
 from sqlalchemy.ext.asyncio import create_async_engine
@@ -15,12 +16,18 @@ from .base import Base, BaseDbConnector
 class PostgresDbConnector(BaseDbConnector):
 
     def __init__(self, config: DBConfig):
+        connect_args = {}
+        if config.ssl:
+            ssl_context = ssl.create_default_context()
+            connect_args["ssl"] = ssl_context
+
         try:
             self._engine = create_async_engine(
                 config.uri,
                 echo=config.debug,
                 pool_size=15,
                 max_overflow=15,
+                connect_args=connect_args,
             )
         except Exception as error:
             logger = logging.getLogger()
