@@ -19,7 +19,7 @@ from db.base import Base
 config = context.config
 
 settings = get_config()
-config.set_main_option("sqlalchemy.url", settings.db.uri)
+config.set_main_option("sqlalchemy.url", settings.db.sync_uri)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

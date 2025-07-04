@@ -8,7 +8,7 @@ _env/
 .env
 .flake8
 .pylintrc
-*.ini
+.mypy.ini
 *.log
 *.dat
 *.json
