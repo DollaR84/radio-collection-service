@@ -30,12 +30,7 @@ class DBConfig(BaseSettings):
     @property
     def uri(self) -> str:
         uri = f"postgresql+asyncpg://{self.username}:{self.password}@{self.host}:{self.port}/{self.db_name}"
-        return "postgresql+asyncpg://" + self.url if self.url else uri
-
-    @property
-    def sync_uri(self) -> str:
-        uri = f"postgresql+psycopg2://{self.username}:{self.password}@{self.host}:{self.port}/{self.db_name}"
-        return "postgresql+psycopg2://" + self.url if self.url else uri
+        return self.url if self.url else uri
 
 
 class RedisConfig(BaseSettings):
