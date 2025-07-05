@@ -22,6 +22,7 @@ class Uploader:
     def write(self, file_path: str, file_id: str, data: list[dto.Station]) -> None:
         content = self.templater("m3u", data=data)
 
+        os.makedirs(file_path, exist_ok=True)
         with open(os.path.join(file_path, file_id + ".m3u"), "w", encoding="utf-8") as file_data:
             file_data.write(content)
 
@@ -67,6 +68,7 @@ class Uploader:
 
         new_file = self.create_file_data(data.user_id, data.file_path, data.file.filename)
 
+        os.makedirs(data.file_path, exist_ok=True)
         with open(new_file.file_path_with_id, "wb") as buffer:
             shutil.copyfileobj(data.file.file, buffer)
 
