@@ -1,12 +1,14 @@
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 export default function Navbar() {
   const { token, logout } = useAuth();
+  const { t } = useTranslation();
   const baseLinkClass = "hover:bg-gray-700 px-3 py-2 rounded whitespace-nowrap";
 
   return (
-    <nav className="flex flex-wrap items-center gap-2" role="navigation" aria-label="Main menu">
+    <nav className="flex flex-wrap items-center gap-2" role="navigation" aria-label={t("menu.aria_main_menu")}>
       <NavLink
         to="/"
         end
@@ -15,7 +17,7 @@ export default function Navbar() {
         }
         aria-current={({ isActive }) => (isActive ? 'page' : undefined)}
       >
-        Main
+        {t("menu.main")}
       </NavLink>
 
       <NavLink
@@ -25,7 +27,7 @@ export default function Navbar() {
         }
         aria-current={({ isActive }) => (isActive ? 'page' : undefined)}
       >
-        Stations
+        {t("menu.stations")}
       </NavLink>
 
       <NavLink
@@ -35,7 +37,7 @@ export default function Navbar() {
         }
         aria-current={({ isActive }) => (isActive ? 'page' : undefined)}
       >
-        Favorites
+        {t("menu.favorites")}
       </NavLink>
 
       <NavLink
@@ -45,16 +47,16 @@ export default function Navbar() {
         }
         aria-current={({ isActive }) => (isActive ? 'page' : undefined)}
       >
-        Profile
+        {t("menu.profile")}
       </NavLink>
 
       {token && (
         <button
           onClick={logout}
           className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded whitespace-nowrap"
-          aria-label="Logout"
+          aria-label={t("menu.logout")}
         >
-          Logout
+          {t("menu.logout")}
         </button>
       )}
     </nav>

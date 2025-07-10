@@ -1,0 +1,186 @@
+{
+  "header": {
+    "title": "RadioCollectionService",
+    "subtitle": "Your personal radio station hub"
+  },
+  "menu": {
+    "aria_main_menu": "Main menu",
+    "main": "Main",
+    "stations": "Stations",
+    "favorites": "Favorites",
+    "profile": "Profile",
+    "logout": "Logout"
+  },
+  "pagination": {
+    "aria": "Pagination navigation",
+    "prev": "Previous page",
+    "next": "Next page",
+    "page_info": "Page {{current}} of {{total}}"
+  },
+  "search": {
+    "name_label": "Search by name",
+    "name_placeholder": "Station name...",
+    "tag_label": "Search by tag",
+    "tag_placeholder": "Tag...",
+    "status_label": "Filter by status",
+    "status_all": "All statuses",
+    "status_works": "Working",
+    "status_not_work": "Not Working",
+    "status_not_verified": "Not Verified",
+    "reset": "Reset Filters"
+  },
+  "footer": {
+    "created_by": "Created by <link>{{name}}</link>",
+    "author": "Author: Ruslan Dolovaniuk",
+    "accessibility_note": "Accessibility-first design",
+    "contact": "Contact",
+    "send_email": "Send Email {{name}}"
+  },
+  "pages": {
+    "show": "Show",
+    "per_page": "stations per page",
+    "status": {
+      "title": "Status",
+      "working": "Working",
+      "not_working": "Not Working",
+      "not_verified": "Not Verified"
+    },
+    "favorite": {
+      "remove": "Remove Favorite",
+      "add": "Add Favorite"
+    },
+    "login": {
+      "title": "Login",
+      "email": "Email",
+      "email_placeholder": "Email",
+      "password": "Password",
+      "password_placeholder": "Password",
+      "processing": "Processing...",
+      "button": "Login",
+      "no_account": "Don't have an account?",
+      "signup_link": "Sign up",
+      "errors": {
+        "missing_fields": "Please enter both email and password",
+        "no_token": "Server didn't return authentication token",
+        "invalid_credentials": "Invalid credentials",
+        "server": "Error {{status}}: {{detail}}",
+        "network": "Network error. Please try again."
+      }
+    },
+    "signup": {
+      "title": "Create Account",
+      "username": "Username",
+      "username_placeholder": "Username",
+      "email": "Email",
+      "email_placeholder": "Email",
+      "password": "Password",
+      "password_placeholder": "Password",
+      "confirm_password": "Confirm Password",
+      "confirm_password_placeholder": "Confirm Password",
+      "processing": "Creating account...",
+      "button": "Sign Up",
+      "have_account": "Already have an account?",
+      "login_link": "Log in",
+      "errors": {
+        "username_required": "Username is required",
+        "password_mismatch": "Passwords do not match",
+        "no_token": "Registration successful, but no token received",
+        "failed": "Registration failed",
+        "server": "Error {{status}}: {{detail}}",
+        "network": "Network error. Please try again."
+      }
+    },
+    "profile": {
+      "title": "User Profile",
+      "username": "Username",
+      "first_name": "First Name",
+      "last_name": "Last Name",
+      "email": "Email",
+      "email_readonly": "Email (read-only)",
+      "email_not_change": "Email cannot be changed",
+      "unsaved_changes": "You have unsaved changes. Are you sure you want to leave?",
+      "no_changes": "No changes to save",
+      "updated": "Profile updated successfully!",
+      "loading": "Loading profile...",
+      "save": "Save changes",
+      "saving": "Saving...",
+      "logout": "Logout",
+      "errors": {
+        "fetch": "Failed to load user data",
+        "username_required": "Username is required",
+        "username_short": "Username must be at least 3 characters",
+        "user_name_long": "username is too long",
+        "first_name_long": "First name is too long",
+        "last_name_long": "Last name is too long",
+        "update": "Failed to update profile"
+      }
+    },
+    "stations": {
+      "title": "Radio Stations",
+      "show": "Show",
+      "stations_label": "stations",
+      "not_found": "No stations found",
+      "errors": {
+        "loading": "Failed to load stations",
+        "favorite": "Failed to update favorites"
+      }
+    },
+    "station_detail": {
+      "loading": "Loading station details",
+      "go_back": "Go back to stations list",
+      "back_list": "Back to list",
+      "copy": "Copy stream URL to clipboard",
+      "copied": "URL stream copied to clipboard!",
+      "created": "Created",
+      "updated": "Last Updated",
+      "info": "Station Information",
+      "tags": "Tags",
+      "tags_label": "Station tags",
+      "url": "Stream URL",
+      "url_label": "Stream URL: {{ url }}. Opens in new tab",
+      "favorite": {
+        "remove": "Remove {{ name }} from favorites",
+        "add": "Add {{ name }} to favorites"
+      },
+      "errors": {
+        "load": "Failed to load station data",
+        "login": "You need to be logged in to add favorites",
+        "update_favorite": "Failed to update favorites",
+        "prefix": "Error!",
+        "not_found": "Station not found"
+      }
+    },
+    "home": {
+      "title": "Welcome to Radio Collection",
+      "description1": "Radio Collection is a project dedicated to discovering, organizing, and listening to your favorite online radio stations — all in one place.",
+      "description2": "I'm a blind developer from Ukraine, passionate about accessibility and open technologies.\nThis service is designed with screen reader support in mind — especially optimized for NVDA —\nand includes a public API that can be used by radio clients and other developers.",
+      "description3": "You can explore all my open-source projects on my",
+      "github_link": "GitHub account",
+      "contact": "Contact",
+      "supportEmail": "support email",
+      "telegram_channel": "Telegram Channel",
+      "telegram_group": "Telegram Group",
+      "login_button": "Login to start listening"
+    },
+    "favorites": {
+      "title": "Favorite Stations",
+      "empty": "You don't have any favorite stations yet",
+      "copy": "Copy url",
+      "copied": "The URL is copied to the clipboard!",
+      "view_details": "View the details of the station {{name}}",
+      "added": "Added",
+      "updated": "Updated",
+      "remove": "Remove from favorites"
+    },
+    "donate": {
+      "title": "Donate to the project",
+      "description": "You can support Radio Collection by transferring to a card or via PayPal.",
+      "copy": "Copy",
+      "copied": "Copied to clipboard",
+      "copy_failed": "Failed to copy",
+      "paypal": "PayPal"
+    }
+  },
+  "language_select": "Select language",
+  "donate": "Donate..."
+}

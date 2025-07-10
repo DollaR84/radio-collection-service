@@ -7,8 +7,10 @@ import { FaHeart, FaRegHeart } from "react-icons/fa";
 import SearchBar from "../components/SearchBar";
 import Pagination from "../components/Pagination";
 import { useAuth } from "../context/AuthContext";
+import { useTranslation } from "react-i18next";
 
 export default function StationsPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { searchParams, setSearchParams } = useAuth();
   const [stations, setStations] = useState<Station[]>([]);
@@ -44,7 +46,7 @@ export default function StationsPage() {
       setTotalCount(stationsResponse.data.total);
       setFavorites(favResponse.data.map((s: Station) => s.id));
     } catch (err) {
-      setError("Failed to load stations");
+      setError(t("pages.stations.errors.loading"));
       console.error(err);
     } finally {
       setLoading(false);
@@ -75,7 +77,7 @@ export default function StationsPage() {
       }
     } catch (err) {
       console.error("Error toggling favorite:", err);
-      setError("Failed to update favorites");
+      setError(t("pages.stations.errors.favorite"));
     }
   };
 
@@ -106,7 +108,7 @@ export default function StationsPage() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Radio Stations</h1>
+      <h1 className="text-2xl font-bold mb-6">{t("pages.stations.title")}</h1>
       
       <SearchBar 
         initialValues={searchParams}
@@ -115,7 +117,7 @@ export default function StationsPage() {
       
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center space-x-2">
-          <span>Show:</span>
+          <span>{t("pages.stations.show")}:</span>
           <select 
             value={itemsPerPage} 
             onChange={handleItemsPerPageChange}
@@ -125,7 +127,7 @@ export default function StationsPage() {
             <option value="25">25</option>
             <option value="50">50</option>
           </select>
-          <span>stations</span>
+          <span>{t("pages.stations.stations_label")}</span>
         </div>
         
         <Pagination
@@ -137,7 +139,7 @@ export default function StationsPage() {
 
       {stations.length === 0 ? (
         <div className="text-center py-10">
-          <p className="text-gray-500">No stations found</p>
+          <p className="text-gray-500">{t("pages.stations.not_found")}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -159,8 +161,8 @@ export default function StationsPage() {
                     station.status === 'not_work' ? 'bg-red-100 text-red-800' : 
                     'bg-yellow-100 text-yellow-800'
                   }`}>
-                    {station.status === 'works' ? 'Working' : 
-                     station.status === 'not_work' ? 'Not Working' : 'Not Verified'}
+                    {station.status === 'works' ? t("pages.status.working") : 
+                     station.status === 'not_work' ? t("pages.status.not_working") : t("pages.status.not_verified")}
                   </span>
                 </div>
                 
@@ -186,7 +188,7 @@ export default function StationsPage() {
                     <FaRegHeart />
                   )}
                   <span>
-                    {favorites.includes(station.id) ? "Remove Favorite" : "Add Favorite"}
+                    {favorites.includes(station.id) ? t("pages.favorite.remove") : t("pages.favorite.add")}
                   </span>
                 </button>
               </div>

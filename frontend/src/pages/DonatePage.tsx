@@ -1,4 +1,7 @@
+import { useTranslation } from "react-i18next";
+
 export default function DonatePage() {
+  const { t } = useTranslation();
   const cardData = [
     { currency: "€", number: "4441 1144 9720 3321" },
     { currency: "$", number: "4441 1144 8905 4781" },
@@ -11,17 +14,17 @@ export default function DonatePage() {
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      alert("Copied to clipboard");
+      alert(t("pages.donate.copied"));
     } catch {
-      alert("Failed to copy");
+      alert(t("pages.donate.copy_failed"));
     }
   };
 
   return (
     <div className="max-w-xl mx-auto px-4 py-10 text-center">
-      <h1 className="text-3xl font-bold mb-6">Donate to the project</h1>
+      <h1 className="text-3xl font-bold mb-6">{t("pages.donate.title")}</h1>
       <p className="mb-6 text-gray-700">
-        You can support Radio Collection by transferring to a card or via PayPal.
+        {t("pages.donate.description")}
       </p>
 
       <div className="space-y-4 mb-8">
@@ -37,14 +40,14 @@ export default function DonatePage() {
               onClick={() => copyToClipboard(card.number)}
               className="border px-3 py-1 rounded text-sm bg-white hover:bg-gray-200 transition"
             >
-              Copy
+              {t("pages.donate.copy")}
             </button>
           </div>
         ))}
       </div>
 
       <div className="mt-6">
-        <div className="font-medium mb-2">PayPal:</div>
+        <div className="font-medium mb-2">{t("pages.donate.paypal")}:</div>
         <a
           href={paypalLink}
           target="_blank"

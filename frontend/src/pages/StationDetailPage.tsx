@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from "react-i18next";
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/client';
 import { Station, StationStatusType } from '../types';
@@ -7,6 +8,7 @@ import { FaHeart, FaRegHeart, FaCopy, FaArrowLeft } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 
 export default function StationDetailPage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { token } = useAuth();
@@ -32,7 +34,7 @@ export default function StationDetailPage() {
           }
         }
       } catch (err) {
-        setError('Failed to load station data');
+        setError(t("pages.station_detail.errors.load"));
         console.error(err);
       } finally {
         setLoading(false);
@@ -44,7 +46,7 @@ export default function StationDetailPage() {
 
   const toggleFavorite = async () => {
     if (!token) {
-      alert('You need to be logged in to add favorites');
+      alert(t("pages.station_detail.errors.login"));
       return;
     }
 
@@ -57,13 +59,13 @@ export default function StationDetailPage() {
       setIsFavorite(!isFavorite);
     } catch (err) {
       console.error('Error toggling favorite:', err);
-      setError('Failed to update favorites');
+      setError(t("pages.station_detail.errors.update"));
     }
   };
 
   const copyToClipboard = (url: string) => {
     navigator.clipboard.writeText(url).then(() => {
-      alert('URL copied to clipboard!');
+      alert(t("pages.station_detail.copied"));
     }).catch(err => {
       console.error('Failed to copy URL:', err);
     });
@@ -74,7 +76,7 @@ export default function StationDetailPage() {
       <div className="flex justify-center items-center h-64">
         <div 
           className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"
-          aria-label="Loading station details"
+          aria-label={t("pages.station_detail.loading")}
         ></div>
       </div>
     );
@@ -86,18 +88,18 @@ export default function StationDetailPage() {
         <button 
           onClick={() => navigate(-1)} 
           className="flex items-center text-blue-600 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-          aria-label="Go back to stations list"
+          aria-label={t("pages.station_detail.go_back")}
         >
           <FaArrowLeft className="mr-2" aria-hidden="true" /> 
-          <span>Back to list</span>
+          <span>{t("pages.station_detail.back_list")}</span>
         </button>
         
         <div 
           className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
           role="alert"
         >
-          <strong className="font-bold">Error! </strong>
-          <span className="block sm:inline">{error || 'Station not found'}</span>
+          <strong className="font-bold">{t("pages.station_detail.errors.prefix")} </strong>
+          <span className="block sm:inline">{error || t("pages.station_detail.errors.not_found")}</span>
         </div>
       </div>
     );
@@ -108,10 +110,10 @@ export default function StationDetailPage() {
       <button 
         onClick={() => navigate(-1)} 
         className="flex items-center text-blue-600 mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded p-1"
-        aria-label="Go back to stations list"
+        aria-label={t("pages.station_detail.go_back")}
       >
         <FaArrowLeft className="mr-2" aria-hidden="true" /> 
-        <span>Back to list</span>
+        <span>{t("pages.station_detail.back_list")}</span>
       </button>
       
       <article className="bg-white rounded-xl shadow-md p-6">
@@ -127,7 +129,7 @@ export default function StationDetailPage() {
                 ? 'text-red-500 bg-red-50' 
                 : 'text-gray-500 hover:bg-gray-100'
             }`}
-            aria-label={isFavorite ? `Remove ${station.name} from favorites` : `Add ${station.name} to favorites`}
+            aria-label={isFavorite ? t("pages.station_detail.favorite.Remove", { name: station.name }) : t("pages.station_detail.favorite.add", { name: station.name })}
             aria-pressed={isFavorite}
           >
             {isFavorite ? (
@@ -135,17 +137,17 @@ export default function StationDetailPage() {
             ) : (
               <FaRegHeart aria-hidden="true" />
             )}
-            <span>{isFavorite ? 'Remove Favorite' : 'Add to Favorites'}</span>
+            <span>{isFavorite ? t("pages.favorite.Remove") : t("pages.favorite.add")}</span>
           </button>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <section aria-labelledby="info-heading">
-            <h2 id="info-heading" className="text-xl font-semibold mb-4">Station Information</h2>
+            <h2 id="info-heading" className="text-xl font-semibold mb-4">{t("pages.station_detail.info")}</h2>
             
             <div className="space-y-3">
               <div>
-                <span className="sr-only">Status: </span>
+                <span className="sr-only">{t("pages.status.title")}: </span>
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                   station.status === 'works' 
                     ? 'bg-green-100 text-green-800' 
@@ -154,26 +156,26 @@ export default function StationDetailPage() {
                       : 'bg-yellow-100 text-yellow-800'
                 }`}
                 aria-live="polite">
-                  {station.status === 'works' ? 'Working' : 
-                   station.status === 'not_work' ? 'Not Working' : 'Not Verified'}
+                  {station.status === 'works' ? t("pages.status.working") : 
+                   station.status === 'not_work' ? t("pages.status.not_working") : t("pages.status.not_verified")}
                 </span>
               </div>
               
               <div>
-                <span className="font-medium text-gray-700">Created:</span>
+                <span className="font-medium text-gray-700">{t("pages.station_detail.created")}:</span>
                 <span className="ml-2">{formatDate(station.created_at)}</span>
               </div>
               
               <div>
-                <span className="font-medium text-gray-700">Last Updated:</span>
+                <span className="font-medium text-gray-700">{t("pages.station_detail.updated")}:</span>
                 <span className="ml-2">{formatDate(station.updated_at)}</span>
               </div>
             </div>
           </section>
           
           <section aria-labelledby="tags-heading">
-            <h2 id="tags-heading" className="text-xl font-semibold mb-4">Tags</h2>
-            <ul className="flex flex-wrap gap-2" aria-label="Station tags">
+            <h2 id="tags-heading" className="text-xl font-semibold mb-4">{t("pages.station_detail.tags")}</h2>
+            <ul className="flex flex-wrap gap-2" aria-label={t("pages.station_detail.tags_label")}>
               {station.tags.map(tag => (
                 <li key={tag}>
                   <span 
@@ -188,21 +190,21 @@ export default function StationDetailPage() {
         </div>
         
         <section aria-labelledby="stream-heading">
-          <h2 id="stream-heading" className="text-xl font-semibold mb-4">Stream URL</h2>
+          <h2 id="stream-heading" className="text-xl font-semibold mb-4">{t("pages.station_detail.url")}</h2>
           <div className="flex items-center">
             <a 
               href={station.url} 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-blue-600 hover:underline break-all focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-              aria-label={`Stream URL: ${station.url}. Opens in new tab`}
+              aria-label={t("pages.station_detail.url_label", { url: station.url })}
             >
               {station.url}
             </a>
             <button 
               onClick={() => copyToClipboard(station.url)}
               className="ml-2 text-gray-500 hover:text-gray-700 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-              aria-label="Copy stream URL to clipboard"
+              aria-label={t("pages.station_detail.copy")}
             >
               <FaCopy aria-hidden="true" />
             </button>

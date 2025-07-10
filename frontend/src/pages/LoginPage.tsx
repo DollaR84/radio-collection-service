@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import api from "../api/client";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useTranslation } from "react-i18next";
 
 interface LoginPageProps {
   onLogin: (token: string) => void;
@@ -29,6 +30,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
 
   const [searchParams] = useSearchParams();
   const returnUrl = getSafeReturnUrl(searchParams);
+  const { t } = useTranslation();
 
   // Focus on the title when loading page
   useEffect(() => {
@@ -40,7 +42,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
     e.preventDefault();
     
     if (!email || !password) {
-      setError("Please enter both email and password");
+      setError(t("pages.login.errors.missing_fields"));
       return;
     }
 
@@ -58,13 +60,18 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
 
         navigate(returnUrl);
       } else {
-        setError("Server didn't return authentication token");
+        setError(t("pages.login.errors.no_token"));
       }
     } catch (err: any) {
       if (err.response) {
-        setError(`Error ${err.response.status}: ${err.response.data?.detail || "Invalid credentials"}`);
+        setError(
+          t("pages.login.errors.server", {
+            status: err.response.status,
+            detail: err.response.data?.detail || t("pages.login.errors.invalid_credentials"),
+          })
+        );
       } else {
-        setError("Network error. Please try again.");
+        setError(t("pages.login.errors.network"));
       }
     } finally {
       setLoading(false);
@@ -78,17 +85,17 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
         tabIndex={-1} 
         className="text-xl font-semibold mb-4 text-center outline-none"
       >
-        Login
+        {t("pages.login.title")}
       </h1>
       
       {/* We use a semantic form */}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="email" className="sr-only">Email</label>
+          <label htmlFor="email" className="sr-only">{t("pages.login.email")}</label>
           <input
             id="email"
             type="email"
-            placeholder="Email"
+            placeholder={t("pages.login.email_placeholder")}
             className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -99,11 +106,11 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
         </div>
         
         <div>
-          <label htmlFor="password" className="sr-only">Password</label>
+          <label htmlFor="password" className="sr-only">{t("pages.login.password")}</label>
           <input
             id="password"
             type="password"
-            placeholder="Password"
+            placeholder={t("pages.login.password_placeholder")}
             className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -126,20 +133,20 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Processing...
+              {t("pages.login.processing")}
             </span>
-          ) : "Login"}
+          ) : (t("pages.login.button"))}
         </button>
       </form>
 
       <div className="mt-4 text-center">
         <p className="text-gray-600">
-          Don't have an account?{" "}
+          {t("pages.login.no_account")}{" "}
           <Link 
             to="/signup" 
             className="text-blue-600 hover:underline font-medium"
           >
-            Sign up
+            {t("pages.login.signup_link")}
           </Link>
         </p>
       </div>

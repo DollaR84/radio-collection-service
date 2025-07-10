@@ -11,5 +11,5 @@ _env/
 .mypy.ini
 *.log
 *.dat
-*.json
+build_central.json
 *.service

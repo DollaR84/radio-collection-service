@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { useBeforeUnload } from '../hooks/useBeforeUnload';
+import { useTranslation } from 'react-i18next';
 
 export default function ProfilePage() {
   const { token, logout } = useAuth();
+  const { t } = useTranslation();
   const [initialData, setInitialData] = useState({
     user_name: '',
     email: '',
@@ -29,10 +31,7 @@ export default function ProfilePage() {
   });
 
   // Check the changes before leaving the page
-  useBeforeUnload(
-    touched,
-    'You have unsaved changes. Are you sure you want to leave?'
-  );
+  useBeforeUnload(touched, t("pages.profile.unsaved_changes"));
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -48,14 +47,14 @@ export default function ProfilePage() {
         setUserData(data);
       } catch (error) {
         console.error('Failed to fetch user data:', error);
-        setError('Failed to load user data');
+        setError(t("pages.profile.errors.fetch"));
       } finally {
         setLoading(false);
       }
     };
 
     fetchUserData();
-  }, [token]);
+  }, [token, t]);
 
   const hasChanges = () => {
     return (
@@ -74,25 +73,25 @@ export default function ProfilePage() {
     let isValid = true;
 
     if (!userData.user_name.trim()) {
-      errors.user_name = 'Username is required';
+      errors.user_name = t("pages.profile.errors.username_required");
       isValid = false;
     } else if (userData.user_name.length < 3) {
-      errors.user_name = 'Username must be at least 3 characters';
+      errors.user_name = t("pages.profile.errors.username_short");
       isValid = false;
     }
 
     if (userData.user_name.length > 50) {
-      errors.last_name = 'Last name is too long';
+      errors.user_name = t("pages.profile.errors.user_name_long");
       isValid = false;
     }
 
     if (userData.first_name.length > 100) {
-      errors.first_name = 'First name is too long';
+      errors.first_name = t("pages.profile.errors.first_name_long");
       isValid = false;
     }
 
     if (userData.last_name.length > 100) {
-      errors.last_name = 'Last name is too long';
+      errors.last_name = t("pages.profile.errors.last_name_long");
       isValid = false;
     }
 
@@ -117,7 +116,7 @@ export default function ProfilePage() {
 
     if (!validate()) return;
     if (!hasChanges()) {
-      setSuccess('No changes to save');
+      setSuccess(t("pages.profile.no_changes"));
       return;
     }
 
@@ -146,18 +145,18 @@ export default function ProfilePage() {
         last_name: response.data.last_name
       });
 
-      setSuccess('Profile updated successfully!');
+      setSuccess(t("pages.profile.updated"));
       setTouched(false);
     } catch (err: any) {
       console.error('Update failed:', err);
-      setError(err.response?.data?.detail || 'Failed to update profile');
+      setError(err.response?.data?.detail || t("pages.profile.errors.update"));
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleLogout = () => {
-    if (touched && !window.confirm('You have unsaved changes. Are you sure you want to leave?')) {
+    if (touched && !window.confirm(t("pages.profile.unsaved_changes"))) {
       return;
     }
     logout();
@@ -167,14 +166,14 @@ export default function ProfilePage() {
     return (
       <div className="text-center py-10">
         <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-        <p className="mt-2">Loading profile...</p>
+        <p className="mt-2">{t("pages.profile.loading")}</p>
       </div>
     );
   }
 
   return (
     <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">User Profile</h1>
+      <h1 className="text-2xl font-bold mb-6">{t("pages.profile.title")}</h1>
       
       {error && (
         <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
@@ -191,7 +190,7 @@ export default function ProfilePage() {
       <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow">
         <div className="mb-4">
           <label htmlFor="user_name" className="block text-gray-700 mb-2">
-            Username *
+            {t("pages.profile.username")} *
           </label>
           <input
             id="user_name"
@@ -214,7 +213,7 @@ export default function ProfilePage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div>
             <label htmlFor="first_name" className="block text-gray-700 mb-2">
-              First Name
+              {t("pages.profile.first_name")}
             </label>
             <input
               id="first_name"
@@ -225,7 +224,7 @@ export default function ProfilePage() {
               className={`w-full p-2 border rounded ${
                 validationErrors.first_name ? 'border-red-500' : ''
               }`}
-              aria-label="First name"
+              aria-label={t("pages.profile.first_name")}
               maxLength={100}
             />
             {validationErrors.first_name && (
@@ -235,7 +234,7 @@ export default function ProfilePage() {
           
           <div>
             <label htmlFor="last_name" className="block text-gray-700 mb-2">
-              Last Name
+              {t("pages.profile.last_name")}
             </label>
             <input
               id="last_name"
@@ -246,7 +245,7 @@ export default function ProfilePage() {
               className={`w-full p-2 border rounded ${
                 validationErrors.last_name ? 'border-red-500' : ''
               }`}
-              aria-label="Last name"
+              aria-label={t("pages.profile.last_name")}
               maxLength={100}
             />
             {validationErrors.last_name && (
@@ -257,7 +256,7 @@ export default function ProfilePage() {
 
         <div className="mb-6">
           <label htmlFor="email" className="block text-gray-700 mb-2">
-            Email
+            {t("pages.profile.email")}
           </label>
           <input
             id="email"
@@ -265,9 +264,9 @@ export default function ProfilePage() {
             value={userData.email}
             disabled
             className="w-full p-2 border rounded bg-gray-100"
-            aria-label="Email (read-only)"
+            aria-label={t("pages.profile.email_readonly")}
           />
-          <p className="text-sm text-gray-500 mt-1">Email cannot be changed</p>
+          <p className="text-sm text-gray-500 mt-1">{t("pages.profile.email_not_change")}</p>
         </div>
         
         <div className="flex flex-wrap justify-between gap-4">
@@ -277,7 +276,7 @@ export default function ProfilePage() {
             className={`bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex-1 ${
               isSaving || (!hasChanges() && !touched) ? 'opacity-50 cursor-not-allowed' : ''
             }`}
-            aria-label="Save changes"
+            aria-label={t("pages.profile.save")}
           >
             {isSaving ? (
               <span className="flex items-center justify-center">
@@ -285,19 +284,19 @@ export default function ProfilePage() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Saving...
+                {t("pages.profile.saving")}
               </span>
             ) : (
-              'Save Changes'
+              t("pages.profile.save")
             )}
           </button>
           
           <button 
             onClick={handleLogout}
             className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 flex-1"
-            aria-label="Log out"
+            aria-label={t("pages.profile.logout")}
           >
-            Logout
+            {t("pages.profile.logout")}
           </button>
         </div>
       </form>

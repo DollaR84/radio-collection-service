@@ -4,6 +4,7 @@ import App from './App';
 import { AuthProvider } from './context/AuthContext';
 import { BrowserRouter } from 'react-router-dom';
 import './index.css';
+import "./utils/i18n";
 
 const rootElement = document.getElementById('root');
 
@@ -12,7 +13,7 @@ if (rootElement) {
   root.render(
     <React.StrictMode>
       <AuthProvider>
-        <BrowserRouter> {}
+        <BrowserRouter>
           <App />
         </BrowserRouter>
       </AuthProvider>

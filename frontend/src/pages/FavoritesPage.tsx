@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import api from '../api/client';
 import { Station } from '../types';
 import Pagination from '../components/Pagination';
@@ -9,6 +10,7 @@ import { FaHeart, FaCopy } from "react-icons/fa";
 const PAGE_LIMIT_OPTIONS = [10, 25, 50];
 
 export default function FavoritesPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [favorites, setFavorites] = useState<Station[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,7 +53,7 @@ export default function FavoritesPage() {
 
   const copyToClipboard = (url: string) => {
     navigator.clipboard.writeText(url).then(() => {
-      alert('URL copied to clipboard!');
+      alert(t("pages.favorites.copied"));
     }).catch(err => {
       console.error('Failed to copy URL:', err);
     });
@@ -70,12 +72,12 @@ export default function FavoritesPage() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">Favorite Stations</h2>
+      <h2 className="text-2xl font-bold mb-6">{t("pages.favorites.title")}</h2>
       
       {/* Pagination and control elements */}
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center space-x-2">
-          <span>Show:</span>
+          <span>{t("pages.show")}:</span>
           <select 
             value={itemsPerPage} 
             onChange={handleItemsPerPageChange}
@@ -85,7 +87,7 @@ export default function FavoritesPage() {
               <option key={option} value={option}>{option}</option>
             ))}
           </select>
-          <span>stations per page</span>
+          <span>{t("pages.per_page")}</span>
         </div>
         
         <Pagination
@@ -97,7 +99,7 @@ export default function FavoritesPage() {
       
       {favorites.length === 0 ? (
         <div className="text-center py-10">
-          <p className="text-gray-500">You don't have any favorite stations yet</p>
+          <p className="text-gray-500">{t("pages.favorites.empty")}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -112,16 +114,28 @@ export default function FavoritesPage() {
                 onKeyDown={(e) => e.key === 'Enter' && handleStationClick(station.id)}
                 tabIndex={0}
                 role="button"
-                aria-label={`View details of ${station.name}`}
+                aria-label={t("pages.favorites.view_details", { name: station.name })}
               >
                 <h3 className="text-xl font-semibold mb-2 text-blue-600 hover:underline">
                   {station.name}
                 </h3>
                 
                 <div className="text-sm text-gray-600 mb-2">
-                  <p><span className="font-medium">Status:</span> {station.status}</p>
-                  <p><span className="font-medium">Added:</span> {formatDate(station.created_at)}</p>
-                  <p><span className="font-medium">Updated:</span> {formatDate(station.updated_at)}</p>
+                  <p><span className="font-medium">{t("pages.status.title")}:</span>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  station.status === 'works' 
+                    ? 'bg-green-100 text-green-800' 
+                    : station.status === 'not_work' 
+                      ? 'bg-red-100 text-red-800'
+                      : 'bg-yellow-100 text-yellow-800'
+                }`}
+                aria-live="polite">
+                  {station.status === 'works' ? t("pages.status.working") : 
+                   station.status === 'not_work' ? t("pages.status.not_working") : t("pages.status.not_verified")}
+                </span>
+                  </p>
+                  <p><span className="font-medium">{t("pages.favorites.added")}:</span> {formatDate(station.created_at)}</p>
+                  <p><span className="font-medium">{t("pages.favorites.updated")}:</span> {formatDate(station.updated_at)}</p>
                 </div>
                 
                 <div className="flex flex-wrap gap-1 mb-3">
@@ -151,7 +165,7 @@ export default function FavoritesPage() {
                       copyToClipboard(station.url);
                     }}
                     className="text-gray-500 hover:text-gray-700 ml-2"
-                    aria-label="Copy URL"
+                    aria-label={t("pages.favorites.copy")}
                   >
                     <FaCopy />
                   </button>
@@ -162,10 +176,10 @@ export default function FavoritesPage() {
                 <button
                   onClick={() => removeFavorite(station.id)}
                   className="flex items-center space-x-1 text-red-500 hover:text-red-700"
-                  aria-label="Remove from favorites"
+                  aria-label={t("pages.favorites.remove")}
                 >
                   <FaHeart className="text-red-500" />
-                  <span>Remove from Favorites</span>
+                  <span>{t("pages.favorites.remove")}</span>
                 </button>
               </div>
             </div>

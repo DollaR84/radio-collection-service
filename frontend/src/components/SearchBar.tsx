@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { StationStatusType } from "../types";
 import { useDebounce } from "../hooks/useDebounce";
+import { useTranslation } from "react-i18next";
 
 interface SearchBarProps {
   initialValues: {
@@ -16,6 +17,7 @@ interface SearchBarProps {
 }
 
 export default function SearchBar({ initialValues, onSearchChange }: SearchBarProps) {
+  const { t } = useTranslation();
   // We combine all the search parameters in one state
   const [searchParams, setSearchParams] = useState({
     name: initialValues.name,
@@ -69,11 +71,11 @@ export default function SearchBar({ initialValues, onSearchChange }: SearchBarPr
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Search by name
+            {t("search.name_label")}
           </label>
           <input
             type="text"
-            placeholder="Station name..."
+            placeholder={t("search.name_placeholder")}
             className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             value={searchParams.name}
             onChange={(e) => handleChange('name', e.target.value)}
@@ -82,11 +84,11 @@ export default function SearchBar({ initialValues, onSearchChange }: SearchBarPr
         
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Search by tag
+            {t("search.tag_label")}
           </label>
           <input
             type="text"
-            placeholder="Tag..."
+            placeholder={t("search.tag_placeholder")}
             className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             value={searchParams.tag}
             onChange={(e) => handleChange('tag', e.target.value)}
@@ -95,17 +97,17 @@ export default function SearchBar({ initialValues, onSearchChange }: SearchBarPr
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Filter by status
+            {t("search.status_label")}
           </label>
           <select
             className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             value={searchParams.status_type}
             onChange={(e) => handleChange('status_type', e.target.value as StationStatusType | "")}
           >
-            <option value="">All statuses</option>
-            <option value="works">Working</option>
-            <option value="not_work">Not Working</option>
-            <option value="not_verified">Not Verified</option>
+            <option value="">{t("search.status_all")}</option>
+            <option value="works">{t("search.status_works")}</option>
+            <option value="not_work">{t("search.status_not_work")}</option>
+            <option value="not_verified">{t("search.status_not_verified")}</option>
           </select>
         </div>
       </div>
@@ -115,7 +117,7 @@ export default function SearchBar({ initialValues, onSearchChange }: SearchBarPr
           onClick={handleReset}
           className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500"
         >
-          Reset Filters
+          {t("search.reset")}
         </button>
       </div>
     </div>
