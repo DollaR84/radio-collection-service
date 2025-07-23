@@ -13,13 +13,13 @@ export default function HomePage() {
       <p className="mb-4 text-lg">{t("pages.home.description1")}</p>
       <p className="mb-4 text-lg whitespace-pre-line">{t("pages.home.description2")}</p>
 
-      /*
+          {/*
       <p className="mb-4 text-lg">{t("pages.home.description3")}{" "}
         <a href="https://github.com/DollaR84" className="text-blue-500 underline" target="_blank" rel="noopener noreferrer">
           {t("pages.home.github_link")}
         </a>.
       </p>
-      */
+          */}
       
       <h2>{t("pages.home.plus.title")}</h2>
       <p>{t("pages.home.plus.description")}</p>
