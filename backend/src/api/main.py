@@ -91,6 +91,7 @@ class FastAPIApp:
                 routes=self._app.routes,
             )
 
+            openapi_schema["servers"] = [{"url": "/api"}]
             components = openapi_schema.setdefault("components", {})
             security_schemes = components.setdefault("securitySchemes", {})
             security_schemes.setdefault("Bearer", {
