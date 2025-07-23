@@ -156,6 +156,10 @@
       "description2": "I'm a blind developer from Ukraine, passionate about accessibility and open technologies.\nThis service is designed with screen reader support in mind — especially optimized for NVDA —\nand includes a public API that can be used by radio clients and other developers.",
       "description3": "You can explore all my open-source projects on my",
       "github_link": "GitHub account",
+      "plus": {
+        "title": "PLUS",
+        "description": "Upload your radio stations and m3u playlists with links to stations"
+      },
       "contact": "Contact",
       "supportEmail": "support email",
       "telegram_channel": "Telegram Channel",
