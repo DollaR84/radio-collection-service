@@ -48,6 +48,7 @@ class FastAPIApp:
             description=self.config.description,
             debug=self.config.debug,
             lifespan=lifespan,
+            root_path="/api",
             swagger_ui_oauth2_redirect_url=self.swagger_ui_oauth2_redirect_url,
             swagger_ui_parameters=self.swagger_ui_parameters,
         )
@@ -107,16 +108,13 @@ class FastAPIApp:
 
     def register_routers(self) -> None:
         register_exception_handlers(self._app)
-        main_router = APIRouter(prefix="/api", route_class=DishkaRoute)
 
-        main_router.include_router(auth.router, tags=["auth"])
-        main_router.include_router(service.router, tags=["service"])
-        main_router.include_router(station.router, tags=["station"])
-        main_router.include_router(favorite.router, tags=["favorite"])
-        main_router.include_router(tasks.router, tags=["task"])
-        main_router.include_router(user.router, tags=["user"])
-
-        self._app.include_router(main_router)
+        self._app.include_router(auth.router, tags=["auth"])
+        self._app.include_router(service.router, tags=["service"])
+        self._app.include_router(station.router, tags=["station"])
+        self._app.include_router(favorite.router, tags=["favorite"])
+        self._app.include_router(tasks.router, tags=["task"])
+        self._app.include_router(user.router, tags=["user"])
 
     @property
     def app(self) -> FastAPI:
