@@ -51,7 +51,7 @@ class AdminApp:
         )
 
         self._app.add_middleware(InjectStaticMiddleware, js_urls=js_urls, css_urls=css_urls)
-        self._app.mount("/admin/static", StaticFiles(directory="/app/static"), name="admin_static")
+        self._app.mount("/admin/statics", StaticFiles(directory="/app/static"), name="admin_static")
 
         admin = Admin(
             self._app,
