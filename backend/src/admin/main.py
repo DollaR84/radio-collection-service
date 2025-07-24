@@ -7,7 +7,6 @@ from starlette.middleware import Middleware
 from starlette.staticfiles import StaticFiles
 
 from sqladmin import Admin
-from sqladmin._assets import ASSETS_PATH
 
 from sqlalchemy.ext.asyncio import AsyncEngine
 
@@ -52,8 +51,6 @@ class AdminApp:
         )
 
         self._app.add_middleware(InjectStaticMiddleware, js_urls=js_urls, css_urls=css_urls)
-
-        self._app.mount("/statics", StaticFiles(directory=ASSETS_PATH), name="sqladmin_static")
         self._app.mount("/static", StaticFiles(directory="/app/static"), name="admin_static")
 
         admin = Admin(
