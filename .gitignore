@@ -13,3 +13,4 @@ _env/
 *.dat
 build_central.json
 *.service
+*.backup
