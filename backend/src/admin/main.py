@@ -45,7 +45,7 @@ class AdminApp:
             "/static/css/tags-manager.css",
         ]
         js_urls = ["/static/js/tags-manager.js"]
-        SQLADMIN_ASSETS_PATH = Path(sqladmin.__file__).parent / "static"
+        SQLADMIN_ASSETS_PATH = Path(sqladmin.__file__).parent / "statics"
 
         self._app = Starlette(
             routes=[],
