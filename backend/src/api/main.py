@@ -6,9 +6,7 @@ from admin import AdminApp
 
 from config import APIConfig
 
-from dishka.integrations.fastapi import DishkaRoute
-
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.openapi.utils import get_openapi

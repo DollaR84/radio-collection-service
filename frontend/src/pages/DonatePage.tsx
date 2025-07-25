@@ -5,7 +5,7 @@ export default function DonatePage() {
   const cardData = [
     { currency: "€", number: "4441 1144 9720 3321" },
     { currency: "$", number: "4441 1144 8905 4781" },
-    { currency: "₴", number: "4149 4993 7736 2866" },
+    { currency: "₴", number: "4441 1110 2054 2688" },
   ];
 
   const paypalLink =

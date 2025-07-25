@@ -1,5 +1,3 @@
-from pathlib import Path
-
 from config import AdminConfig, Config
 
 from fastapi import FastAPI
@@ -9,7 +7,6 @@ from starlette.middleware import Middleware
 from starlette.staticfiles import StaticFiles
 
 from sqladmin import Admin
-import sqladmin
 
 from sqlalchemy.ext.asyncio import AsyncEngine
 
@@ -45,7 +42,6 @@ class AdminApp:
             "/static/css/tags-manager.css",
         ]
         js_urls = ["/static/js/tags-manager.js"]
-        SQLADMIN_ASSETS_PATH = Path(sqladmin.__file__).parent / "statics"
 
         self._app = Starlette(
             routes=[],
@@ -55,7 +51,6 @@ class AdminApp:
         )
 
         self._app.add_middleware(InjectStaticMiddleware, js_urls=js_urls, css_urls=css_urls)
-        self._app.mount("/statics", StaticFiles(directory=SQLADMIN_ASSETS_PATH), name="sqladmin_static")
         self._app.mount("/static", StaticFiles(directory="/app/static"), name="admin_static")
 
         admin = Admin(
