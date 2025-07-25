@@ -44,4 +44,5 @@ class AppProvider(Provider):
     get_user_files_interactor = provide(interactors.GetUserFiles, scope=Scope.REQUEST)
     get_m3u_files_for_parse_interactor = provide(interactors.GetM3uFilesForParse, scope=Scope.REQUEST)
     get_pls_files_for_parse_interactor = provide(interactors.GetPlsFilesForParse, scope=Scope.REQUEST)
+    get_json_files_for_parse_interactor = provide(interactors.GetJsonFilesForParse, scope=Scope.REQUEST)
     update_file_load_status_interactor = provide(interactors.UpdateFileLoadStatus, scope=Scope.REQUEST)

@@ -24,3 +24,4 @@ class UserAccessRights(str, Enum):
 class FilePlaylistType(str, Enum):
     M3U = "m3u"
     PLS = "pls"
+    JSON = "json"

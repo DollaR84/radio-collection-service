@@ -9,9 +9,10 @@ from application.interactors import (
     CheckStationUrl,
     GetM3uFilesForParse,
     GetPlsFilesForParse,
+    GetJsonFilesForParse,
     UpdateFileLoadStatus,
 )
-from application.services.parsers import CollectionParser, M3UParser, PLSParser
+from application.services.parsers import CollectionParser, M3UParser, PLSParser, JsonParser
 from application.services.parsers.base import BaseParser
 
 from .base import BaseTask
@@ -94,7 +95,7 @@ class Mp3RadioStationsTask(BaseCollectionTask):
 
 
 class BasePlaylistTask(BaseParserTask, is_abstract=True):
-    get_files: GetM3uFilesForParse | GetPlsFilesForParse
+    get_files: GetM3uFilesForParse | GetPlsFilesForParse | GetJsonFilesForParse
     update_status: UpdateFileLoadStatus
 
     async def execute(self, ctx: dict[Any, Any]) -> None:
@@ -102,7 +103,7 @@ class BasePlaylistTask(BaseParserTask, is_abstract=True):
         files = await self.get_files()
 
         for file in files:
-            parse_data = self.parser.get_data_from_file(file.file_path_with_id)
+            parse_data = await self.parser.get_data_from_file(file)
             ctx["progress"] = {"done": f"parsing file '{file.filename}'"}
 
             await self._saving(ctx, parse_data)
@@ -140,4 +141,20 @@ class PlsPlaylistTask(BasePlaylistTask):
         super().__init__(check_station_url, creator)
         self.parser = parser
         self.get_files = get_pls_files
+        self.update_status = update_status
+
+
+class JsonPlaylistTask(BasePlaylistTask):
+
+    def __init__(
+            self,
+            parser: JsonParser,
+            get_json_files: GetJsonFilesForParse,
+            check_station_url: CheckStationUrl,
+            creator: CreateStations,
+            update_status: UpdateFileLoadStatus,
+    ):
+        super().__init__(check_station_url, creator)
+        self.parser: JsonParser = parser
+        self.get_files = get_json_files
         self.update_status = update_status

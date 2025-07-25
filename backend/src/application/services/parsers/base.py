@@ -1,13 +1,13 @@
 ﻿from abc import ABC
 import asyncio
 import logging
-import os
 import random
 
 from aiohttp import ClientSession
+import aiofiles
 from fake_useragent import UserAgent
 
-from application.dto import CollectionData
+from application.dto import CollectionData, File
 
 from config import ParserConfig
 
@@ -46,19 +46,18 @@ class BaseParser(ABC):
 
         return content
 
-    def get_data_from_file(self, file_path: str) -> list[list[CollectionData]]:
+    async def get_data_from_file(self, file: File) -> list[list[CollectionData]]:
         full_data: list[CollectionData] = []
 
-        file_name, file_ext = os.path.splitext(file_path)
-        if file_ext.lower() != self._ext.lower():
+        if file.fileext.lower() != self._ext.lower():
             return [full_data]
 
-        with open(file_path, "r", encoding="utf-8") as file_data:
-            data = self.get_data_from_file_data(file_data.read())
+        async with aiofiles.open(file.file_path_with_id, mode="r", encoding="utf-8") as file_data:
+            data = self.get_data_from_file_data(await file_data.read())
 
             for url, name, tags in zip(*data):
                 if not name:
-                    name = file_name
+                    name = file.filename
                 full_data.append(CollectionData(name=name, url=url, info_data=tags))
 
         return self.get_batch_data(full_data)

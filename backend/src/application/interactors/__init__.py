@@ -5,6 +5,7 @@ from .file import (
     GetUserFiles,
     GetM3uFilesForParse,
     GetPlsFilesForParse,
+    GetJsonFilesForParse,
     UpdateFileLoadStatus,
 )
 
@@ -56,6 +57,7 @@ __all__ = [
     "UpdateFileLoadStatus",
     "GetM3uFilesForParse",
     "GetPlsFilesForParse",
+    "GetJsonFilesForParse",
     "GetFileByID",
     "GetUserFiles",
 

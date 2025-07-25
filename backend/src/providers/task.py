@@ -9,9 +9,10 @@ from application.interactors import (
     UpdateStationsStatus,
     GetM3uFilesForParse,
     GetPlsFilesForParse,
+    GetJsonFilesForParse,
     UpdateFileLoadStatus,
 )
-from application.services import CollectionParser, M3UParser, PLSParser, RadioTester
+from application.services import CollectionParser, M3UParser, PLSParser, JsonParser, RadioTester
 
 from config import Config
 
@@ -22,6 +23,7 @@ from workers.tasks import (
     Mp3RadioStationsTask,
     M3uPlaylistTask,
     PlsPlaylistTask,
+    JsonPlaylistTask,
     TestNotVerifiedTask,
     TestNotWorkTask,
     TestWorksTask,
@@ -92,6 +94,17 @@ class TaskProvider(Provider):
             update_status: UpdateFileLoadStatus,
     ) -> PlsPlaylistTask:
         return PlsPlaylistTask(parser, get_pls_files, check_station_url, creator, update_status)
+
+    @provide(scope=Scope.REQUEST)
+    async def get_json_playlist_task(
+            self,
+            parser: JsonParser,
+            get_json_files: GetJsonFilesForParse,
+            check_station_url: CheckStationUrl,
+            creator: CreateStations,
+            update_status: UpdateFileLoadStatus,
+    ) -> JsonPlaylistTask:
+        return JsonPlaylistTask(parser, get_json_files, check_station_url, creator, update_status)
 
     @provide(scope=Scope.REQUEST)
     async def get_test_not_verified_task(

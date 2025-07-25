@@ -37,3 +37,10 @@ class GetPlsFilesForParse(BaseGetFile):
     async def __call__(self) -> list[dto.File]:
         domain_data = await self.gateway.get_files_for_parse(FilePlaylistType.PLS)
         return [dto.File(**file.dict()) for file in domain_data]
+
+
+class GetJsonFilesForParse(BaseGetFile):
+
+    async def __call__(self) -> list[dto.File]:
+        domain_data = await self.gateway.get_files_for_parse(FilePlaylistType.JSON)
+        return [dto.File(**file.dict()) for file in domain_data]

@@ -140,7 +140,7 @@ async def send_stations(
 
 @router.post(
     "/playlist",
-    description="Method for send radio stations playlist (m3u, pls) on server",
+    description="Method for send radio stations playlist (m3u, pls, json) on server",
     status_code=status.HTTP_200_OK,
     response_model=schemas.PlaylistSavingResponse,
 )
@@ -159,7 +159,15 @@ async def send_playlist(
     logging.info("user %d '%s' send playlist '%s'", user.id, user.user_name, new_file.filename)
 
     try:
-        task_name = "M3u Playlist" if new_file.fileext == FilePlaylistType.M3U.value else "Pls Playlist"
+        if new_file.fileext == FilePlaylistType.M3U.value:
+            task_name = "M3u Playlist"
+        elif new_file.fileext == FilePlaylistType.PLS.value:
+            task_name = "Pls Playlist"
+        elif new_file.fileext == FilePlaylistType.JSON.value:
+            task_name = "Json Playlist"
+        else:
+            raise ValueError(f"unsupported playlist type: {new_file.fileext}")
+
         job_id = await manager.execute_task(task_name)
         return schemas.PlaylistSavingResponse(ok=True, message="playlist saving...", job_id=job_id)
 

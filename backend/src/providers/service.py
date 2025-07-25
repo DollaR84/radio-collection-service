@@ -4,7 +4,16 @@ from dishka import from_context, Provider, Scope, provide
 
 from application import interactors
 from application import Templater
-from application.services import CollectionParser, M3UParser, PLSParser, NoService, RadioTester, Resolver, Uploader
+from application.services import (
+    CollectionParser,
+    M3UParser,
+    PLSParser,
+    JsonParser,
+    NoService,
+    RadioTester,
+    Resolver,
+    Uploader,
+)
 
 from config import Config
 
@@ -34,6 +43,10 @@ class ServiceProvider(Provider):
     @provide(scope=Scope.REQUEST)
     async def get_pls_parser(self, config: Config) -> PLSParser:
         return PLSParser(config.parser)
+
+    @provide(scope=Scope.REQUEST)
+    async def get_json_parser(self, config: Config) -> JsonParser:
+        return JsonParser(config.parser)
 
     @provide(scope=Scope.REQUEST)
     async def get_radio_tester(self, config: Config) -> RadioTester:
