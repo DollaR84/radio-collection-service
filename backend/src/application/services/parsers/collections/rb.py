@@ -1,5 +1,5 @@
 ﻿import logging
-from typing import Any
+from typing import Any, Optional
 
 from pyradios import RadioBrowser
 
@@ -19,10 +19,16 @@ class RadioBrowserCollection(BaseCollection):
     def make_url(self, **kwargs: Any) -> str:
         return ""
 
-    async def load(self, url: str) -> list[CollectionData]:
+    async def load(self, url: str, offset: Optional[int] = None, limit: Optional[int] = None) -> list[CollectionData]:
         results = []
 
-        for data in self.client.stations():
+        stations = self.client.stations()
+        if offset and limit and offset < len(stations):
+            stations = stations[offset:limit]
+        elif offset and offset >= len(stations):
+            stations = []
+
+        for data in stations:
             item = CollectionData(
                 name=data.get("name", "").replace("\t", "").replace("\n", "").strip(),
                 url=data.get("url", ""),
@@ -32,10 +38,15 @@ class RadioBrowserCollection(BaseCollection):
 
         return results
 
-    async def process_data(self, url: str) -> list[CollectionData]:
+    async def process_data(
+            self,
+            url: str,
+            offset: Optional[int] = None,
+            limit: Optional[int] = None,
+    ) -> list[CollectionData]:
         results = []
         try:
-            results.extend(await self.load(url))
+            results.extend(await self.load(url, offset, limit))
 
         except Exception as error:
             logging.error(error, exc_info=True)

@@ -1,7 +1,7 @@
 ﻿from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Type
+from typing import Any, Optional, Type
 
 from application.dto import CollectionData
 
@@ -47,18 +47,23 @@ class BaseCollection(ABC):
         if self.parser is None:
             raise RuntimeError("for parse collections need set parser")
 
-    async def parse(self) -> list[list[CollectionData]]:
-        full_data = await self.process_data(self.make_url())
-        return self.parser.get_batch_data(full_data)
-
     @abstractmethod
     def make_url(self, **kwargs: Any) -> str:
         raise NotImplementedError
 
+    async def parse(self, offset: Optional[int] = None, limit: Optional[int] = None) -> list[list[CollectionData]]:
+        full_data = await self.process_data(self.make_url(), offset, limit)
+        return self.parser.get_batch_data(full_data)
+
     @abstractmethod
-    async def process_data(self, url: str) -> list[CollectionData]:
+    async def process_data(
+            self,
+            url: str,
+            offset: Optional[int] = None,
+            limit: Optional[int] = None,
+    ) -> list[CollectionData]:
         raise NotImplementedError
 
     @abstractmethod
-    async def load(self, url: str) -> list:
+    async def load(self, url: str, offset: Optional[int] = None, limit: Optional[int] = None) -> list:
         raise NotImplementedError
