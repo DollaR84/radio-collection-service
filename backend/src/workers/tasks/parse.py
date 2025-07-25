@@ -72,6 +72,7 @@ class BaseCollectionTask(BaseParserTask, is_abstract=True):
         collection = self.parser.get_collection(self.get_name(), parser=self.parser)
         parse_data = await collection.parse()
         ctx["progress"] = {"done": "parsing"}
+        logging.info("parsing task finished")
 
         await self._saving(ctx, parse_data)
         logging.info("task completed: %s", self.__class__.__name__)
