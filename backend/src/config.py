@@ -107,7 +107,6 @@ class GoogleConfig(BaseSettings):
 class ParserConfig(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="PARSER_")
 
-    upload_folder: str
     max_workers: int = 4
     chunks_count: int = 1000
     batch_size: int = 3000
