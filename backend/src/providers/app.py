@@ -23,6 +23,7 @@ class AppProvider(Provider):
     get_stations_interactor = provide(interactors.GetStations, scope=Scope.REQUEST)
     get_stations_with_count_interactor = provide(interactors.GetStationsWithCount, scope=Scope.REQUEST)
     get_station_urls_interactor = provide(interactors.GetStationUrls, scope=Scope.REQUEST)
+    check_station_url_interactor = provide(interactors.CheckStationUrl, scope=Scope.REQUEST)
     update_station_status_interactor = provide(interactors.UpdateStationStatus, scope=Scope.REQUEST)
     update_stations_status_interactor = provide(interactors.UpdateStationsStatus, scope=Scope.REQUEST)
 

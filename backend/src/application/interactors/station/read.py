@@ -57,19 +57,31 @@ class GetStationsWithCount(BaseGetStation):
         )
 
 
-class GetStationUrls:
+class BaseStationUrls:
 
     def __init__(self, gateway: interfaces.GetStationsUrlsInterface):
         self.gateway = gateway
+
+
+class GetStationUrls(BaseStationUrls):
 
     async def __call__(self, offset: Optional[int] = None, limit: Optional[int] = None) -> list[str]:
         return await self.gateway.get_stations_urls(offset=offset, limit=limit)
 
 
-class GetUserFavorites:
+class CheckStationUrl(BaseStationUrls):
+
+    async def __call__(self, url: str) -> bool:
+        return await self.gateway.check_station_url(url)
+
+
+class BaseUserFavorites:
 
     def __init__(self, gateway: interfaces.GetFavoriteInterface):
         self.gateway = gateway
+
+
+class GetUserFavorites(BaseUserFavorites):
 
     async def __call__(
             self,
@@ -84,10 +96,7 @@ class GetUserFavorites:
         ]
 
 
-class GetUserFavoritesWithCount:
-
-    def __init__(self, gateway: interfaces.GetFavoriteInterface):
-        self.gateway = gateway
+class GetUserFavoritesWithCount(BaseUserFavorites):
 
     async def __call__(
             self,

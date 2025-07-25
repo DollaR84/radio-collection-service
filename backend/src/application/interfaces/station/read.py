@@ -43,6 +43,10 @@ class GetStationsUrlsInterface(Protocol):
     ) -> list[str]:
         ...
 
+    @abstractmethod
+    async def check_station_url(self, url: str) -> bool:
+        ...
+
 
 class GetFavoriteInterface(Protocol):
 

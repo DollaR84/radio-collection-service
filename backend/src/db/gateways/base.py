@@ -140,3 +140,11 @@ class BaseGateway(Generic[T, M]):
         except SQLAlchemyError as error:
             logging.error(error, exc_info=True)
             raise ValueError(error_message) from error
+
+    async def _get_exists(self, stmt: Select, error_message: str) -> bool:
+        try:
+            result = await self.session.execute(stmt)
+            return bool(result.scalar_one())
+        except SQLAlchemyError as error:
+            logging.error(error, exc_info=True)
+            raise ValueError(error_message) from error

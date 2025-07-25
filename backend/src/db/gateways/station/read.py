@@ -1,6 +1,6 @@
 from typing import Optional
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, exists
 from sqlalchemy.sql import Select
 
 from application.types import StationStatusType
@@ -95,6 +95,11 @@ class GetStationsUrlsGateway(BaseGateway[int, str]):
 
         urls = await self._get(stmt, error_message, is_multiple=True)
         return urls
+
+    async def check_station_url(self, url: str) -> bool:
+        error_message = f"Error check station url: '{url}'"
+        stmt = select(exists().where(Station.url == url))
+        return await self._get_exists(stmt, error_message)
 
 
 class GetFavoriteGateway(BaseGateway[int, Station]):

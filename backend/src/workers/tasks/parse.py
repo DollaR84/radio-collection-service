@@ -6,7 +6,7 @@ from apscheduler.triggers.cron import CronTrigger
 from application.dto import CollectionData, Station
 from application.interactors import (
     CreateStations,
-    GetStationUrls,
+    CheckStationUrl,
     GetM3uFilesForParse,
     GetPlsFilesForParse,
     UpdateFileLoadStatus,
@@ -19,26 +19,25 @@ from .base import BaseTask
 
 class BaseParserTask(BaseTask, is_abstract=True):
     parser: BaseParser
-    get_all_urls: GetStationUrls
+    check_station_url: CheckStationUrl
     creator: CreateStations
 
     def __init__(
             self,
-            get_all_urls: GetStationUrls,
+            check_station_url: CheckStationUrl,
             creator: CreateStations,
     ):
-        self.get_all_urls: GetStationUrls = get_all_urls
+        self.check_station_url: CheckStationUrl = check_station_url
         self.creator: CreateStations = creator
 
     async def _saving(self, ctx: dict[Any, Any], parse_data: list[list[CollectionData]]) -> None:
         exists_urls_to_parse_data: set[str] = set()
-        exists_urls_to_db = await self.get_all_urls()
         total = len(parse_data)
 
         for index, batch in enumerate(parse_data, start=1):
             data = []
             for item in batch:
-                if item.url not in exists_urls_to_db and item.url not in exists_urls_to_parse_data:
+                if item.url not in exists_urls_to_parse_data and not await self.check_station_url(item.url):
                     data.append(item)
                     exists_urls_to_parse_data.add(item.url)
 
@@ -60,10 +59,10 @@ class BaseCollectionTask(BaseParserTask, is_abstract=True):
     def __init__(
             self,
             parser: CollectionParser,
-            get_all_urls: GetStationUrls,
+            check_station_url: CheckStationUrl,
             creator: CreateStations,
     ):
-        super().__init__(get_all_urls, creator)
+        super().__init__(check_station_url, creator)
         self.parser: CollectionParser = parser
 
     async def execute(self, ctx: dict[Any, Any]) -> None:
@@ -78,6 +77,7 @@ class BaseCollectionTask(BaseParserTask, is_abstract=True):
 
             offset += self.parser.config.chunks_count
             ctx["progress"] = {"done": f"parsing: {offset}"}
+            logging.info("parsing %d items", len(parse_data))
 
             await self._saving(ctx, parse_data)
         logging.info("task completed: %s", self.__class__.__name__)
@@ -122,11 +122,11 @@ class M3uPlaylistTask(BasePlaylistTask):
             self,
             parser: M3UParser,
             get_m3u_files: GetM3uFilesForParse,
-            get_all_urls: GetStationUrls,
+            check_station_url: CheckStationUrl,
             creator: CreateStations,
             update_status: UpdateFileLoadStatus,
     ):
-        super().__init__(get_all_urls, creator)
+        super().__init__(check_station_url, creator)
         self.parser = parser
         self.get_files = get_m3u_files
         self.update_status = update_status
@@ -138,11 +138,11 @@ class PlsPlaylistTask(BasePlaylistTask):
             self,
             parser: PLSParser,
             get_pls_files: GetPlsFilesForParse,
-            get_all_urls: GetStationUrls,
+            check_station_url: CheckStationUrl,
             creator: CreateStations,
             update_status: UpdateFileLoadStatus,
     ):
-        super().__init__(get_all_urls, creator)
+        super().__init__(check_station_url, creator)
         self.parser = parser
         self.get_files = get_pls_files
         self.update_status = update_status

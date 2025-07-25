@@ -5,7 +5,7 @@ from dishka import AsyncContainer, from_context, Provider, Scope, provide
 from application.interactors import (
     CreateStations,
     GetStations,
-    GetStationUrls,
+    CheckStationUrl,
     UpdateStationsStatus,
     GetM3uFilesForParse,
     GetPlsFilesForParse,
@@ -48,50 +48,50 @@ class TaskProvider(Provider):
     async def get_radio_browser_task(
             self,
             parser: CollectionParser,
-            get_urls: GetStationUrls,
+            check_station_url: CheckStationUrl,
             creator: CreateStations,
     ) -> RadioBrowserTask:
-        return RadioBrowserTask(parser, get_urls, creator)
+        return RadioBrowserTask(parser, check_station_url, creator)
 
     @provide(scope=Scope.REQUEST)
     async def get_internet_radio_streams_task(
             self,
             parser: CollectionParser,
-            get_urls: GetStationUrls,
+            check_station_url: CheckStationUrl,
             creator: CreateStations,
     ) -> InternetRadioStreamsTask:
-        return InternetRadioStreamsTask(parser, get_urls, creator)
+        return InternetRadioStreamsTask(parser, check_station_url, creator)
 
     @provide(scope=Scope.REQUEST)
     async def get_mp3_radio_stations_task(
             self,
             parser: CollectionParser,
-            get_urls: GetStationUrls,
+            check_station_url: CheckStationUrl,
             creator: CreateStations,
     ) -> Mp3RadioStationsTask:
-        return Mp3RadioStationsTask(parser, get_urls, creator)
+        return Mp3RadioStationsTask(parser, check_station_url, creator)
 
     @provide(scope=Scope.REQUEST)
     async def get_m3u_playlist_task(
             self,
             parser: M3UParser,
             get_m3u_files: GetM3uFilesForParse,
-            get_urls: GetStationUrls,
+            check_station_url: CheckStationUrl,
             creator: CreateStations,
             update_status: UpdateFileLoadStatus,
     ) -> M3uPlaylistTask:
-        return M3uPlaylistTask(parser, get_m3u_files, get_urls, creator, update_status)
+        return M3uPlaylistTask(parser, get_m3u_files, check_station_url, creator, update_status)
 
     @provide(scope=Scope.REQUEST)
     async def get_pls_playlist_task(
             self,
             parser: PLSParser,
             get_pls_files: GetPlsFilesForParse,
-            get_urls: GetStationUrls,
+            check_station_url: CheckStationUrl,
             creator: CreateStations,
             update_status: UpdateFileLoadStatus,
     ) -> PlsPlaylistTask:
-        return PlsPlaylistTask(parser, get_pls_files, get_urls, creator, update_status)
+        return PlsPlaylistTask(parser, get_pls_files, check_station_url, creator, update_status)
 
     @provide(scope=Scope.REQUEST)
     async def get_test_not_verified_task(
