@@ -67,19 +67,14 @@ class BaseCollectionTask(BaseParserTask, is_abstract=True):
 
     async def execute(self, ctx: dict[Any, Any]) -> None:
         logging.info("starting task: %s", self.__class__.__name__)
+
         collection = self.parser.get_collection(self.get_name(), parser=self.parser)
+        parse_data = await collection.parse()
 
-        offset = 0
-        while True:
-            parse_data = await collection.parse(offset=offset, limit=self.parser.config.chunks_count)
-            if not parse_data:
-                break
+        ctx["progress"] = {"done": "parsing"}
+        logging.info("parsing finished: %d stations", len(parse_data))
 
-            offset += self.parser.config.chunks_count
-            ctx["progress"] = {"done": f"parsing: {offset}"}
-            logging.info("parsing %d items", len(parse_data))
-
-            await self._saving(ctx, parse_data)
+        await self._saving(ctx, parse_data)
         logging.info("task completed: %s", self.__class__.__name__)
 
 

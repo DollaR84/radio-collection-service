@@ -1,7 +1,7 @@
 ﻿from dataclasses import dataclass
 from enum import Enum
 import json
-from typing import Any, Optional, Union
+from typing import Any, Union
 
 from bs4 import BeautifulSoup, Tag
 
@@ -41,7 +41,7 @@ class InternetRadioStreamsCollection(BaseCollection):
             url_type = url_type.value
         return "/".join([getattr(self, f"base_{url_type}_url"), "main", element_url])
 
-    async def load(self, url: str, offset: Optional[int] = None, limit: Optional[int] = None) -> list[ItemData]:
+    async def load(self, url: str) -> list[ItemData]:
         results: list[ItemData] = []
         search_data: list[Tag] = []
         content = await self.parser.get_content(url)
@@ -84,25 +84,17 @@ class InternetRadioStreamsCollection(BaseCollection):
                     type=item.get("contentType"),
                 ))
 
-        return results[offset:limit] if offset and offset < len(results) else []
+        return results
 
-    async def process_data(
-            self,
-            url: str,
-            offset: Optional[int] = None,
-            limit: Optional[int] = None,
-    ) -> list[CollectionData]:
+    async def process_data(self, url: str) -> list[CollectionData]:
         results = []
-        data = await self.load(url, offset, limit)
+        data = await self.load(url)
 
         for item in data:
             if item.type == UrlType.FILE.value:
                 results.extend(await self.read(item))
             elif item.type == UrlType.DIRECTORY.value:
-                results.extend(await self.process_data(
-                    self.make_url(url_type=item.type, element_url=item.path),
-                    offset, limit
-                ))
+                results.extend(await self.process_data(self.make_url(url_type=item.type, element_url=item.path)))
 
         return results
 

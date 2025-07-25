@@ -1,5 +1,5 @@
 ﻿import logging
-from typing import Any, Optional
+from typing import Any
 
 from bs4 import BeautifulSoup, Tag
 
@@ -25,7 +25,7 @@ class Mp3RadioStationsCollection(BaseCollection):
     def __make_url__(self, page_number: int = 1) -> str:
         return "/".join([self.base_url, f"page{page_number}"])
 
-    async def load(self, url: str, offset: Optional[int] = None, limit: Optional[int] = None) -> list[CollectionData]:
+    async def load(self, url: str) -> list[CollectionData]:
         results: list[CollectionData] = []
         content = await self.parser.get_content(url)
 
@@ -63,7 +63,7 @@ class Mp3RadioStationsCollection(BaseCollection):
             is_disabled = False
             pagination = bs.find("ul", {"class": "pagination"})
             if not isinstance(pagination, Tag):
-                return results[offset:limit] if offset and offset < len(results) else []
+                return results
 
             for line in pagination.find_all("li"):
                 if "disabled" in line.get("class", []):
@@ -74,21 +74,16 @@ class Mp3RadioStationsCollection(BaseCollection):
                     self.last_page = int(line.find("a").text)
                     break
 
-        return results[offset:limit] if offset and offset < len(results) else []
+        return results
 
-    async def process_data(
-            self,
-            url: str,
-            offset: Optional[int] = None,
-            limit: Optional[int] = None,
-    ) -> list[CollectionData]:
+    async def process_data(self, url: str) -> list[CollectionData]:
         results = []
         try:
-            results.extend(await self.load(url, offset, limit))
+            results.extend(await self.load(url))
 
             self.current_page += 1
             if self.last_page and self.current_page <= self.last_page:
-                results.extend(await self.process_data(self.make_url(page_number=self.current_page), offset, limit))
+                results.extend(await self.process_data(self.make_url(page_number=self.current_page)))
         except Exception as error:
             logging.error(error, exc_info=True)
 

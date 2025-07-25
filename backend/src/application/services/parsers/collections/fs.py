@@ -1,4 +1,4 @@
-﻿from typing import Any, Optional
+﻿from typing import Any
 
 from application.dto import CollectionData
 
@@ -13,15 +13,10 @@ class FileSystemCollection(BaseCollection):
     def make_url(self, **kwargs: Any) -> str:
         return ""
 
-    async def load(self, url: str, offset: Optional[int] = None, limit: Optional[int] = None) -> list[CollectionData]:
+    async def load(self, url: str) -> list[CollectionData]:
         return []
 
-    async def process_data(
-            self,
-            url: str,
-            offset: Optional[int] = None,
-            limit: Optional[int] = None,
-    ) -> list[CollectionData]:
+    async def process_data(self, url: str) -> list[CollectionData]:
         results: list[CollectionData] = []
         if not url:
             return results
@@ -29,4 +24,4 @@ class FileSystemCollection(BaseCollection):
         parser = M3UParser(self.parser.config, base_path=url)
         results.extend(await parser.get_data())
 
-        return results[offset:limit] if offset and offset < len(results) else []
+        return results
