@@ -49,7 +49,7 @@ services:
     platform: ${DOCKER_PLATFORM:-linux/amd64}
     image: radio-collection-service-api
     env_file: .env
-    command: ["--workers", "4"]
+    command: ["--workers", "4", "--limit-max-request-size", "15"]
     volumes:
       - ./backend/src/migration/versions:/app/migration/versions
       - ./backend/src/templates:/app/templates
