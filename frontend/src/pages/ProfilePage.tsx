@@ -11,13 +11,15 @@ export default function ProfilePage() {
     user_name: '',
     email: '',
     first_name: '',
-    last_name: ''
+    last_name: '',
+    access_rights: ''
   });
   const [userData, setUserData] = useState({
     user_name: '',
     email: '',
     first_name: '',
-    last_name: ''
+    last_name: '',
+    access_rights: ''
   });
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -41,7 +43,8 @@ export default function ProfilePage() {
           user_name: response.data.user_name || '',
           email: response.data.email || '',
           first_name: response.data.first_name || '',
-          last_name: response.data.last_name || ''
+          last_name: response.data.last_name || '',
+          access_rights: response.data.access_rights || 'DEFAULT'
         };
         setInitialData(data);
         setUserData(data);
@@ -173,7 +176,18 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">{t("pages.profile.title")}</h1>
+      <div className="flex items-center gap-3 mb-6">
+        <h1 className="text-2xl font-bold">{t("pages.profile.title")}</h1>
+        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+          userData.access_rights === "OWNER" ? "bg-yellow-100 text-yellow-800" :
+          userData.access_rights === "FULL" ? "bg-green-100 text-green-800" :
+          userData.access_rights === "PRO" ? "bg-blue-100 text-blue-800" :
+          userData.access_rights === "PLUS" ? "bg-purple-100 text-purple-800" :
+          "bg-gray-100 text-gray-800"
+        }`}>
+        {userData.access_rights}
+        </span>
+      </div>
       
       {error && (
         <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
