@@ -6,7 +6,7 @@ from apscheduler.triggers.cron import CronTrigger
 from application.dto import CollectionData, Station
 from application.interactors import (
     CreateStations,
-    CheckStationUrl,
+    GetStationUrls,
     GetM3uFilesForParse,
     GetPlsFilesForParse,
     GetJsonFilesForParse,
@@ -20,25 +20,26 @@ from .base import BaseTask
 
 class BaseParserTask(BaseTask, is_abstract=True):
     parser: BaseParser
-    check_station_url: CheckStationUrl
+    get_all_urls: GetStationUrls
     creator: CreateStations
 
     def __init__(
             self,
-            check_station_url: CheckStationUrl,
+            get_all_urls: GetStationUrls,
             creator: CreateStations,
     ):
-        self.check_station_url: CheckStationUrl = check_station_url
+        self.get_all_urls: GetStationUrls = get_all_urls
         self.creator: CreateStations = creator
 
     async def _saving(self, ctx: dict[Any, Any], parse_data: list[list[CollectionData]]) -> None:
         exists_urls_to_parse_data: set[str] = set()
+        exists_urls_to_db: list[str] = await self.get_all_urls()
         total = len(parse_data)
 
         for index, batch in enumerate(parse_data, start=1):
             data = []
             for item in batch:
-                if item.url not in exists_urls_to_parse_data and not await self.check_station_url(item.url):
+                if item.url not in exists_urls_to_db and item.url not in exists_urls_to_parse_data:
                     data.append(item)
                     exists_urls_to_parse_data.add(item.url)
 
@@ -61,10 +62,10 @@ class BaseCollectionTask(BaseParserTask, is_abstract=True):
     def __init__(
             self,
             parser: CollectionParser,
-            check_station_url: CheckStationUrl,
+            get_all_urls: GetStationUrls,
             creator: CreateStations,
     ):
-        super().__init__(check_station_url, creator)
+        super().__init__(get_all_urls, creator)
         self.parser: CollectionParser = parser
 
     async def execute(self, ctx: dict[Any, Any]) -> None:
@@ -119,11 +120,11 @@ class M3uPlaylistTask(BasePlaylistTask):
             self,
             parser: M3UParser,
             get_m3u_files: GetM3uFilesForParse,
-            check_station_url: CheckStationUrl,
+            get_all_urls: GetStationUrls,
             creator: CreateStations,
             update_status: UpdateFileLoadStatus,
     ):
-        super().__init__(check_station_url, creator)
+        super().__init__(get_all_urls, creator)
         self.parser = parser
         self.get_files = get_m3u_files
         self.update_status = update_status
@@ -135,11 +136,11 @@ class PlsPlaylistTask(BasePlaylistTask):
             self,
             parser: PLSParser,
             get_pls_files: GetPlsFilesForParse,
-            check_station_url: CheckStationUrl,
+            get_all_urls: GetStationUrls,
             creator: CreateStations,
             update_status: UpdateFileLoadStatus,
     ):
-        super().__init__(check_station_url, creator)
+        super().__init__(get_all_urls, creator)
         self.parser = parser
         self.get_files = get_pls_files
         self.update_status = update_status
@@ -151,11 +152,11 @@ class JsonPlaylistTask(BasePlaylistTask):
             self,
             parser: JsonParser,
             get_json_files: GetJsonFilesForParse,
-            check_station_url: CheckStationUrl,
+            get_all_urls: GetStationUrls,
             creator: CreateStations,
             update_status: UpdateFileLoadStatus,
     ):
-        super().__init__(check_station_url, creator)
+        super().__init__(get_all_urls, creator)
         self.parser: JsonParser = parser
         self.get_files = get_json_files
         self.update_status = update_status
