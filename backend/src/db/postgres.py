@@ -1,16 +1,15 @@
-from asyncio import current_task
 from contextlib import asynccontextmanager
 import logging
 import ssl
 from typing import AsyncIterator
 
 from sqlalchemy.ext.asyncio import create_async_engine
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, async_scoped_session
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.exc import OperationalError
 
 from config import DBConfig
 
-from .base import Base, BaseDbConnector
+from .base import BaseDbConnector
 
 
 class PostgresDbConnector(BaseDbConnector):
@@ -35,7 +34,7 @@ class PostgresDbConnector(BaseDbConnector):
             raise ValueError("Error: failed to create engine") from error
 
         self._session_factory = async_sessionmaker(
-            binds={Base: self._engine},
+            bind=self._engine,
             class_=AsyncSession,
             autoflush=False,
             autocommit=False,
@@ -44,13 +43,13 @@ class PostgresDbConnector(BaseDbConnector):
 
     @asynccontextmanager
     async def get_session(self) -> AsyncIterator[AsyncSession]:  # pylint: disable=invalid-overridden-method
-        session = async_scoped_session(self._session_factory, scopefunc=current_task)()
-        try:
-            yield session
+        async with self._session_factory() as session:
+            try:
+                yield session
 
-        except Exception as error:
-            await session.rollback()
-            raise OperationalError(statement=str(error), params=None, orig=error) from error
+            except Exception as error:
+                await session.rollback()
+                raise OperationalError(statement=str(error), params=None, orig=error) from error
 
-        finally:
-            await session.aclose()
+            finally:
+                await session.aclose()

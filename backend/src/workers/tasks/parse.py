@@ -53,6 +53,7 @@ class BaseParserTask(BaseTask, is_abstract=True):
                 ) for item in data
             ])
             ctx["progress"] = {"done": f"saving: {index}/{total}"}
+            logging.info("saving: %d/%d", index, total)
 
 
 class BaseCollectionTask(BaseParserTask, is_abstract=True):
