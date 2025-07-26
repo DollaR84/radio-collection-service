@@ -21,8 +21,23 @@ export default function HomePage() {
       </p>
           */}
       
-      <h2>{t("pages.home.plus.title")}</h2>
-      <p>{t("pages.home.plus.description")}</p>
+      <h2>🔐 {t("pages.home.access.title")}</h2>
+      <p>{t("pages.home.access.description")}</p>
+
+      <h3>{t("pages.home.access.default.title")}</h3>
+      <ul>
+      <li>{t("pages.home.access.default.line1")}</li>
+      <li>{t("pages.home.access.default.line2")}</li>
+      <li>{t("pages.home.access.default.line3")}</li>
+      <li>{t("pages.home.access.default.line4")}</li>
+      <li>{t("pages.home.access.default.line5")}</li>
+      </ul>
+
+      <h3>{t("pages.home.access.plus.title")}</h3>
+      <ul>
+      <li>{t("pages.home.access.plus.line1")}</li>
+      <li>{t("pages.home.access.plus.line2")}</li>
+      </ul>
 
       <div className="mb-6 text-lg">
         <p>📨 {t("pages.home.contact")}:{" "}

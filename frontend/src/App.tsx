@@ -7,13 +7,14 @@ import StationsPage from "./pages/StationsPage";
 import StationDetailPage from "./pages/StationDetailPage";
 import ProfilePage from "./pages/ProfilePage";
 import FavoritesPage from "./pages/FavoritesPage";
+import AddStationsPage from "./pages/AddStationsPage";
 import LoadingSpinner from "./components/LoadingSpinner";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import { useAuth } from "./context/AuthContext";
 
 export default function App() {
-  const { token, isLoading } = useAuth();
+  const { token, isLoading, accessRights } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -66,6 +67,15 @@ export default function App() {
             path="/profile"
             element={
               token ? <ProfilePage /> : <Navigate to="/login" replace />
+            }
+          />
+
+          <Route
+            path="/upload"
+            element={
+              token && accessRights !== 'default'
+                ? <AddStationsPage />
+                : <Navigate to={token ? "/stations" : "/login"} replace />
             }
           />
 

@@ -6,6 +6,7 @@ import { StationStatusType } from '../types';
 interface AuthContextType {
   token: string | null;
   isLoading: boolean;
+  accessRights: string | null;
   searchParams: {
     name: string;
     tag: string;
@@ -25,6 +26,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [token, setToken] = useState<string | null>(null);
+  const [accessRights, setAccessRights] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [searchParams, setSearchParams] = useState({
     name: "",
@@ -34,10 +36,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshToken = useCallback(async (): Promise<string | null> => {
     try {
-      const response = await axios.post('/api/auth/refresh', {}, {
-        withCredentials: true
-      });
-      
+      const response = await axios.post('/api/auth/refresh', {}, { withCredentials: true });
       if (response.data.access_token) {
         const newToken = response.data.access_token;
         sessionStorage.setItem('access_token', newToken);
@@ -60,6 +59,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       sessionStorage.removeItem('access_token');
       setToken(null);
+      setAccessRights(null);
     }
   }, []);
 
@@ -68,10 +68,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setToken(accessToken);
   }, []);
 
+  const fetchAccessRights = useCallback(async (accessToken: string) => {
+    try {
+      const response = await api.get('/profile', {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      setAccessRights(response.data.access_rights || null);
+    } catch (error) {
+      console.error('Failed to load user access rights:', error);
+      setAccessRights(null);
+    }
+  }, []);
+
   useEffect(() => {
     const verifyToken = async () => {
       const storedToken = sessionStorage.getItem('access_token');
-      
       if (!storedToken) {
         setIsLoading(false);
         return;
@@ -82,11 +93,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           headers: { Authorization: `Bearer ${storedToken}` }
         });
         setToken(storedToken);
+        await fetchAccessRights(storedToken);
       } catch (error) {
         console.log('Token validation failed, trying to refresh...');
         try {
           const newToken = await refreshToken();
-          if (!newToken) {
+          if (newToken) {
+            await fetchAccessRights(newToken);
+          } else {
             await logout();
           }
         } catch (refreshError) {
@@ -99,7 +113,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     verifyToken();
-  }, [logout, refreshToken]);
+  }, [logout, refreshToken, fetchAccessRights]);
 
   useEffect(() => {
     window.logoutUser = logout;
@@ -107,7 +121,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       sessionStorage.setItem('access_token', newToken);
       setToken(newToken);
     };
-
     return () => {
       window.logoutUser = () => {};
       window.updateAuthContext = () => {};
@@ -115,12 +128,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [logout]);
 
   return (
-    <AuthContext.Provider value={{ 
-      token, 
-      isLoading, 
+    <AuthContext.Provider value={{
+      token,
+      isLoading,
+      accessRights,
       searchParams,
       setSearchParams,
-      login, 
+      login,
       logout,
       refreshToken
     }}>

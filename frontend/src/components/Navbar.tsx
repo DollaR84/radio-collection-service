@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 
 export default function Navbar() {
-  const { token, logout } = useAuth();
+  const { token, logout, accessRights } = useAuth();
   const { t } = useTranslation();
   const baseLinkClass = "hover:bg-gray-700 px-3 py-2 rounded whitespace-nowrap";
 
@@ -17,7 +17,7 @@ export default function Navbar() {
         }
         aria-current={({ isActive }) => (isActive ? 'page' : undefined)}
       >
-        {t("menu.main")}
+        🏠 {t("menu.main")}
       </NavLink>
 
       <NavLink
@@ -27,7 +27,7 @@ export default function Navbar() {
         }
         aria-current={({ isActive }) => (isActive ? 'page' : undefined)}
       >
-        {t("menu.stations")}
+        📻 {t("menu.stations")}
       </NavLink>
 
       <NavLink
@@ -37,7 +37,7 @@ export default function Navbar() {
         }
         aria-current={({ isActive }) => (isActive ? 'page' : undefined)}
       >
-        {t("menu.favorites")}
+        ⭐ {t("menu.favorites")}
       </NavLink>
 
       <NavLink
@@ -47,8 +47,21 @@ export default function Navbar() {
         }
         aria-current={({ isActive }) => (isActive ? 'page' : undefined)}
       >
-        {t("menu.profile")}
+        👤 {t("menu.profile")}
       </NavLink>
+
+      {token && accessRights !== 'default' && (
+  <NavLink
+    to="/upload"
+    className={({ isActive }) =>
+      isActive ? `bg-gray-700 ${baseLinkClass}` : baseLinkClass
+    }
+    aria-current={({ isActive }) => (isActive ? 'page' : undefined)}
+  >
+    ⬆️ {t("menu.upload_stations")}
+  </NavLink>
+)}
+
 
       {token && (
         <button

@@ -9,6 +9,7 @@
     "stations": "Stations",
     "favorites": "Favorites",
     "profile": "Profile",
+    "upload_stations": "Upload stations",
     "logout": "Logout"
   },
   "pagination": {
@@ -92,6 +93,7 @@
     },
     "profile": {
       "title": "User Profile",
+      "status": "Status",
       "username": "Username",
       "first_name": "First Name",
       "last_name": "Last Name",
@@ -156,9 +158,22 @@
       "description2": "I'm a blind developer from Ukraine, passionate about accessibility and open technologies.\nThis service is designed with screen reader support in mind — especially optimized for NVDA —\nand includes a public API that can be used by radio clients and other developers.",
       "description3": "You can explore all my open-source projects on my",
       "github_link": "GitHub account",
-      "plus": {
-        "title": "PLUS",
-        "description": "Upload your radio stations and m3u playlists with links to stations"
+      "access": {
+        "title": "User roles",
+        "description": "There are different user statuses on the site that determine the available functionality:",
+        "default": {
+          "title": "DEFAULT (standard) — access to basic features:",
+          "line1": "viewing the radio station catalog",
+          "line2": "search for stations in the database by partial name match",
+          "line3": "search for stations in the database by partial match of tags",
+          "line4": "search for stations in the database by audio link availability status",
+          "line5": "adding stations to favorites"
+        },
+        "plus": {
+          "title": "PLUS (advanced):",
+          "line1": "Uploading a list of your radio stations to the service database",
+          "line2": "uploading playlists (m3u, pls, json) to the service database"
+        }
       },
       "contact": "Contact",
       "supportEmail": "support email",
@@ -175,6 +190,17 @@
       "added": "Added",
       "updated": "Updated",
       "remove": "Remove from favorites"
+    },
+    "upload": {
+      "title": "Uploading radio stations",
+      "add_station": "Add station",
+      "send_stations": "Send stations",
+      "send_playlist": "Upload playlist",
+      "name_placeholder": "Station name",
+      "url_placeholder": "Stream link",
+      "tags_placeholder": "Type a tag and press Enter",
+      "success": "Data sent successfully",
+      "error": "Error while sending data"
     },
     "donate": {
       "title": "Donate to the project",
