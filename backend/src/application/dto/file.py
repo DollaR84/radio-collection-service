@@ -20,7 +20,7 @@ class NewFile(BaseFile):
 
     @property
     def file_path_with_id(self) -> str:
-        return os.path.join(self.file_path, self.file_id, f".{self.fileext}")
+        return os.path.join(self.file_path, f"{self.file_id}.{self.fileext}")
 
 
 @dataclass(slots=True)
