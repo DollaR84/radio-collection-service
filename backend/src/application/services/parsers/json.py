@@ -11,7 +11,7 @@ from .base import BaseParser
 
 
 class JsonParser(BaseParser):
-    _ext: str = ".json"
+    _ext: str = "json"
 
     def __init__(self, config: ParserConfig, file_path: Optional[str] = None):
         super().__init__(config)

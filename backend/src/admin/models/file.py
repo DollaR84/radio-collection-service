@@ -50,11 +50,6 @@ class FileAdmin(ModelView, model=File):
         "is_load",
     ]
 
-    column_filters = [
-        "user_id",
-        "created_at",
-    ]
-
     column_sortable_list = [
         "created_at",
         "user_id",

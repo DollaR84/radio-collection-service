@@ -11,7 +11,7 @@ from .base import BaseParser
 
 
 class M3UParser(BaseParser):
-    _ext: str = ".m3u"
+    _ext: str = "m3u"
 
     def __init__(
             self,

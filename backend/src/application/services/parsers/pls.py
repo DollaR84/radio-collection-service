@@ -7,7 +7,7 @@ from .base import BaseParser
 
 
 class PLSParser(BaseParser):
-    _ext: str = ".pls"
+    _ext: str = "pls"
 
     def __init__(self, config: ParserConfig, url: Optional[str] = None):
         super().__init__(config)
