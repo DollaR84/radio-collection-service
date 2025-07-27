@@ -40,6 +40,7 @@ from .user import (
     CreateAccessPermission,
     DeleteAccessPermission,
     GetAccessPermission,
+    GetCurrentAccessPermission,
     GetAccessPermissions,
     UpdateAccessPermission,
 )
@@ -50,6 +51,7 @@ __all__ = [
     "DeleteAccessPermission",
     "GetAccessPermissions",
     "GetAccessPermission",
+    "GetCurrentAccessPermission",
     "UpdateAccessPermission",
 
     "CreateFile",

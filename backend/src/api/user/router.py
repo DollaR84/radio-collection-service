@@ -7,6 +7,7 @@ from fastapi import APIRouter, HTTPException, status
 
 from application import dto
 from application import interactors
+from application.types import UserAccessRights
 
 from .. import schemas
 
@@ -62,8 +63,9 @@ async def update_user_data(
     response_model=schemas.UserAccessRightsSchema,
 )
 async def get_user_access_rights(
-        _: FromDishka[dto.AdminUser],
+        _: FromDishka[dto.CurrentUser],
         interactor: FromDishka[interactors.GetUserByUUID],
+        permission_interactor: FromDishka[interactors.GetCurrentAccessPermission],
         uuid_id: uuid.UUID
 ) -> schemas.UserAccessRightsSchema:
     user = await interactor(uuid_id)
@@ -75,7 +77,12 @@ async def get_user_access_rights(
             detail=f"error user '{uuid_id}' not found",
         )
 
-    return schemas.UserAccessRightsSchema(uuid_id=user.uuid_id, access_rights=user.access_rights)
+    expires_at = None
+    if user.access_rights != UserAccessRights.DEFAULT:
+        permission = await permission_interactor(user.id)
+        expires_at = permission.expires_at if permission else None
+
+    return schemas.UserAccessRightsSchema(uuid_id=user.uuid_id, access_rights=user.access_rights, expires_at=expires_at)
 
 
 @router.post(

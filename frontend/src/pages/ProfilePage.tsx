@@ -12,15 +12,18 @@ export default function ProfilePage() {
     email: '',
     first_name: '',
     last_name: '',
-    access_rights: ''
+    access_rights: '',
+    uuid_id: ''
   });
   const [userData, setUserData] = useState({
     user_name: '',
     email: '',
     first_name: '',
     last_name: '',
-    access_rights: ''
+    access_rights: '',
+    uuid_id: ''
   });
+  const [accessExpiresAt, setAccessExpiresAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
@@ -32,7 +35,6 @@ export default function ProfilePage() {
     last_name: ''
   });
 
-  // Check the changes before leaving the page
   useBeforeUnload(touched, t("pages.profile.unsaved_changes"));
 
   useEffect(() => {
@@ -44,10 +46,22 @@ export default function ProfilePage() {
           email: response.data.email || '',
           first_name: response.data.first_name || '',
           last_name: response.data.last_name || '',
-          access_rights: response.data.access_rights || 'default'
+          access_rights: response.data.access_rights || 'default',
+          uuid_id: response.data.uuid_id || ''
         };
         setInitialData(data);
         setUserData(data);
+
+        if (data.access_rights !== 'default' && data.access_rights !== 'owner' && data.uuid_id) {
+          try {
+            const rightsResp = await api.get(`/user/rights/${data.uuid_id}`);
+            if (rightsResp.data.expires_at) {
+              setAccessExpiresAt(rightsResp.data.expires_at);
+            }
+          } catch (err) {
+            console.error("Failed to fetch access rights info:", err);
+          }
+        }
       } catch (error) {
         console.error('Failed to fetch user data:', error);
         setError(t("pages.profile.errors.fetch"));
@@ -132,15 +146,15 @@ export default function ProfilePage() {
         last_name: userData.last_name
       });
 
-      // We update only local data
       setInitialData({
         ...userData,
         user_name: response.data.user_name,
         first_name: response.data.first_name,
-        last_name: response.data.last_name
+        last_name: response.data.last_name,
+        uuid_id: userData.uuid_id,
+        access_rights: userData.access_rights
       });
 
-      // We update data for display
       setUserData({
         ...userData,
         user_name: response.data.user_name,
@@ -179,15 +193,22 @@ export default function ProfilePage() {
       <div className="flex items-center gap-3 mb-6">
         <h1 className="text-2xl font-bold">{t("pages.profile.title")}</h1>
         <span className="text-sm text-gray-600">{t("pages.profile.status")}:</span>
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-          userData.access_rights === "owner" ? "bg-yellow-100 text-yellow-800" :
-          userData.access_rights === "full" ? "bg-green-100 text-green-800" :
-          userData.access_rights === "pro" ? "bg-blue-100 text-blue-800" :
-          userData.access_rights === "plus" ? "bg-purple-100 text-purple-800" :
-          "bg-gray-100 text-gray-800"
-        }`}>
-        {userData.access_rights}
-        </span>
+        <div className="flex flex-col items-start">
+          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+            userData.access_rights === "owner" ? "bg-yellow-100 text-yellow-800" :
+            userData.access_rights === "full" ? "bg-green-100 text-green-800" :
+            userData.access_rights === "pro" ? "bg-blue-100 text-blue-800" :
+            userData.access_rights === "plus" ? "bg-purple-100 text-purple-800" :
+            "bg-gray-100 text-gray-800"
+          }`}>
+            {userData.access_rights}
+          </span>
+          {accessExpiresAt && (
+            <span className="text-xs text-gray-500 mt-1">
+              {t("pages.profile.expires_at")}: {new Date(accessExpiresAt).toLocaleDateString()}
+            </span>
+          )}
+        </div>
       </div>
       
       {error && (

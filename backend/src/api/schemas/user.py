@@ -1,3 +1,4 @@
+from datetime import datetime
 import uuid
 from typing import Optional
 from typing_extensions import Self
@@ -65,3 +66,4 @@ class UserMessageResponse(BaseModel):
 
 class UserAccessRightsSchema(UserResponse):
     access_rights: UserAccessRights = UserAccessRights.DEFAULT
+    expires_at: Optional[datetime] = None

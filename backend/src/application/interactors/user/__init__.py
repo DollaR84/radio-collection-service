@@ -6,6 +6,7 @@ from .read import (
     GetUserByGoogle,
     GetUserByEmail,
     GetAccessPermission,
+    GetCurrentAccessPermission,
     GetAccessPermissions,
 )
 from .update import UpdateUserByID, UpdateUserByUUID, UpdateUserByGoogle, UpdateUserByEmail, UpdateAccessPermission
@@ -26,6 +27,7 @@ __all__ = [
     "CreateAccessPermission",
     "DeleteAccessPermission",
     "GetAccessPermission",
+    "GetCurrentAccessPermission",
     "GetAccessPermissions",
     "UpdateAccessPermission",
 ]

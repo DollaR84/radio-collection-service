@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 import uuid
 
@@ -52,6 +53,15 @@ class GetAccessPermissionGateway(BaseGateway[int, AccessPermission]):
         error_message = f"Error get user permission id={permission_id}"
         stmt = select(AccessPermission)
         stmt = stmt.where(AccessPermission.id == permission_id)
+
+        permission = await self._get(stmt, error_message)
+        return domain.AccessPermissionModel(**permission.dict()) if permission else None
+
+    async def get_current_permission(self, user_id: int) -> Optional[domain.AccessPermissionModel]:
+        error_message = f"Error get user current permission for user_id={user_id}"
+        stmt = select(AccessPermission)
+        stmt = stmt.where(AccessPermission.user_id == user_id)
+        stmt = stmt.where(AccessPermission.expires_at > datetime.utcnow())
 
         permission = await self._get(stmt, error_message)
         return domain.AccessPermissionModel(**permission.dict()) if permission else None

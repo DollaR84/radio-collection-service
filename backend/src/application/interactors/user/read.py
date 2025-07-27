@@ -53,6 +53,13 @@ class GetAccessPermission(BaseGetAccessPermission):
         return dto.AccessPermission(**permission.dict()) if permission else None
 
 
+class GetCurrentAccessPermission(BaseGetAccessPermission):
+
+    async def __call__(self, user_id: int) -> Optional[dto.AccessPermission]:
+        permission = await self.gateway.get_current_permission(user_id)
+        return dto.AccessPermission(**permission.dict()) if permission else None
+
+
 class GetAccessPermissions(BaseGetAccessPermission):
 
     async def __call__(

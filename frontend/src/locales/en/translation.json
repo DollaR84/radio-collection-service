@@ -94,6 +94,7 @@
     "profile": {
       "title": "User Profile",
       "status": "Status",
+      "expires_at": "Active until",
       "username": "Username",
       "first_name": "First Name",
       "last_name": "Last Name",

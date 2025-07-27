@@ -33,6 +33,10 @@ class GetAccessPermissionInterface(Protocol):
         ...
 
     @abstractmethod
+    async def get_current_permission(self, user_id: int) -> Optional[domain.AccessPermissionModel]:
+        ...
+
+    @abstractmethod
     async def get_permissions(
             self,
             user_id: Optional[int] = None,

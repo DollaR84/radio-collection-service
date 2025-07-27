@@ -94,6 +94,7 @@
     "profile": {
       "title": "Профіль користувача",
       "status": "Статус",
+      "expires_at": "Активно до",
       "username": "Ім’я користувача",
       "first_name": "Ім’я",
       "last_name": "Прізвище",

@@ -35,6 +35,7 @@ class AppProvider(Provider):
     create_access_permission_interactor = provide(interactors.CreateAccessPermission, scope=Scope.REQUEST)
     delete_access_permission_interactor = provide(interactors.DeleteAccessPermission, scope=Scope.REQUEST)
     get_access_permission_interactor = provide(interactors.GetAccessPermission, scope=Scope.REQUEST)
+    get_current_access_permission_interactor = provide(interactors.GetCurrentAccessPermission, scope=Scope.REQUEST)
     get_access_permissions_interactor = provide(interactors.GetAccessPermissions, scope=Scope.REQUEST)
     update_access_permission_interactor = provide(interactors.UpdateAccessPermission, scope=Scope.REQUEST)
 
