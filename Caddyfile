@@ -1,0 +1,3 @@
+elrus.pp.ua {
+    reverse_proxy web:80
+}

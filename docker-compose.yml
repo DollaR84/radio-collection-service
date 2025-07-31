@@ -51,8 +51,6 @@ services:
       - ./backend/src/templates:/app/templates
       - ./shared_data:/app/data
     user: "1000:1000"
-    ports:
-      - "8000:8000"
     depends_on:
       db:
         condition: service_healthy
@@ -72,8 +70,6 @@ services:
       dockerfile: Dockerfile
     platform: ${DOCKER_PLATFORM:-linux/amd64}
     env_file: .env
-    ports:
-      - "80:80"
     volumes:
       - ./frontend/src:/app/web/src
       - /app/web/node_modules
@@ -103,6 +99,26 @@ services:
         condition: service_healthy
     restart: always
 
+  caddy:
+    image: caddy:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      api:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+    networks:
+      - default
+
 volumes:
   postgres_data:
   redis_data:
+  caddy_data:
+  caddy_config:

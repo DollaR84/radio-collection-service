@@ -142,8 +142,28 @@ services:
       loki:
         condition: service_healthy
 
+  caddy:
+    image: caddy:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      api:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+    networks:
+      - default
+
 volumes:
   postgres_data:
   redis_data:
   loki_data:
   grafana_data:
+  caddy_data:
+  caddy_config:
