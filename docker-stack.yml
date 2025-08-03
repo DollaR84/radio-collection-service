@@ -10,6 +10,11 @@ services:
     <<: *default-logging
     platform: ${DOCKER_PLATFORM:-linux/amd64}
     image: postgres
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.2'
     env_file: .env
     environment:
       POSTGRES_DB: ${POSTGRES_DB_NAME}
@@ -17,7 +22,6 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    restart: always
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USERNAME}"]
       interval: 3s
@@ -27,10 +31,14 @@ services:
   redis:
     platform: ${DOCKER_PLATFORM:-linux/amd64}
     image: redis:alpine
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: '0.2'
     env_file: .env
     volumes:
       - redis_data:/data
-    restart: always
     healthcheck:
       test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
       interval: 3s
@@ -39,11 +47,13 @@ services:
 
   api:
     <<: *default-logging
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
     platform: ${DOCKER_PLATFORM:-linux/amd64}
     image: radio-collection-service-api
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.2'
     env_file: .env
     command: ["--workers", "1"]
     volumes:
@@ -51,12 +61,6 @@ services:
       - ./backend/src/templates:/app/templates
       - ./shared_data:/app/data
     user: "1000:1000"
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    restart: always
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8000/api/health || exit 1"]
       interval: 30s
@@ -65,18 +69,17 @@ services:
 
   web:
     <<: *default-logging
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    image: radio-collection-service-web
     platform: ${DOCKER_PLATFORM:-linux/amd64}
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: '0.2'
     env_file: .env
     volumes:
       - ./frontend/src:/app/web/src
       - /app/web/node_modules
-    depends_on:
-      api:
-        condition: service_healthy
-    restart: always
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:80"]
       interval: 30s
@@ -86,22 +89,25 @@ services:
   worker:
     <<: *default-logging
     image: radio-collection-service-api
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
     env_file: .env
     entrypoint: ["python", "-m"]
     command: "workers.worker"
     volumes:
       - /etc/ssl/certs:/etc/ssl/certs:ro
       - ./shared_data:/app/data
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    restart: always
 
   caddy:
     image: caddy:alpine
-    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: '0.1'
     ports:
       - "80:80"
       - "443:443"
@@ -109,11 +115,6 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
-    depends_on:
-      api:
-        condition: service_healthy
-      web:
-        condition: service_healthy
     networks:
       - default
 
