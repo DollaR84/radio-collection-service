@@ -8,7 +8,6 @@ x-default-logging: &default-logging
 services:
   db:
     <<: *default-logging
-    platform: ${DOCKER_PLATFORM:-linux/amd64}
     image: postgres
     deploy:
       resources:
@@ -29,7 +28,6 @@ services:
       retries: 5
 
   redis:
-    platform: ${DOCKER_PLATFORM:-linux/amd64}
     image: redis:alpine
     deploy:
       resources:
@@ -47,7 +45,6 @@ services:
 
   api:
     <<: *default-logging
-    platform: ${DOCKER_PLATFORM:-linux/amd64}
     image: radio-collection-service-api
     deploy:
       resources:
@@ -70,7 +67,6 @@ services:
   web:
     <<: *default-logging
     image: radio-collection-service-web
-    platform: ${DOCKER_PLATFORM:-linux/amd64}
     deploy:
       resources:
         limits:
