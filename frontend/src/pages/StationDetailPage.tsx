@@ -129,7 +129,7 @@ export default function StationDetailPage() {
                 ? 'text-red-500 bg-red-50' 
                 : 'text-gray-500 hover:bg-gray-100'
             }`}
-            aria-label={isFavorite ? t("pages.station_detail.favorite.Remove", { name: station.name }) : t("pages.station_detail.favorite.add", { name: station.name })}
+            aria-label={isFavorite ? t("pages.station_detail.favorite.remove", { name: station.name }) : t("pages.station_detail.favorite.add", { name: station.name })}
             aria-pressed={isFavorite}
           >
             {isFavorite ? (
