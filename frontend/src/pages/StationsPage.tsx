@@ -38,7 +38,7 @@ export default function StationsPage() {
       };
 
       const [stationsResponse, favResponse] = await Promise.all([
-        api.get('/stations', { params }),
+        api.get('/stations/', { params }),
         api.get("/favorites/all")
       ]);
 
