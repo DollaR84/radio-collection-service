@@ -54,7 +54,7 @@ export default function StationDetailPage() {
       if (isFavorite) {
         await api.delete(`/favorites/${id}`);
       } else {
-        await api.post('/favorites/', { station_id: id });
+        await api.post('/favorites', { station_id: id });
       }
       setIsFavorite(!isFavorite);
     } catch (err) {

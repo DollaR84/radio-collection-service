@@ -15,7 +15,7 @@ router = APIRouter(prefix="/tasks", route_class=DishkaRoute)
 
 
 @router.get(
-    "/",
+    "",
     description="Method to get list of task names",
     status_code=status.HTTP_200_OK,
     response_model=list[str],
@@ -35,7 +35,7 @@ async def get_tasks(
 
 
 @router.post(
-    "/",
+    "",
     description="Method to run task by name",
     status_code=status.HTTP_202_ACCEPTED,
     response_model=schemas.TaskResponse,

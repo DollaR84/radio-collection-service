@@ -33,7 +33,7 @@ async def get_favorites_all(
 
 
 @router.get(
-    "/",
+    "",
     description="Method for get list favorites radio stations",
     status_code=status.HTTP_200_OK,
     response_model=schemas.StationsResponse,
@@ -56,7 +56,7 @@ async def get_favorites(
 
 
 @router.post(
-    "/",
+    "",
     description="Method for add radio station to user favorites",
     status_code=status.HTTP_201_CREATED,
 )

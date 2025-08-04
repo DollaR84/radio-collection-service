@@ -25,7 +25,7 @@ export default function FavoritesPage() {
       try {
         setLoading(true);
         const offset = (currentPage - 1) * itemsPerPage;
-        const response = await api.get(`/favorites/?offset=${offset}&limit=${itemsPerPage}`);
+        const response = await api.get(`/favorites?offset=${offset}&limit=${itemsPerPage}`);
         setFavorites(response.data.items);
         setTotalCount(response.data.total);
       } catch (error) {

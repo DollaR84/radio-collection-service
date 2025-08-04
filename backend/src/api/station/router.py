@@ -21,7 +21,7 @@ router = APIRouter(prefix="/stations", route_class=DishkaRoute)
 
 
 @router.get(
-    "/",
+    "",
     description="Method for get list radio stations",
     status_code=status.HTTP_200_OK,
     response_model=schemas.StationsResponse,
@@ -73,7 +73,7 @@ async def get_station(
 
 
 @router.post(
-    "/",
+    "",
     description="Method for send radio station on server",
     status_code=status.HTTP_200_OK,
     response_model=schemas.PlaylistSavingResponse,
