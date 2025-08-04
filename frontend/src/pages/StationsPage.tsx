@@ -72,7 +72,7 @@ export default function StationsPage() {
         await api.delete(`/favorites/${id}`);
         setFavorites(prev => prev.filter(fid => fid !== id));
       } else {
-        await api.post("/favorites", { station_id: id });
+        await api.post("/favorites/", { station_id: id });
         setFavorites(prev => [...prev, id]);
       }
     } catch (err) {

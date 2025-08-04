@@ -35,7 +35,7 @@ export default function AddStationsPage() {
     setError(null);
     try {
       if (stations.length === 1) {
-        await api.post('/stations', stations[0]);
+        await api.post('/stations/', stations[0]);
       } else {
         await api.post('/stations/list', { items: stations });
       }
