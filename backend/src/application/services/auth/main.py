@@ -71,6 +71,9 @@ class Authenticator:
 
         if not user:
             raise NoJwtException()
+        elif not user.is_active:
+            raise ForbiddenException()
+
         return dto.CurrentUser(**user.dict())
 
     async def get_current_admin_user(
