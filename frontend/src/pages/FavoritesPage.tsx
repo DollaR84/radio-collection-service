@@ -5,7 +5,8 @@ import api from '../api/client';
 import { Station } from '../types';
 import Pagination from '../components/Pagination';
 import { formatDate } from '../utils/dateUtils';
-import { FaHeart, FaCopy } from "react-icons/fa";
+import { FaCopy } from "react-icons/fa";
+import FavoriteButton from '../components/FavoriteButton';
 
 const PAGE_LIMIT_OPTIONS = [10, 25, 50];
 
@@ -16,11 +17,9 @@ export default function FavoritesPage() {
   const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
   
-  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  // Which station is expanded inline in the list (null = none)
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -40,16 +39,6 @@ export default function FavoritesPage() {
 
     fetchFavorites();
   }, [currentPage, itemsPerPage]);
-
-  const removeFavorite = async (id: number) => {
-    try {
-      await api.delete(`/favorites/${id}`);
-      setFavorites(prev => prev.filter(station => station.id !== id));
-      if (expandedId === id) setExpandedId(null);
-    } catch (error) {
-      console.error('Failed to remove favorite:', error);
-    }
-  };
 
   const handleStationClick = (id: number) => {
     navigate(`/station/${id}`);
@@ -82,7 +71,6 @@ export default function FavoritesPage() {
     <div className="p-6 max-w-6xl mx-auto">
       <h2 className="text-2xl font-bold mb-6">{t("pages.favorites.title")}</h2>
       
-      {/* Pagination and control elements */}
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center space-x-2">
           <span>{t("pages.show")}:</span>
@@ -128,12 +116,8 @@ export default function FavoritesPage() {
                 aria-labelledby={`station-title-${station.id}`}
               >
                 <div className="p-4">
-                  {/* Header with real heading */}
                   <header>
                     <h3 id={`station-title-${station.id}`} className="text-xl font-semibold mb-2">
-                      {/* Accessible disclosure button inside the heading:
-                          - aria-expanded tells SR whether details are visible
-                          - aria-controls points to the panel id */}
                       <button
                         type="button"
                         onClick={() => toggleExpand(station.id)}
@@ -146,7 +130,6 @@ export default function FavoritesPage() {
                     </h3>
                   </header>
 
-                  {/* Status immediately after the heading in DOM order */}
                   <p className="text-sm text-gray-600 mb-2">
                     <span className="font-medium">{t("pages.status.title")}:</span>{' '}
                     <span
@@ -164,7 +147,6 @@ export default function FavoritesPage() {
                     </span>
                   </p>
 
-                  {/* Inline panel with details (hidden when closed) */}
                   <div
                     id={`station-panel-${station.id}`}
                     role="region"
@@ -214,16 +196,13 @@ export default function FavoritesPage() {
                     </div>
                   </div>
 
-                  {/* Footer: remove button (placed last so SR reads it after content) */}
                   <div className="border-t p-3 bg-gray-50 mt-3">
-                    <button
-                      onClick={() => removeFavorite(station.id)}
+                    <FavoriteButton
+                      stationId={station.id}
+                      addLabel={t("pages.favorite.add")}
+                      removeLabel={t("pages.favorite.remove")}
                       className="flex items-center space-x-1 text-red-500 hover:text-red-700"
-                      aria-label={t("pages.favorites.remove")}
-                    >
-                      <FaHeart className="text-red-500" />
-                      <span>{t("pages.favorites.remove")}</span>
-                    </button>
+                    />
                   </div>
                 </div>
               </article>
@@ -232,7 +211,6 @@ export default function FavoritesPage() {
         </div>
       )}
       
-      {/* Pagination below */}
       <div className="mt-6 flex justify-center">
         <Pagination
           currentPage={currentPage}

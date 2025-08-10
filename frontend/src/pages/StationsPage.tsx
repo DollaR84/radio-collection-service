@@ -3,14 +3,16 @@ import { useNavigate } from "react-router-dom";
 import api from "../api/client";
 import { Station, StationStatusType } from "../types";
 import { useDebounce } from "../hooks/useDebounce";
-import { FaHeart, FaRegHeart } from "react-icons/fa";
 import SearchBar from "../components/SearchBar";
 import Pagination from "../components/Pagination";
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "react-i18next";
+import FavoriteButton from "../components/FavoriteButton";
 
-function searchParamsEqual(a: { name: string; tag: string; status_type: StationStatusType | "" },
-                           b: { name: string; tag: string; status_type: StationStatusType | "" }) {
+function searchParamsEqual(
+  a: { name: string; tag: string; status_type: StationStatusType | "" },
+  b: { name: string; tag: string; status_type: StationStatusType | "" }
+) {
   return a.name === b.name && a.tag === b.tag && a.status_type === b.status_type;
 }
 
@@ -20,9 +22,9 @@ export default function StationsPage() {
   const { searchParams, setSearchParams, stationsPage, setStationsPage, itemsPerPage, setItemsPerPage } = useAuth();
 
   const [stations, setStations] = useState<Station[]>([]);
-  const [favorites, setFavorites] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [totalCount, setTotalCount] = useState(0);
 
   const debouncedName = useDebounce(searchParams.name, 500);
   const debouncedTag = useDebounce(searchParams.tag, 500);
@@ -37,16 +39,11 @@ export default function StationsPage() {
         limit: itemsPerPage.toString(),
         ...(debouncedName && { name: debouncedName }),
         ...(debouncedTag && { info: debouncedTag }),
-        ...(searchParams.status_type && { status_type: searchParams.status_type })
+        ...(searchParams.status_type && { status_type: searchParams.status_type }),
       };
 
-      const [stationsResponse, favResponse] = await Promise.all([
-        api.get('/stations/', { params }),
-        api.get("/favorites/all")
-      ]);
-
+      const stationsResponse = await api.get("/stations/", { params });
       setStations(stationsResponse.data.items);
-      setFavorites(favResponse.data.map((s: Station) => s.id));
       setTotalCount(stationsResponse.data.total);
     } catch (err) {
       setError(t("pages.stations.errors.loading"));
@@ -60,34 +57,18 @@ export default function StationsPage() {
     fetchStations();
   }, [fetchStations]);
 
-  const handleSearchChange = useCallback((params: {
-    name: string;
-    tag: string;
-    status_type: StationStatusType | "";
-  }) => {
-    if (!searchParamsEqual(params, searchParams)) {
-      setSearchParams(params);
-      setStationsPage(1);
-    }
-  }, [setSearchParams, searchParams, setStationsPage]);
+  const handleSearchChange = useCallback(
+    (params: { name: string; tag: string; status_type: StationStatusType | "" }) => {
+      if (!searchParamsEqual(params, searchParams)) {
+        setSearchParams(params);
+        setStationsPage(1);
+      }
+    },
+    [setSearchParams, searchParams, setStationsPage]
+  );
 
   const handlePageChange = (page: number) => {
     setStationsPage(page);
-  };
-
-  const toggleFavorite = async (id: number) => {
-    try {
-      if (favorites.includes(id)) {
-        await api.delete(`/favorites/${id}`);
-        setFavorites(prev => prev.filter(fid => fid !== id));
-      } else {
-        await api.post("/favorites/", { station_id: id });
-        setFavorites(prev => [...prev, id]);
-      }
-    } catch (err) {
-      console.error("Error toggling favorite:", err);
-      setError(t("pages.stations.errors.favorite"));
-    }
   };
 
   const handleStationClick = (id: number) => {
@@ -100,8 +81,6 @@ export default function StationsPage() {
     setStationsPage(1);
   };
 
-  const [totalCount, setTotalCount] = useState(0);
-
   if (loading && stations.length === 0) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -112,9 +91,7 @@ export default function StationsPage() {
 
   if (error) {
     return (
-      <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-        {error}
-      </div>
+      <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded">{error}</div>
     );
   }
 
@@ -122,10 +99,7 @@ export default function StationsPage() {
     <div className="p-6 max-w-6xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">{t("pages.stations.title")}</h1>
 
-      <SearchBar
-        initialValues={searchParams}
-        onSearchChange={handleSearchChange}
-      />
+      <SearchBar initialValues={searchParams} onSearchChange={handleSearchChange} />
 
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center space-x-2">
@@ -155,8 +129,11 @@ export default function StationsPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {stations.map(station => (
-            <div key={station.id} className="border rounded-lg overflow-hidden bg-white">
+          {stations.map((station) => (
+            <div
+              key={station.id}
+              className="border rounded-lg overflow-hidden bg-white"
+            >
               <div className="p-4">
                 <h2 className="text-xl font-semibold mb-2">
                   <button
@@ -168,13 +145,20 @@ export default function StationsPage() {
                 </h2>
 
                 <div className="mb-2">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    station.status === 'works' ? 'bg-green-100 text-green-800' :
-                    station.status === 'not_work' ? 'bg-red-100 text-red-800' :
-                    'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {station.status === 'works' ? t("pages.status.working") :
-                     station.status === 'not_work' ? t("pages.status.not_working") : t("pages.status.not_verified")}
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      station.status === "works"
+                        ? "bg-green-100 text-green-800"
+                        : station.status === "not_work"
+                        ? "bg-red-100 text-red-800"
+                        : "bg-yellow-100 text-yellow-800"
+                    }`}
+                  >
+                    {station.status === "works"
+                      ? t("pages.status.working")
+                      : station.status === "not_work"
+                      ? t("pages.status.not_working")
+                      : t("pages.status.not_verified")}
                   </span>
                 </div>
 
@@ -188,21 +172,11 @@ export default function StationsPage() {
               </div>
 
               <div className="border-t p-3 bg-gray-50">
-                <button
-                  onClick={() => toggleFavorite(station.id)}
-                  className={`flex items-center space-x-1 ${
-                    favorites.includes(station.id) ? "text-red-500" : "text-gray-400"
-                  }`}
-                >
-                  {favorites.includes(station.id) ? (
-                    <FaHeart className="text-red-500" />
-                  ) : (
-                    <FaRegHeart />
-                  )}
-                  <span>
-                    {favorites.includes(station.id) ? t("pages.favorite.remove") : t("pages.favorite.add")}
-                  </span>
-                </button>
+                <FavoriteButton
+                  stationId={station.id}
+                  addLabel={t("pages.favorite.add")}
+                  removeLabel={t("pages.favorite.remove")}
+                />
               </div>
             </div>
           ))}

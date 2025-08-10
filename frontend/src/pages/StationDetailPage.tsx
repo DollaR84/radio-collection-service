@@ -2,18 +2,19 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from "react-i18next";
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/client';
-import { Station, StationStatusType } from '../types';
+import { Station } from '../types';
 import { formatDate } from '../utils/dateUtils';
-import { FaHeart, FaRegHeart, FaCopy, FaArrowLeft } from 'react-icons/fa';
+import { FaCopy, FaArrowLeft } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
+import FavoriteButton from '../components/FavoriteButton';
 
 export default function StationDetailPage() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { token } = useAuth();
+
   const [station, setStation] = useState<Station | null>(null);
-  const [isFavorite, setIsFavorite] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -23,16 +24,6 @@ export default function StationDetailPage() {
         setLoading(true);
         const stationResponse = await api.get(`/stations/${id}`);
         setStation(stationResponse.data);
-        
-        if (token) {
-          try {
-            const favResponse = await api.get('/favorites/all');
-            const favoriteIds = favResponse.data.map((s: Station) => s.id);
-            setIsFavorite(favoriteIds.includes(Number(id)));
-          } catch (err) {
-            console.error('Failed to fetch favorites', err);
-          }
-        }
       } catch (err) {
         setError(t("pages.station_detail.errors.load"));
         console.error(err);
@@ -42,26 +33,7 @@ export default function StationDetailPage() {
     };
 
     fetchStationData();
-  }, [id, token]);
-
-  const toggleFavorite = async () => {
-    if (!token) {
-      alert(t("pages.station_detail.errors.login"));
-      return;
-    }
-
-    try {
-      if (isFavorite) {
-        await api.delete(`/favorites/${id}`);
-      } else {
-        await api.post('/favorites/', { station_id: id });
-      }
-      setIsFavorite(!isFavorite);
-    } catch (err) {
-      console.error('Error toggling favorite:', err);
-      setError(t("pages.station_detail.errors.update"));
-    }
-  };
+  }, [id, t]);
 
   const copyToClipboard = (url: string) => {
     navigator.clipboard.writeText(url).then(() => {
@@ -122,23 +94,14 @@ export default function StationDetailPage() {
             {station.name}
           </h1>
           
-          <button
-            onClick={toggleFavorite}
-            className={`flex items-center space-x-2 p-2 rounded focus:outline-none focus:ring-2 focus:ring-red-500 ${
-              isFavorite 
-                ? 'text-red-500 bg-red-50' 
-                : 'text-gray-500 hover:bg-gray-100'
-            }`}
-            aria-label={isFavorite ? t("pages.station_detail.favorite.remove", { name: station.name }) : t("pages.station_detail.favorite.add", { name: station.name })}
-            aria-pressed={isFavorite}
-          >
-            {isFavorite ? (
-              <FaHeart className="text-red-500" aria-hidden="true" />
-            ) : (
-              <FaRegHeart aria-hidden="true" />
-            )}
-            <span>{isFavorite ? t("pages.favorite.Remove") : t("pages.favorite.add")}</span>
-          </button>
+          {token && (
+            <FavoriteButton
+              stationId={station.id}
+              addLabel={t("pages.favorite.add")}
+              removeLabel={t("pages.favorite.remove")}
+              className="p-2 rounded focus:outline-none focus:ring-2 focus:ring-red-500"
+            />
+          )}
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
