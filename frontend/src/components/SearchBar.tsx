@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { StationStatusType } from "../types";
 import { useDebounce } from "../hooks/useDebounce";
 import { useTranslation } from "react-i18next";
@@ -18,18 +18,18 @@ interface SearchBarProps {
 
 export default function SearchBar({ initialValues, onSearchChange }: SearchBarProps) {
   const { t } = useTranslation();
-  // We combine all the search parameters in one state
+
   const [searchParams, setSearchParams] = useState({
     name: initialValues.name,
     tag: initialValues.tag,
     status_type: initialValues.status_type
   });
 
-  // Debowsim only text fields
   const debouncedName = useDebounce(searchParams.name, 500);
   const debouncedTag = useDebounce(searchParams.tag, 500);
 
-  // Synchronization with external changes in Initialvalvues
+  const isFirstRender = useRef(true);
+
   useEffect(() => {
     setSearchParams({
       name: initialValues.name,
@@ -38,8 +38,12 @@ export default function SearchBar({ initialValues, onSearchChange }: SearchBarPr
     });
   }, [initialValues]);
 
-  // Sending changes when updating parameters
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
     onSearchChange({
       name: debouncedName,
       tag: debouncedTag,
@@ -47,7 +51,6 @@ export default function SearchBar({ initialValues, onSearchChange }: SearchBarPr
     });
   }, [debouncedName, debouncedTag, searchParams.status_type, onSearchChange]);
 
-  // Changes for all fields
   const handleChange = (field: keyof typeof searchParams, value: string) => {
     setSearchParams(prev => ({
       ...prev,
@@ -55,7 +58,6 @@ export default function SearchBar({ initialValues, onSearchChange }: SearchBarPr
     }));
   };
 
-  // Full filter reset
   const handleReset = () => {
     const resetParams = {
       name: "",

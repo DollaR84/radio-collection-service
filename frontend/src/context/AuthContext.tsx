@@ -17,6 +17,8 @@ interface AuthContextType {
     tag: string;
     status_type: StationStatusType | "";
   }) => void;
+  stationsPage: number;
+  setStationsPage: (page: number) => void;
   login: (accessToken: string) => void;
   logout: () => Promise<void>;
   refreshToken: () => Promise<string | null>;
@@ -33,6 +35,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     tag: "",
     status_type: "" as StationStatusType | ""
   });
+
+  // Persist page in sessionStorage so it survives reloads; default = 1
+  const [stationsPageState, setStationsPageState] = useState<number>(() => {
+    const s = sessionStorage.getItem('stations_page');
+    return s ? Number(s) : 1;
+  });
+
+  const setStationsPage = useCallback((page: number) => {
+    sessionStorage.setItem('stations_page', String(page));
+    setStationsPageState(page);
+  }, []);
 
   const refreshToken = useCallback(async (): Promise<string | null> => {
     try {
@@ -116,14 +129,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [logout, refreshToken, fetchAccessRights]);
 
   useEffect(() => {
-    window.logoutUser = logout;
-    window.updateAuthContext = (newToken: string) => {
+    (window as any).logoutUser = logout;
+    (window as any).updateAuthContext = (newToken: string) => {
       sessionStorage.setItem('access_token', newToken);
       setToken(newToken);
     };
     return () => {
-      window.logoutUser = () => {};
-      window.updateAuthContext = () => {};
+      (window as any).logoutUser = () => {};
+      (window as any).updateAuthContext = () => {};
     };
   }, [logout]);
 
@@ -134,6 +147,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       accessRights,
       searchParams,
       setSearchParams,
+      stationsPage: stationsPageState,
+      setStationsPage,
       login,
       logout,
       refreshToken

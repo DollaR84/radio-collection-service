@@ -20,6 +20,9 @@ export default function FavoritesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
+  // Which station is expanded inline in the list (null = none)
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+
   useEffect(() => {
     const fetchFavorites = async () => {
       try {
@@ -42,6 +45,7 @@ export default function FavoritesPage() {
     try {
       await api.delete(`/favorites/${id}`);
       setFavorites(prev => prev.filter(station => station.id !== id));
+      if (expandedId === id) setExpandedId(null);
     } catch (error) {
       console.error('Failed to remove favorite:', error);
     }
@@ -62,6 +66,10 @@ export default function FavoritesPage() {
   const handleItemsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setItemsPerPage(Number(e.target.value));
     setCurrentPage(1);
+  };
+
+  const toggleExpand = (id: number) => {
+    setExpandedId(prev => (prev === id ? null : id));
   };
 
   if (loading) return (
@@ -92,7 +100,7 @@ export default function FavoritesPage() {
         
         <Pagination
           currentPage={currentPage}
-          totalPages={Math.ceil(totalCount / itemsPerPage)}
+          totalPages={Math.max(1, Math.ceil(totalCount / itemsPerPage))}
           onPageChange={setCurrentPage}
         />
       </div>
@@ -103,87 +111,124 @@ export default function FavoritesPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {favorites.map(station => (
-            <div 
-              key={station.id} 
-              className="border rounded-xl shadow-md overflow-hidden bg-white transition-transform hover:scale-105"
-            >
-              <div 
-                className="p-4 cursor-pointer"
-                onClick={() => handleStationClick(station.id)}
-                onKeyDown={(e) => e.key === 'Enter' && handleStationClick(station.id)}
-                tabIndex={0}
-                role="button"
-                aria-label={t("pages.favorites.view_details", { name: station.name })}
+          {favorites.map(station => {
+            const statusLabel =
+              station.status === 'works'
+                ? t("pages.status.working")
+                : station.status === 'not_work'
+                  ? t("pages.status.not_working")
+                  : t("pages.status.not_verified");
+
+            const isExpanded = expandedId === station.id;
+
+            return (
+              <article
+                key={station.id}
+                className="border rounded-xl shadow-md overflow-hidden bg-white transition-transform hover:scale-105"
+                aria-labelledby={`station-title-${station.id}`}
               >
-                <h3 className="text-xl font-semibold mb-2 text-blue-600 hover:underline">
-                  {station.name}
-                </h3>
-                
-                <div className="text-sm text-gray-600 mb-2">
-                  <p><span className="font-medium">{t("pages.status.title")}:</span>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  station.status === 'works' 
-                    ? 'bg-green-100 text-green-800' 
-                    : station.status === 'not_work' 
-                      ? 'bg-red-100 text-red-800'
-                      : 'bg-yellow-100 text-yellow-800'
-                }`}
-                aria-live="polite">
-                  {station.status === 'works' ? t("pages.status.working") : 
-                   station.status === 'not_work' ? t("pages.status.not_working") : t("pages.status.not_verified")}
-                </span>
-                  </p>
-                  <p><span className="font-medium">{t("pages.favorites.added")}:</span> {formatDate(station.created_at)}</p>
-                  <p><span className="font-medium">{t("pages.favorites.updated")}:</span> {formatDate(station.updated_at)}</p>
-                </div>
-                
-                <div className="flex flex-wrap gap-1 mb-3">
-                  {station.tags.map(tag => (
-                    <span 
-                      key={tag} 
-                      className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded"
+                <div className="p-4">
+                  {/* Header with real heading */}
+                  <header>
+                    <h3 id={`station-title-${station.id}`} className="text-xl font-semibold mb-2">
+                      {/* Accessible disclosure button inside the heading:
+                          - aria-expanded tells SR whether details are visible
+                          - aria-controls points to the panel id */}
+                      <button
+                        type="button"
+                        onClick={() => toggleExpand(station.id)}
+                        aria-expanded={isExpanded}
+                        aria-controls={`station-panel-${station.id}`}
+                        className="w-full text-left text-blue-600 hover:underline focus:outline-none"
+                      >
+                        {station.name}
+                      </button>
+                    </h3>
+                  </header>
+
+                  {/* Status immediately after the heading in DOM order */}
+                  <p className="text-sm text-gray-600 mb-2">
+                    <span className="font-medium">{t("pages.status.title")}:</span>{' '}
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        station.status === 'works'
+                          ? 'bg-green-100 text-green-800'
+                          : station.status === 'not_work'
+                            ? 'bg-red-100 text-red-800'
+                            : 'bg-yellow-100 text-yellow-800'
+                      }`}
+                      aria-live="polite"
+                      id={`station-status-${station.id}`}
                     >
-                      {tag}
+                      {statusLabel}
                     </span>
-                  ))}
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <a 
-                    href={station.url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-blue-500 hover:underline truncate text-sm"
-                    onClick={(e) => e.stopPropagation()}
+                  </p>
+
+                  {/* Inline panel with details (hidden when closed) */}
+                  <div
+                    id={`station-panel-${station.id}`}
+                    role="region"
+                    aria-labelledby={`station-title-${station.id}`}
+                    hidden={!isExpanded}
                   >
-                    {station.url}
-                  </a>
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      copyToClipboard(station.url);
-                    }}
-                    className="text-gray-500 hover:text-gray-700 ml-2"
-                    aria-label={t("pages.favorites.copy")}
-                  >
-                    <FaCopy />
-                  </button>
+                    <div className="text-sm text-gray-600 mb-2">
+                      <p>
+                        <span className="font-medium">{t("pages.favorites.added")}:</span> {formatDate(station.created_at)}
+                      </p>
+                      <p>
+                        <span className="font-medium">{t("pages.favorites.updated")}:</span> {formatDate(station.updated_at)}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1 mb-3">
+                      {station.tags.map(tag => (
+                        <span
+                          key={tag}
+                          className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+
+                    <div className="flex items-center justify-between mb-3">
+                      <a
+                        href={station.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 hover:underline truncate text-sm"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {station.url}
+                      </a>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          copyToClipboard(station.url);
+                        }}
+                        className="text-gray-500 hover:text-gray-700 ml-2"
+                        aria-label={t("pages.favorites.copy")}
+                      >
+                        <FaCopy />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Footer: remove button (placed last so SR reads it after content) */}
+                  <div className="border-t p-3 bg-gray-50 mt-3">
+                    <button
+                      onClick={() => removeFavorite(station.id)}
+                      className="flex items-center space-x-1 text-red-500 hover:text-red-700"
+                      aria-label={t("pages.favorites.remove")}
+                    >
+                      <FaHeart className="text-red-500" />
+                      <span>{t("pages.favorites.remove")}</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
-              
-              <div className="border-t p-3 bg-gray-50">
-                <button
-                  onClick={() => removeFavorite(station.id)}
-                  className="flex items-center space-x-1 text-red-500 hover:text-red-700"
-                  aria-label={t("pages.favorites.remove")}
-                >
-                  <FaHeart className="text-red-500" />
-                  <span>{t("pages.favorites.remove")}</span>
-                </button>
-              </div>
-            </div>
-          ))}
+              </article>
+            );
+          })}
         </div>
       )}
       
@@ -191,7 +236,7 @@ export default function FavoritesPage() {
       <div className="mt-6 flex justify-center">
         <Pagination
           currentPage={currentPage}
-          totalPages={Math.ceil(totalCount / itemsPerPage)}
+          totalPages={Math.max(1, Math.ceil(totalCount / itemsPerPage))}
           onPageChange={setCurrentPage}
         />
       </div>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/client";
-import { Station } from "../types";
+import { Station, StationStatusType } from "../types";
 import { useDebounce } from "../hooks/useDebounce";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import SearchBar from "../components/SearchBar";
@@ -9,16 +9,26 @@ import Pagination from "../components/Pagination";
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "react-i18next";
 
+function searchParamsEqual(a: { name: string; tag: string; status_type: StationStatusType | "" },
+                           b: { name: string; tag: string; status_type: StationStatusType | "" }) {
+  return a.name === b.name && a.tag === b.tag && a.status_type === b.status_type;
+}
+
 export default function StationsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { searchParams, setSearchParams } = useAuth();
+  const { searchParams, setSearchParams, stationsPage, setStationsPage } = useAuth();
+
   const [stations, setStations] = useState<Station[]>([]);
   const [favorites, setFavorites] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(25);
+  const currentPage = stationsPage;
+
+  const [itemsPerPage, setItemsPerPage] = useState<number>(() => {
+    const s = sessionStorage.getItem('stations_items_per_page');
+    return s ? Number(s) : 25;
+  });
   const [totalCount, setTotalCount] = useState(0);
 
   const debouncedName = useDebounce(searchParams.name, 500);
@@ -28,8 +38,8 @@ export default function StationsPage() {
     try {
       setLoading(true);
       const offset = (currentPage - 1) * itemsPerPage;
-      
-      const params = {
+
+      const params: any = {
         offset: offset.toString(),
         limit: itemsPerPage.toString(),
         ...(debouncedName && { name: debouncedName }),
@@ -51,7 +61,7 @@ export default function StationsPage() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, itemsPerPage, debouncedName, debouncedTag, searchParams.status_type]);
+  }, [currentPage, itemsPerPage, debouncedName, debouncedTag, searchParams.status_type, t]);
 
   useEffect(() => {
     fetchStations();
@@ -62,9 +72,15 @@ export default function StationsPage() {
     tag: string;
     status_type: StationStatusType | "";
   }) => {
-    setSearchParams(params);
-    setCurrentPage(1);
-  }, [setSearchParams]);
+    if (!searchParamsEqual(params, searchParams)) {
+      setSearchParams(params);
+      setStationsPage(1);
+    }
+  }, [setSearchParams, searchParams, setStationsPage]);
+
+  const handlePageChange = (page: number) => {
+    setStationsPage(page);
+  };
 
   const toggleFavorite = async (id: number) => {
     try {
@@ -86,8 +102,10 @@ export default function StationsPage() {
   };
 
   const handleItemsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setItemsPerPage(Number(e.target.value));
-    setCurrentPage(1);
+    const next = Number(e.target.value);
+    setItemsPerPage(next);
+    sessionStorage.setItem('stations_items_per_page', String(next));
+    setStationsPage(1);
   };
 
   if (loading && stations.length === 0) {
@@ -109,31 +127,31 @@ export default function StationsPage() {
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">{t("pages.stations.title")}</h1>
-      
-      <SearchBar 
+
+      <SearchBar
         initialValues={searchParams}
-        onSearchChange={handleSearchChange} 
+        onSearchChange={handleSearchChange}
       />
-      
+
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center space-x-2">
           <span>{t("pages.stations.show")}:</span>
-          <select 
-            value={itemsPerPage} 
+          <select
+            value={itemsPerPage}
             onChange={handleItemsPerPageChange}
             className="border rounded p-1"
           >
-            <option value="10">10</option>
-            <option value="25">25</option>
-            <option value="50">50</option>
+            <option value={10}>10</option>
+            <option value={25}>25</option>
+            <option value={50}>50</option>
           </select>
           <span>{t("pages.stations.stations_label")}</span>
         </div>
-        
+
         <Pagination
           currentPage={currentPage}
-          totalPages={Math.ceil(totalCount / itemsPerPage)}
-          onPageChange={setCurrentPage}
+          totalPages={Math.max(1, Math.ceil(totalCount / itemsPerPage))}
+          onPageChange={handlePageChange}
         />
       </div>
 
@@ -154,18 +172,18 @@ export default function StationsPage() {
                     {station.name}
                   </button>
                 </h2>
-                
+
                 <div className="mb-2">
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    station.status === 'works' ? 'bg-green-100 text-green-800' : 
-                    station.status === 'not_work' ? 'bg-red-100 text-red-800' : 
+                    station.status === 'works' ? 'bg-green-100 text-green-800' :
+                    station.status === 'not_work' ? 'bg-red-100 text-red-800' :
                     'bg-yellow-100 text-yellow-800'
                   }`}>
-                    {station.status === 'works' ? t("pages.status.working") : 
+                    {station.status === 'works' ? t("pages.status.working") :
                      station.status === 'not_work' ? t("pages.status.not_working") : t("pages.status.not_verified")}
                   </span>
                 </div>
-                
+
                 {station.tags.length > 0 && (
                   <div className="mt-3">
                     <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">
@@ -174,7 +192,7 @@ export default function StationsPage() {
                   </div>
                 )}
               </div>
-              
+
               <div className="border-t p-3 bg-gray-50">
                 <button
                   onClick={() => toggleFavorite(station.id)}
@@ -196,12 +214,12 @@ export default function StationsPage() {
           ))}
         </div>
       )}
-      
+
       <div className="mt-6 flex justify-center">
         <Pagination
           currentPage={currentPage}
-          totalPages={Math.ceil(totalCount / itemsPerPage)}
-          onPageChange={setCurrentPage}
+          totalPages={Math.max(1, Math.ceil(totalCount / itemsPerPage))}
+          onPageChange={handlePageChange}
         />
       </div>
     </div>
