@@ -19,6 +19,8 @@ interface AuthContextType {
   }) => void;
   stationsPage: number;
   setStationsPage: (page: number) => void;
+  itemsPerPage: number;
+  setItemsPerPage: (items: number) => void;
   login: (accessToken: string) => void;
   logout: () => Promise<void>;
   refreshToken: () => Promise<string | null>;
@@ -36,7 +38,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     status_type: "" as StationStatusType | ""
   });
 
-  // Persist page in sessionStorage so it survives reloads; default = 1
   const [stationsPageState, setStationsPageState] = useState<number>(() => {
     const s = sessionStorage.getItem('stations_page');
     return s ? Number(s) : 1;
@@ -45,6 +46,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const setStationsPage = useCallback((page: number) => {
     sessionStorage.setItem('stations_page', String(page));
     setStationsPageState(page);
+  }, []);
+
+  const [itemsPerPageState, setItemsPerPageState] = useState<number>(() => {
+    const s = sessionStorage.getItem('stations_items_per_page');
+    return s ? Number(s) : 25;
+  });
+
+  const setItemsPerPage = useCallback((items: number) => {
+    sessionStorage.setItem('stations_items_per_page', String(items));
+    setItemsPerPageState(items);
   }, []);
 
   const refreshToken = useCallback(async (): Promise<string | null> => {
@@ -149,6 +160,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSearchParams,
       stationsPage: stationsPageState,
       setStationsPage,
+      itemsPerPage: itemsPerPageState,
+      setItemsPerPage,
       login,
       logout,
       refreshToken

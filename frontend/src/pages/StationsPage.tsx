@@ -17,19 +17,12 @@ function searchParamsEqual(a: { name: string; tag: string; status_type: StationS
 export default function StationsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { searchParams, setSearchParams, stationsPage, setStationsPage } = useAuth();
+  const { searchParams, setSearchParams, stationsPage, setStationsPage, itemsPerPage, setItemsPerPage } = useAuth();
 
   const [stations, setStations] = useState<Station[]>([]);
   const [favorites, setFavorites] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const currentPage = stationsPage;
-
-  const [itemsPerPage, setItemsPerPage] = useState<number>(() => {
-    const s = sessionStorage.getItem('stations_items_per_page');
-    return s ? Number(s) : 25;
-  });
-  const [totalCount, setTotalCount] = useState(0);
 
   const debouncedName = useDebounce(searchParams.name, 500);
   const debouncedTag = useDebounce(searchParams.tag, 500);
@@ -37,7 +30,7 @@ export default function StationsPage() {
   const fetchStations = useCallback(async () => {
     try {
       setLoading(true);
-      const offset = (currentPage - 1) * itemsPerPage;
+      const offset = (stationsPage - 1) * itemsPerPage;
 
       const params: any = {
         offset: offset.toString(),
@@ -53,15 +46,15 @@ export default function StationsPage() {
       ]);
 
       setStations(stationsResponse.data.items);
-      setTotalCount(stationsResponse.data.total);
       setFavorites(favResponse.data.map((s: Station) => s.id));
+      setTotalCount(stationsResponse.data.total);
     } catch (err) {
       setError(t("pages.stations.errors.loading"));
       console.error(err);
     } finally {
       setLoading(false);
     }
-  }, [currentPage, itemsPerPage, debouncedName, debouncedTag, searchParams.status_type, t]);
+  }, [stationsPage, itemsPerPage, debouncedName, debouncedTag, searchParams.status_type, t]);
 
   useEffect(() => {
     fetchStations();
@@ -104,9 +97,10 @@ export default function StationsPage() {
   const handleItemsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const next = Number(e.target.value);
     setItemsPerPage(next);
-    sessionStorage.setItem('stations_items_per_page', String(next));
     setStationsPage(1);
   };
+
+  const [totalCount, setTotalCount] = useState(0);
 
   if (loading && stations.length === 0) {
     return (
@@ -149,7 +143,7 @@ export default function StationsPage() {
         </div>
 
         <Pagination
-          currentPage={currentPage}
+          currentPage={stationsPage}
           totalPages={Math.max(1, Math.ceil(totalCount / itemsPerPage))}
           onPageChange={handlePageChange}
         />
@@ -217,7 +211,7 @@ export default function StationsPage() {
 
       <div className="mt-6 flex justify-center">
         <Pagination
-          currentPage={currentPage}
+          currentPage={stationsPage}
           totalPages={Math.max(1, Math.ceil(totalCount / itemsPerPage))}
           onPageChange={handlePageChange}
         />
