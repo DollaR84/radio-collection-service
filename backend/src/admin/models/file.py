@@ -1,4 +1,4 @@
-from db.models import File
+from db.models import File, User
 
 from sqladmin import ModelView
 from sqladmin.filters import ForeignKeyFilter
@@ -68,5 +68,5 @@ class FileAdmin(ModelView, model=File):
     }
 
     column_filters = [
-        ForeignKeyFilter(File.user_id, File.user.user_name, title="User Name"),
+        ForeignKeyFilter(File.user_id, User.user_name, title="User Name"),
     ]

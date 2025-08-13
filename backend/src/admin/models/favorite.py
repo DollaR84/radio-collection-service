@@ -1,4 +1,4 @@
-from db.models import Favorite
+from db.models import Favorite, Station, User
 
 from sqladmin import ModelView
 from sqladmin.filters import ForeignKeyFilter
@@ -46,8 +46,8 @@ class FavoriteAdmin(ModelView, model=Favorite):
     ]
 
     column_filters = [
-        ForeignKeyFilter(Favorite.user_id, Favorite.user.user_name, title="User Name"),
-        ForeignKeyFilter(Favorite.station_id, Favorite.station.name, title="Station Name"),
+        ForeignKeyFilter(Favorite.user_id, User.user_name, title="User Name"),
+        ForeignKeyFilter(Favorite.station_id, Station.name, title="Station Name"),
     ]
 
     form_ajax_refs = {
