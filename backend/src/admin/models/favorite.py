@@ -1,7 +1,7 @@
 from db.models import Favorite
 
 from sqladmin import ModelView
-from sqladmin.filters import DateTimeBetween, ForeignKeyFilter
+from sqladmin.filters import ForeignKeyFilter
 
 
 class FavoriteAdmin(ModelView, model=Favorite):
@@ -48,7 +48,6 @@ class FavoriteAdmin(ModelView, model=Favorite):
     column_filters = [
         ForeignKeyFilter(Favorite.user_id, Favorite.user.user_name, title="User Name"),
         ForeignKeyFilter(Favorite.station_id, Favorite.station.name, title="Station Name"),
-        DateTimeBetween(column="created_at", name="Created Between"),
     ]
 
     form_ajax_refs = {
