@@ -65,6 +65,22 @@ class UserAdmin(ModelView, model=User):
         bool: BooleanFormatter(),
     }
 
+    column_formatters = {
+        "access_rights": lambda model, name: model.access_rights.name if model.access_rights else "",
+        "access_permissions": lambda model, name: ", ".join([
+            f"{p.access_rights.name} (expires {p.expires_at.strftime('%Y-%m-%d') if p.expires_at else 'never'})"
+            for p in model.access_permissions
+        ]) if model.access_permissions else "",
+        "created_at": (
+            lambda model, name:
+                model.created_at.strftime("%Y-%m-%d %H:%M") if model.created_at else ""
+        ),
+        "updated_at": (
+            lambda model, name:
+                model.updated_at.strftime("%Y-%m-%d %H:%M") if model.updated_at else ""
+        ),
+    }
+
     async def on_model_change(
             self,
             data: dict[str, Any],

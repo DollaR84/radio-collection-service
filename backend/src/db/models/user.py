@@ -43,6 +43,15 @@ class User(TimeCreateMixin, TimeUpdateMixin, Base):
         nullable=False,
     )
 
-    access_permissions: so.Mapped["AccessPermission"] = so.relationship("AccessPermission", back_populates="user")
-    favorites: so.Mapped["Favorite"] = so.relationship("Favorite", back_populates="user")
-    files: so.Mapped["File"] = so.relationship("File", back_populates="user")
+    access_permissions: so.Mapped[list["AccessPermission"]] = so.relationship(
+        "AccessPermission", back_populates="user",
+        cascade="all, delete-orphan", uselist=True
+    )
+    favorites: so.Mapped[list["Favorite"]] = so.relationship(
+        "Favorite", back_populates="user",
+        cascade="all, delete-orphan", uselist=True
+    )
+    files: so.Mapped[list["File"]] = so.relationship(
+        "File", back_populates="user",
+        cascade="all, delete-orphan", uselist=True
+    )
