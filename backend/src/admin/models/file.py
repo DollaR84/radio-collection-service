@@ -1,6 +1,7 @@
 from db.models import File
 
 from sqladmin import ModelView
+from sqladmin.filters import ForeignKeyFilter
 
 from ..formatters import BooleanFormatter
 
@@ -65,3 +66,7 @@ class FileAdmin(ModelView, model=File):
     column_type_formatters = {
         bool: BooleanFormatter(),
     }
+
+    column_filters = [
+        ForeignKeyFilter(File.user_id, File.user.user_name, title="User Name"),
+    ]
