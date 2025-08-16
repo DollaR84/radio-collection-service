@@ -94,7 +94,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchAccessRights = useCallback(async (accessToken: string) => {
     try {
-      const response = await api.get('/profile', {
+      const response = await api.get('/user/profile', {
         headers: { Authorization: `Bearer ${accessToken}` }
       });
       setAccessRights(response.data.access_rights || null);

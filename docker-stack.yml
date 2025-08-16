@@ -8,7 +8,7 @@ x-default-logging: &default-logging
 services:
   db:
     <<: *default-logging
-    image: postgres
+    image: postgres:17.5
     deploy:
       resources:
         limits:
