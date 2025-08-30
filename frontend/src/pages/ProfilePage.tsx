@@ -13,7 +13,8 @@ export default function ProfilePage() {
     first_name: '',
     last_name: '',
     access_rights: '',
-    uuid_id: ''
+    uuid_id: '',
+    has_password: false
   });
   const [userData, setUserData] = useState({
     user_name: '',
@@ -34,6 +35,20 @@ export default function ProfilePage() {
     first_name: '',
     last_name: ''
   });
+  
+  // States for managing the password modal window
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    current_password: '',
+    new_password: '',
+    confirm_password: ''
+  });
+  const [passwordErrors, setPasswordErrors] = useState({
+    current_password: '',
+    new_password: '',
+    confirm_password: ''
+  });
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   useBeforeUnload(touched, t("pages.profile.unsaved_changes"));
 
@@ -47,7 +62,8 @@ export default function ProfilePage() {
           first_name: response.data.first_name || '',
           last_name: response.data.last_name || '',
           access_rights: response.data.access_rights || 'default',
-          uuid_id: response.data.uuid_id || ''
+          uuid_id: response.data.uuid_id || '',
+          has_password: response.data.has_password || false
         };
         setInitialData(data);
         setUserData(data);
@@ -116,6 +132,38 @@ export default function ProfilePage() {
     return isValid;
   };
 
+  // Password validation
+  const validatePassword = () => {
+    const errors = {
+      current_password: '',
+      new_password: '',
+      confirm_password: ''
+    };
+    let isValid = true;
+
+    // If the user already has a password, the current password is required.
+    if (initialData.has_password && !passwordData.current_password) {
+      errors.current_password = t("pages.password.errors.current_password_required");
+      isValid = false;
+    }
+
+    if (!passwordData.new_password) {
+      errors.new_password = t("pages.password.errors.new_password_required");
+      isValid = false;
+    } else if (passwordData.new_password.length < 6) {
+      errors.new_password = t("pages.password.errors.password_short");
+      isValid = false;
+    }
+
+    if (passwordData.new_password !== passwordData.confirm_password) {
+      errors.confirm_password = t("pages.password.errors.password_mismatch");
+      isValid = false;
+    }
+
+    setPasswordErrors(errors);
+    return isValid;
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setUserData(prev => ({
@@ -124,6 +172,15 @@ export default function ProfilePage() {
     }));
     
     if (!touched) setTouched(true);
+  };
+
+  // Password field change handler
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setPasswordData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -152,7 +209,8 @@ export default function ProfilePage() {
         first_name: response.data.first_name,
         last_name: response.data.last_name,
         uuid_id: userData.uuid_id,
-        access_rights: userData.access_rights
+        access_rights: userData.access_rights,
+        has_password: initialData.has_password
       });
 
       setUserData({
@@ -169,6 +227,53 @@ export default function ProfilePage() {
       setError(err.response?.data?.detail || t("pages.profile.errors.update"));
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // Opening the modal window
+  const openPasswordModal = () => {
+    setIsPasswordModalOpen(true);
+    // Reset data on opening
+    setPasswordData({
+      current_password: '',
+      new_password: '',
+      confirm_password: ''
+    });
+    setPasswordErrors({
+      current_password: '',
+      new_password: '',
+      confirm_password: ''
+    });
+  };
+
+  // Closing the modal window
+  const closePasswordModal = () => {
+    setIsPasswordModalOpen(false);
+  };
+
+  // Password change handler
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    if (!validatePassword()) return;
+
+    setIsChangingPassword(true);
+    
+    try {
+      await api.patch('/user/password', {
+        current_password: initialData.has_password ? passwordData.current_password : undefined,
+        new_password: passwordData.new_password,
+        confirm_password: passwordData.confirm_password
+      });
+
+      setSuccess(t("pages.password.password_updated"));
+      setInitialData(prev => ({ ...prev, has_password: true }));
+      closePasswordModal();
+    } catch (err: any) {
+      setError(err.response?.data?.detail || t("pages.password.errors.password_update"));
+    } finally {
+      setIsChangingPassword(false);
     }
   };
 
@@ -328,6 +433,18 @@ export default function ProfilePage() {
           </button>
           
           <button 
+            type="button"
+            onClick={openPasswordModal}
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex-1"
+            aria-label={initialData.has_password ? t("pages.password.change_password") : t("pages.password.set_password")}
+          >
+            {initialData.has_password 
+              ? t("pages.password.change_password") 
+              : t("pages.password.set_password")
+            }
+          </button>
+          
+          <button 
             onClick={handleLogout}
             className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 flex-1"
             aria-label={t("pages.profile.logout")}
@@ -336,6 +453,119 @@ export default function ProfilePage() {
           </button>
         </div>
       </form>
+
+      {/* Modal window for changing the password */}
+      {isPasswordModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-md">
+            <div className="p-6">
+              <h2 className="text-xl font-bold mb-4">
+                {initialData.has_password 
+                  ? t("pages.password.change_password") 
+                  : t("pages.password.set_password")
+                }
+              </h2>
+              
+              <form onSubmit={handlePasswordSubmit}>
+                {initialData.has_password && (
+                  <div className="mb-4">
+                    <label htmlFor="current_password" className="block text-gray-700 mb-2">
+                      {t("pages.password.current_password")} *
+                    </label>
+                    <input
+                      id="current_password"
+                      name="current_password"
+                      type="password"
+                      value={passwordData.current_password}
+                      onChange={handlePasswordChange}
+                      className={`w-full p-2 border rounded ${
+                        passwordErrors.current_password ? 'border-red-500' : ''
+                      }`}
+                      aria-label={t("pages.password.current_password")}
+                    />
+                    {passwordErrors.current_password && (
+                      <p className="text-red-500 text-sm mt-1">{passwordErrors.current_password}</p>
+                    )}
+                  </div>
+                )}
+
+                <div className="mb-4">
+                  <label htmlFor="new_password" className="block text-gray-700 mb-2">
+                    {t("pages.password.new_password")} *
+                  </label>
+                  <input
+                    id="new_password"
+                    name="new_password"
+                    type="password"
+                    value={passwordData.new_password}
+                    onChange={handlePasswordChange}
+                    className={`w-full p-2 border rounded ${
+                      passwordErrors.new_password ? 'border-red-500' : ''
+                    }`}
+                    aria-label={t("pages.password.new_password")}
+                  />
+                  {passwordErrors.new_password && (
+                    <p className="text-red-500 text-sm mt-1">{passwordErrors.new_password}</p>
+                  )}
+                  <p className="text-sm text-gray-500 mt-1">{t("pages.password.password_requirements")}</p>
+                </div>
+
+                <div className="mb-6">
+                  <label htmlFor="confirm_password" className="block text-gray-700 mb-2">
+                    {t("pages.password.confirm_password")} *
+                  </label>
+                  <input
+                    id="confirm_password"
+                    name="confirm_password"
+                    type="password"
+                    value={passwordData.confirm_password}
+                    onChange={handlePasswordChange}
+                    className={`w-full p-2 border rounded ${
+                      passwordErrors.confirm_password ? 'border-red-500' : ''
+                    }`}
+                    aria-label={t("pages.password.confirm_password")}
+                  />
+                  {passwordErrors.confirm_password && (
+                    <p className="text-red-500 text-sm mt-1">{passwordErrors.confirm_password}</p>
+                  )}
+                </div>
+
+                <div className="flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={closePasswordModal}
+                    className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100"
+                    aria-label={t("pages.cancel")}
+                  >
+                    {t("pages.cancel")}
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isChangingPassword}
+                    className={`bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 ${
+                      isChangingPassword ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    {isChangingPassword ? (
+                      <span className="flex items-center justify-center">
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        {t("pages.profile.saving")}
+                      </span>
+                    ) : (
+                      initialData.has_password 
+                        ? t("pages.password.change_button") 
+                        : t("pages.password.set_button")
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

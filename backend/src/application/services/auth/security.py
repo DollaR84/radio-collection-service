@@ -21,13 +21,11 @@ from .types import TokenType
 
 
 class SecurityTool:
-    __slots__ = ("config", "pwd_context", "request",)
+    __slots__ = ("config", "pwd_context",)
 
-    def __init__(self, config: SecurityConfig, request: Request):
+    def __init__(self, config: SecurityConfig):
         self.config: SecurityConfig = config
         self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-        self.request: Request = request
 
     def get_password_hash(self, password: str) -> str:
         hashed_password: str = self.pwd_context.hash(password)
@@ -98,15 +96,15 @@ class SecurityTool:
 
         return uuid.UUID(uuid_id)
 
-    def get_access_token(self) -> str:
-        token = self.request.cookies.get("access_token")
+    def get_access_token(self, request: Request) -> str:
+        token = request.cookies.get("access_token")
         if not token:
             raise TokenNotFound()
 
         return token
 
-    def get_refresh_token(self) -> str:
-        token = self.request.cookies.get("refresh_token")
+    def get_refresh_token(self, request: Request) -> str:
+        token = request.cookies.get("refresh_token")
         if not token:
             raise TokenNotFound()
 

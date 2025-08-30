@@ -60,6 +60,11 @@ class UpdateUser(BaseUser):
 
 
 @dataclass(slots=True)
+class UpdatePassword(BaseData):
+    hashed_password: str
+
+
+@dataclass(slots=True)
 class PlusUser(User):
     access_rights: Literal[UserAccessRights.PLUS]
 

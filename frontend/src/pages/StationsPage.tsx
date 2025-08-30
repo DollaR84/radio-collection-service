@@ -5,7 +5,7 @@ import { Station, StationStatusType } from "../types";
 import { useDebounce } from "../hooks/useDebounce";
 import SearchBar from "../components/SearchBar";
 import Pagination from "../components/Pagination";
-import { useAuth } from "../context/AuthContext";
+import { useStations } from "../context/StationsContext";
 import { useTranslation } from "react-i18next";
 import FavoriteButton from "../components/FavoriteButton";
 
@@ -19,7 +19,7 @@ function searchParamsEqual(
 export default function StationsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { searchParams, setSearchParams, stationsPage, setStationsPage, itemsPerPage, setItemsPerPage } = useAuth();
+  const { searchParams, setSearchParams, stationsPage, setStationsPage, itemsPerPage, setItemsPerPage } = useStations();
 
   const [stations, setStations] = useState<Station[]>([]);
   const [loading, setLoading] = useState(true);

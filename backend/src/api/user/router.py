@@ -7,6 +7,7 @@ from fastapi import APIRouter, HTTPException, status
 
 from application import dto
 from application import interactors
+from application.services import Authenticator
 from application.types import UserAccessRights
 
 from .. import schemas
@@ -23,7 +24,9 @@ router = APIRouter(prefix="/user", route_class=DishkaRoute)
 async def get_user_profile(
         user: FromDishka[dto.CurrentUser],
 ) -> schemas.UserInfoResponse:
-    return schemas.UserInfoResponse(**user.dict())
+    user_data = schemas.UserInfoResponse(**user.dict())
+    user_data.has_password = bool(user.hashed_password)
+    return user_data
 
 
 @router.patch(
@@ -45,6 +48,48 @@ async def update_user_data(
         last_name=data.last_name,
     )
     await updater(user.uuid_id, update_data)
+
+    update_user = await interactor(user.uuid_id)
+    if update_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="An error occurred while retrieving updated user data",
+        )
+
+    return schemas.UserInfoResponse(**update_user.dict())
+
+
+@router.patch(
+    "/password",
+    description="Method for change user password",
+    status_code=status.HTTP_200_OK,
+    response_model=schemas.UserInfoResponse,
+)
+async def update_user_password(
+        auth: FromDishka[Authenticator],
+        user: FromDishka[dto.CurrentUser],
+        updater: FromDishka[interactors.UpdateUserPassword],
+        interactor: FromDishka[interactors.GetUserByUUID],
+        data: schemas.PasswordUpdate,
+) -> schemas.UserInfoResponse:
+    if data.current_password:
+        if not auth.verify_password(plain_password=data.current_password, hashed_password=user.hashed_password):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="incorrect current password",
+            )
+
+    if data.new_password != data.confirm_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="new password and confirm password mismatch",
+        )
+
+    hashed_password = auth.get_password_hash(data.new_password)
+    update_data = dto.UpdatePassword(
+        hashed_password=hashed_password,
+    )
+    await updater(user, update_data)
 
     update_user = await interactor(user.uuid_id)
     if update_user is None:

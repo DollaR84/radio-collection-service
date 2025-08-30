@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import DonatePage from "./pages/DonatePage";
 import LoginPage from "./pages/LoginPage";
@@ -12,10 +12,10 @@ import LoadingSpinner from "./components/LoadingSpinner";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import { useAuth } from "./context/AuthContext";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 export default function App() {
-  const { token, isLoading, accessRights } = useAuth();
-  const location = useLocation();
+  const { token, isLoading } = useAuth();
 
   if (isLoading) {
     return (
@@ -25,78 +25,68 @@ export default function App() {
     );
   }
 
-  const isPublicHome = location.pathname === "/";
-
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
 
       <main className="flex-grow container mx-auto px-4 py-6">
         <Routes>
-          <Route
-            path="/"
-            element={
-              <HomePage />
-            }
-          />
+          <Route path="/" element={<HomePage />} />
+          <Route path="/donate" element={<DonatePage />} />
 
-          <Route
-            path="/donate"
+          <Route 
+            path="/stations" 
             element={
-              <DonatePage />
-            }
-          />
-
-          <Route
-            path="/stations"
-            element={
-              token ? <StationsPage /> : <Navigate to="/login" replace />
-            }
+              <ProtectedRoute>
+                <StationsPage />
+              </ProtectedRoute>
+            } 
           />
 
           <Route path="/station/:id" element={<StationDetailPage />} />
 
-          <Route
-            path="/favorites"
+          <Route 
+            path="/favorites" 
             element={
-              token ? <FavoritesPage /> : <Navigate to="/login" replace />
-            }
+              <ProtectedRoute>
+                <FavoritesPage />
+              </ProtectedRoute>
+            } 
           />
 
-          <Route
-            path="/profile"
+          <Route 
+            path="/profile" 
             element={
-              token ? <ProfilePage /> : <Navigate to="/login" replace />
-            }
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            } 
           />
 
-          <Route
-            path="/upload"
+          <Route 
+            path="/upload" 
             element={
-              token && accessRights !== 'default'
-                ? <AddStationsPage />
-                : <Navigate to={token ? "/stations" : "/login"} replace />
-            }
+              <ProtectedRoute>
+                <AddStationsPage />
+              </ProtectedRoute>
+            } 
           />
 
-          <Route
-            path="/login"
-            element={
-              token ? <Navigate to="/profile" replace /> : <LoginPage />
-            }
+          <Route 
+            path="/login" 
+            element={token ? <Navigate to="/profile" replace /> : <LoginPage />} 
           />
 
-          <Route
-            path="/signup"
-            element={
-              token ? <Navigate to="/profile" replace /> : <SignupPage />
-            }
+          <Route 
+            path="/signup" 
+            element={token ? <Navigate to="/profile" replace /> : <SignupPage />} 
           />
 
-          <Route
-            path="*"
-            element={<Navigate to={token ? "/stations" : "/login"} replace />}
+          <Route 
+            path="*" 
+            element={<Navigate to={token ? "/stations" : "/login"} replace />} 
           />
+
         </Routes>
       </main>
 

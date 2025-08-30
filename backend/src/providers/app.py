@@ -15,6 +15,7 @@ class AppProvider(Provider):
     update_user_by_uuid_interactor = provide(interactors.UpdateUserByUUID, scope=Scope.REQUEST)
     update_user_by_google_interactor = provide(interactors.UpdateUserByGoogle, scope=Scope.REQUEST)
     update_user_by_email_interactor = provide(interactors.UpdateUserByEmail, scope=Scope.REQUEST)
+    update_user_password_interactor = provide(interactors.UpdateUserPassword, scope=Scope.REQUEST)
 
     create_station_interactor = provide(interactors.CreateStation, scope=Scope.REQUEST)
     create_stations_interactor = provide(interactors.CreateStations, scope=Scope.REQUEST)

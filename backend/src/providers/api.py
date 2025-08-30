@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 from dishka import from_context, Provider, Scope, provide
 
@@ -19,6 +20,8 @@ class ApiProvider(Provider):
     oauth2_scheme = from_context(provides=OAuth2PasswordBearer, scope=Scope.APP)
     request = from_context(provides=Request, scope=Scope.REQUEST)
 
+    authenticator: Optional[Authenticator] = None
+
     @provide(scope=Scope.REQUEST)
     async def get_access_token(
             self,
@@ -30,15 +33,17 @@ class ApiProvider(Provider):
         if token:
             token = token.replace("Bearer", "").strip()
         else:
-            token = auth.get_access_token()
+            token = auth.get_access_token(request)
 
         if token is None:
             raise ValueError("token not found")
         return dto.AccessToken(value=token)
 
     @provide(scope=Scope.REQUEST)
-    async def get_auth(self, config: Config, request: Request) -> Authenticator:
-        return Authenticator(config, request)
+    async def get_auth(self, config: Config) -> Authenticator:
+        if self.authenticator is None:
+            self.authenticator = Authenticator(config)
+        return self.authenticator
 
     @provide(scope=Scope.REQUEST)
     async def get_current_user(

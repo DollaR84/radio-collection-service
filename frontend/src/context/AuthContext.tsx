@@ -1,29 +1,12 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import axios from 'axios';
 import api from '../api/client';
-import { StationStatusType } from '../types';
 
 interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   accessRights: string | null;
-  searchParams: {
-    name: string;
-    tag: string;
-    status_type: StationStatusType | "";
-  };
-  setSearchParams: (params: {
-    name: string;
-    tag: string;
-    status_type: StationStatusType | "";
-  }) => void;
-  stationsPage: number;
-  setStationsPage: (page: number) => void;
-  itemsPerPage: number;
-  setItemsPerPage: (items: number) => void;
   login: (accessToken: string) => void;
   logout: () => Promise<void>;
-  refreshToken: () => Promise<string | null>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -32,52 +15,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [token, setToken] = useState<string | null>(null);
   const [accessRights, setAccessRights] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchParams, setSearchParams] = useState({
-    name: "",
-    tag: "",
-    status_type: "" as StationStatusType | ""
-  });
 
-  const [stationsPageState, setStationsPageState] = useState<number>(() => {
-    const s = sessionStorage.getItem('stations_page');
-    return s ? Number(s) : 1;
-  });
-
-  const setStationsPage = useCallback((page: number) => {
-    sessionStorage.setItem('stations_page', String(page));
-    setStationsPageState(page);
-  }, []);
-
-  const [itemsPerPageState, setItemsPerPageState] = useState<number>(() => {
-    const s = sessionStorage.getItem('stations_items_per_page');
-    return s ? Number(s) : 25;
-  });
-
-  const setItemsPerPage = useCallback((items: number) => {
-    sessionStorage.setItem('stations_items_per_page', String(items));
-    setItemsPerPageState(items);
-  }, []);
-
-  const refreshToken = useCallback(async (): Promise<string | null> => {
+  const checkAuthStatus = useCallback(async (): Promise<boolean> => {
     try {
-      const response = await axios.post('/api/auth/refresh', {}, { withCredentials: true });
-      if (response.data.access_token) {
-        const newToken = response.data.access_token;
-        sessionStorage.setItem('access_token', newToken);
-        setToken(newToken);
-        return newToken;
-      }
-      return null;
+      const response = await api.get('/auth/status', { withCredentials: true });
+      return response.data.authenticated;
     } catch (error) {
-      console.error('Token refresh failed:', error);
-      await logout();
-      return null;
+      console.error('Auth status check failed:', error);
+      return false;
     }
   }, []);
 
   const logout = useCallback(async () => {
     try {
-      await api.post('/auth/logout');
+      await api.post('/auth/logout', {}, { withCredentials: true });
     } catch (error) {
       console.error('Logout API error:', error);
     } finally {
@@ -92,52 +43,76 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setToken(accessToken);
   }, []);
 
-  const fetchAccessRights = useCallback(async (accessToken: string) => {
+  const fetchAccessRights = useCallback(async () => {
     try {
-      const response = await api.get('/user/profile', {
-        headers: { Authorization: `Bearer ${accessToken}` }
-      });
+      const response = await api.get('/user/profile', { withCredentials: true });
       setAccessRights(response.data.access_rights || null);
+      
     } catch (error) {
       console.error('Failed to load user access rights:', error);
       setAccessRights(null);
     }
   }, []);
 
-  useEffect(() => {
-    const verifyToken = async () => {
-      const storedToken = sessionStorage.getItem('access_token');
-      if (!storedToken) {
-        setIsLoading(false);
-        return;
+  const fetchToken = useCallback(async (): Promise<string | null> => {
+    try {
+      const response = await api.get('/auth/token', { withCredentials: true });
+      if (response.data.access_token) {
+        sessionStorage.setItem('access_token', response.data.access_token);
+        setToken(response.data.access_token);
+        return response.data.access_token;
       }
+      return null;
+    } catch (error) {
+      console.error('Failed to fetch token:', error);
+      return null;
+    }
+  }, []);
 
-      try {
-        await api.get('/auth/validate', {
-          headers: { Authorization: `Bearer ${storedToken}` }
-        });
-        setToken(storedToken);
-        await fetchAccessRights(storedToken);
-      } catch (error) {
-        console.log('Token validation failed, trying to refresh...');
+  useEffect(() => {
+    const initializeAuth = async () => {
+      setIsLoading(true);
+      
+      const storedToken = sessionStorage.getItem('access_token');
+      
+      if (storedToken) {
         try {
-          const newToken = await refreshToken();
-          if (newToken) {
-            await fetchAccessRights(newToken);
+          await api.get('/auth/validate', {
+            headers: { Authorization: `Bearer ${storedToken}` }
+          });
+          setToken(storedToken);
+          await fetchAccessRights();
+        } catch (error) {
+          console.log('Stored token invalid, checking auth status...');
+          const isAuthenticated = await checkAuthStatus();
+          if (isAuthenticated) {
+            const newToken = await fetchToken();
+            if (newToken) {
+              await fetchAccessRights();
+            } else {
+              await logout();
+            }
           } else {
             await logout();
           }
-        } catch (refreshError) {
-          console.error('Refresh token failed:', refreshError);
-          await logout();
         }
-      } finally {
-        setIsLoading(false);
+      } else {
+        const isAuthenticated = await checkAuthStatus();
+        if (isAuthenticated) {
+          const newToken = await fetchToken();
+          if (newToken) {
+            await fetchAccessRights();
+          } else {
+            await logout();
+          }
+        }
       }
+      
+      setIsLoading(false);
     };
 
-    verifyToken();
-  }, [logout, refreshToken, fetchAccessRights]);
+    initializeAuth();
+  }, [checkAuthStatus, fetchAccessRights, fetchToken, logout]);
 
   useEffect(() => {
     (window as any).logoutUser = logout;
@@ -145,6 +120,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       sessionStorage.setItem('access_token', newToken);
       setToken(newToken);
     };
+    
     return () => {
       (window as any).logoutUser = () => {};
       (window as any).updateAuthContext = () => {};
@@ -156,15 +132,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       token,
       isLoading,
       accessRights,
-      searchParams,
-      setSearchParams,
-      stationsPage: stationsPageState,
-      setStationsPage,
-      itemsPerPage: itemsPerPageState,
-      setItemsPerPage,
       login,
       logout,
-      refreshToken
     }}>
       {children}
     </AuthContext.Provider>

@@ -31,6 +31,9 @@ class UserLoginByPassword(BaseUser):
 class UserGoogle(BaseUser):
     google_id: str
 
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+
 
 class UserUpdate(BaseModel):
     email: Optional[str] = None
@@ -38,6 +41,12 @@ class UserUpdate(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     access_rights: Optional[UserAccessRights] = None
+
+
+class PasswordUpdate(BaseModel):
+    new_password: str
+    confirm_password: str
+    current_password: Optional[str] = None
 
 
 class UserResponse(BaseModel):
@@ -56,6 +65,7 @@ class UserInfoResponse(UserResponse):
     is_active: bool
     is_admin: bool
 
+    has_password: bool = False
     access_rights: UserAccessRights = UserAccessRights.DEFAULT
 
 

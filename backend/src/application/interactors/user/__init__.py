@@ -9,7 +9,14 @@ from .read import (
     GetCurrentAccessPermission,
     GetAccessPermissions,
 )
-from .update import UpdateUserByID, UpdateUserByUUID, UpdateUserByGoogle, UpdateUserByEmail, UpdateAccessPermission
+from .update import (
+    UpdateUserByID,
+    UpdateUserByUUID,
+    UpdateUserByGoogle,
+    UpdateUserByEmail,
+    UpdateUserPassword,
+    UpdateAccessPermission,
+)
 
 
 __all__ = [
@@ -23,6 +30,7 @@ __all__ = [
     "UpdateUserByUUID",
     "UpdateUserByGoogle",
     "UpdateUserByEmail",
+    "UpdateUserPassword",
 
     "CreateAccessPermission",
     "DeleteAccessPermission",

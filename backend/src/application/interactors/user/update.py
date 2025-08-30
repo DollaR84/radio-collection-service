@@ -40,6 +40,13 @@ class UpdateUserByEmail(BaseUpdateUser):
         return await self.gateway.update_user_by_email(email, domain_data)
 
 
+class UpdateUserPassword(BaseUpdateUser):
+
+    async def __call__(self, user: dto.User, update_data: dto.UpdatePassword) -> int:
+        domain_data = domain.UpdateUserModel(**update_data.dict())
+        return await self.gateway.update_user_by_uuid(user.uuid_id, domain_data)
+
+
 class UpdateAccessPermission:
 
     def __init__(self, gateway: interfaces.UpdateAccessPermissionInterface):

@@ -40,6 +40,7 @@
   "pages": {
     "show": "Show",
     "per_page": "stations per page",
+    "cancel": "Cancel",
     "status": {
       "title": "Status",
       "working": "Working",
@@ -50,14 +51,34 @@
       "remove": "Remove Favorite",
       "add": "Add Favorite"
     },
+    "password": {
+      "password": "Password",
+      "password_placeholder": "Password",
+      "confirm_password": "Confirm Password",
+      "confirm_password_placeholder": "Confirm Password",
+      "change_password": "Change password",
+      "set_password": "Set password",
+      "current_password": "Current password",
+      "new_password": "New password",
+      "password_requirements": "Password must be at least 6 characters long",
+      "password_updated": "Password updated successfully",
+      "change_button": "Change",
+      "set_button": "Set",
+      "errors": {
+        "password_mismatch": "Passwords do not match",
+        "current_password_required": "Current password required",
+        "new_password_required": "New password required",
+        "password_short": "Password short",
+        "password_update": "Error password update"
+      }
+    },
     "login": {
       "title": "Login",
       "email": "Email",
       "email_placeholder": "Email",
-      "password": "Password",
-      "password_placeholder": "Password",
       "processing": "Processing...",
-      "button": "Login",
+      "login_button": "Login",
+      "google_button": "Login via Google",
       "no_account": "Don't have an account?",
       "signup_link": "Sign up",
       "errors": {
@@ -65,7 +86,8 @@
         "no_token": "Server didn't return authentication token",
         "invalid_credentials": "Invalid credentials",
         "server": "Error {{status}}: {{detail}}",
-        "network": "Network error. Please try again."
+        "network": "Network error. Please try again.",
+        "google_failed": "invalid google response"
       }
     },
     "signup": {
@@ -74,17 +96,12 @@
       "username_placeholder": "Username",
       "email": "Email",
       "email_placeholder": "Email",
-      "password": "Password",
-      "password_placeholder": "Password",
-      "confirm_password": "Confirm Password",
-      "confirm_password_placeholder": "Confirm Password",
       "processing": "Creating account...",
       "button": "Sign Up",
       "have_account": "Already have an account?",
       "login_link": "Log in",
       "errors": {
         "username_required": "Username is required",
-        "password_mismatch": "Passwords do not match",
         "no_token": "Registration successful, but no token received",
         "failed": "Registration failed",
         "server": "Error {{status}}: {{detail}}",

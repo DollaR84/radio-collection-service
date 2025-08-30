@@ -11,6 +11,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.openapi.utils import get_openapi
 
+from starlette.middleware.sessions import SessionMiddleware
+
 from workers import TaskManager
 
 from . import auth
@@ -57,6 +59,14 @@ class FastAPIApp:
             allow_credentials=self.config.allow_credentials,
             allow_methods=self.config.allow_methods,
             allow_headers=self.config.allow_headers,
+        )
+
+        self.app.add_middleware(
+            SessionMiddleware,
+            secret_key=self.config.secret_key,
+            max_age=self.config.max_age,
+            same_site=self.config.same_site,
+            https_only=self.config.https_only,
         )
 
         self.app.mount("/static", StaticFiles(directory="/app/static"), name="static")

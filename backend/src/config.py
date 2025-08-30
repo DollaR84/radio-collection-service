@@ -56,6 +56,11 @@ class APIConfig(BaseSettings):
     description: str
     version: str
     upload_folder: str
+    secret_key: str
+
+    max_age: int = 3600
+    same_site: str = "lax"
+    https_only: bool = True
     debug: bool = False
 
     allow_credentials: bool = True

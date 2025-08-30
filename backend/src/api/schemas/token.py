@@ -10,3 +10,7 @@ class TokenFormResponse(BaseModel):
 
 class AccessTokenResponse(BaseModel):
     access_token: str
+
+
+class AccessStatusResponse(BaseModel):
+    authenticated: bool

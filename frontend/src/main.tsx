@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import { AuthProvider } from './context/AuthContext';
 import { FavoritesProvider } from './context/FavoritesContext';
+import { StationsProvider } from './context/StationsContext';
 import { BrowserRouter } from 'react-router-dom';
 import './index.css';
 import "./utils/i18n";
@@ -15,9 +16,11 @@ if (rootElement) {
     <React.StrictMode>
       <AuthProvider>
         <FavoritesProvider>
-          <BrowserRouter>
-            <App />
-          </BrowserRouter>
+          <StationsProvider>
+            <BrowserRouter>
+              <App />
+            </BrowserRouter>
+          </StationsProvider>
         </FavoritesProvider>
       </AuthProvider>
     </React.StrictMode>

@@ -30,7 +30,7 @@ export default function SignupPage() {
       }
 
     if (password !== confirm_password) {
-      setError(t("pages.signup.errors.password_mismatch"));
+      setError(t("pages.password.errors.password_mismatch"));
       return;
     }
 
@@ -106,11 +106,11 @@ export default function SignupPage() {
         </div>
 
         <div>
-          <label htmlFor="password" className="sr-only">{t("pages.signup.password")}</label>
+          <label htmlFor="password" className="sr-only">{t("pages.password.password")}</label>
           <input
             id="password"
             type="password"
-            placeholder={t("pages.signup.password_placeholder")}
+            placeholder={t("pages.password.password_placeholder")}
             className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -122,11 +122,11 @@ export default function SignupPage() {
         </div>
 
         <div>
-          <label htmlFor="confirm_password" className="sr-only">{t("pages.signup.confirm_password")}</label>
+          <label htmlFor="confirm_password" className="sr-only">{t("pages.password.confirm_password")}</label>
           <input
             id="confirm_password"
             type="password"
-            placeholder={t("pages.signup.confirm_password_placeholder")}
+            placeholder={t("pages.password.confirm_password_placeholder")}
             className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
             value={confirm_password}
             onChange={(e) => setConfirmPassword(e.target.value)}

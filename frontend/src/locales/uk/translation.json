@@ -40,6 +40,7 @@
   "pages": {
     "show": "Показати",
     "per_page": "станцій на сторінці",
+    "cancel": "Скасувати",
     "status": {
       "title": "Статус",
       "working": "Працює",
@@ -50,14 +51,34 @@
       "remove": "Видалити з улюблених",
       "add": "Додати до улюблених"
     },
+    "password": {
+      "password": "Пароль",
+      "password_placeholder": "Пароль",
+      "confirm_password": "Підтвердьте пароль",
+      "confirm_password_placeholder": "Підтвердьте пароль",
+      "change_password": "Змінити пароль",
+      "set_password": "Встановити пароль",
+      "current_password": "Поточний пароль",
+      "new_password": "Новий пароль",
+      "password_requirements": "Пароль має містити щонайменше 6 символів",
+      "password_updated": "Пароль успішно оновлено",
+      "change_button": "Змінити",
+      "set_button": "Встановити",
+      "errors": {
+        "password_mismatch": "Паролі не збігаються",
+        "current_password_required": "Потрібен поточний пароль",
+        "new_password_required": "Потрібен новий пароль",
+        "password_short": "Короткий пароль",
+        "password_update": "Помилка оновлення пароля"
+      }
+    },
     "login": {
       "title": "Вхід",
       "email": "Електронна пошта",
       "email_placeholder": "Електронна пошта",
-      "password": "Пароль",
-      "password_placeholder": "Пароль",
       "processing": "Обробка...",
-      "button": "Увійти",
+      "login_button": "Увійти",
+      "google_button": "Увійти за допомогою Google",
       "no_account": "Ще не маєте акаунта?",
       "signup_link": "Зареєструватися",
       "errors": {
@@ -65,7 +86,8 @@
         "no_token": "Сервер не повернув токен авторизації",
         "invalid_credentials": "Неправильні облікові дані",
         "server": "Помилка {{status}}: {{detail}}",
-        "network": "Помилка мережі. Спробуйте ще раз."
+        "network": "Помилка мережі. Спробуйте ще раз.",
+        "google_failed": "недійсна відповідь Google"
       }
     },
     "signup": {
@@ -74,17 +96,12 @@
       "username_placeholder": "Ім'я користувача",
       "email": "Електронна пошта",
       "email_placeholder": "Електронна пошта",
-      "password": "Пароль",
-      "password_placeholder": "Пароль",
-      "confirm_password": "Підтвердьте пароль",
-      "confirm_password_placeholder": "Підтвердьте пароль",
       "processing": "Створення акаунта...",
       "button": "Зареєструватися",
       "have_account": "Вже маєте акаунт?",
       "login_link": "Увійти",
       "errors": {
         "username_required": "Ім'я користувача обов'язкове",
-        "password_mismatch": "Паролі не збігаються",
         "no_token": "Реєстрація успішна, але токен не отримано",
         "failed": "Помилка реєстрації",
         "server": "Помилка {{status}}: {{detail}}",
