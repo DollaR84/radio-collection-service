@@ -1,9 +1,9 @@
-from typing import Any
+from typing import Any, cast
 
 from application.services import Resolver
 from application.types import UserAccessRights
 
-from db.models import User
+from db.models import User, AccessPermission
 
 from sqladmin import ModelView
 
@@ -66,18 +66,21 @@ class UserAdmin(ModelView, model=User):
     }
 
     column_formatters = {
-        "access_rights": lambda model, name: model.access_rights.name if model.access_rights else "",
+        "access_rights": (
+            lambda model, name:
+                cast(User, model).access_rights.name if cast(User, model).access_rights else ""
+        ),
         "access_permissions": lambda model, name: ", ".join([
             f"{p.access_rights.name} (expires {p.expires_at.strftime('%Y-%m-%d') if p.expires_at else 'never'})"
-            for p in model.access_permissions
-        ]) if model.access_permissions else "",
+            for p in cast(list[AccessPermission], cast(User, model).access_permissions)
+        ]) if cast(User, model).access_permissions else "",
         "created_at": (
             lambda model, name:
-                model.created_at.strftime("%Y-%m-%d %H:%M") if model.created_at else ""
+                cast(User, model).created_at.strftime("%Y-%m-%d %H:%M") if cast(User, model).created_at else ""
         ),
         "updated_at": (
             lambda model, name:
-                model.updated_at.strftime("%Y-%m-%d %H:%M") if model.updated_at else ""
+                cast(User, model).updated_at.strftime("%Y-%m-%d %H:%M") if cast(User, model).updated_at else ""
         ),
     }
 

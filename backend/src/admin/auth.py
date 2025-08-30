@@ -24,10 +24,10 @@ class AdminAuth(AuthenticationBackend):
         return True
 
     async def authenticate(self, request: Request) -> bool:
-        authenticator = Authenticator(self.config, request)
+        authenticator = Authenticator(self.config)
 
         try:
-            token_value = authenticator.get_access_token()
+            token_value = authenticator.get_access_token(request)
             token = AccessToken(value=token_value)
 
             async with request.state.container() as container:
