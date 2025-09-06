@@ -1,1 +1,1 @@
-docker compose exec db pg_dump -U postgres -d radiocenter backup/backup.sql
+docker compose exec db pg_dump -U postgres -d radiocenter -f backup/backup.sql
