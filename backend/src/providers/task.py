@@ -11,6 +11,9 @@ from application.interactors import (
     GetPlsFilesForParse,
     GetJsonFilesForParse,
     UpdateFileLoadStatus,
+    GetUsers,
+    GetCurrentAccessPermission,
+    UpdateUserByID,
 )
 from application.services import CollectionParser, M3UParser, PLSParser, JsonParser, RadioTester
 
@@ -24,6 +27,7 @@ from workers.tasks import (
     M3uPlaylistTask,
     PlsPlaylistTask,
     JsonPlaylistTask,
+    PermissionDefaultTask,
     TestNotVerifiedTask,
     TestNotWorkTask,
     TestWorksTask,
@@ -105,6 +109,15 @@ class TaskProvider(Provider):
             update_status: UpdateFileLoadStatus,
     ) -> JsonPlaylistTask:
         return JsonPlaylistTask(parser, get_json_files, get_all_urls, creator, update_status)
+
+    @provide(scope=Scope.REQUEST)
+    async def get_permission_default_task(
+            self,
+            get_users: GetUsers,
+            get_current_permission: GetCurrentAccessPermission,
+            updater: UpdateUserByID,
+    ) -> PermissionDefaultTask:
+        return PermissionDefaultTask(get_users, get_current_permission, updater)
 
     @provide(scope=Scope.REQUEST)
     async def get_test_not_verified_task(

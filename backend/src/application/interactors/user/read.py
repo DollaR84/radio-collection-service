@@ -40,6 +40,16 @@ class GetUserByEmail(BaseGetUser):
         return dto.User(**domain_data.dict()) if domain_data else None
 
 
+class GetUsers(BaseGetUser):
+
+    async def __call__(self, exclude_access_rights: Optional[list[UserAccessRights]] = None) -> list[dto.User]:
+        domain_data = await self.gateway.get_users(exclude_access_rights)
+        return [
+            dto.User(**user.dict())
+            for user in domain_data
+        ]
+
+
 class BaseGetAccessPermission:
 
     def __init__(self, gateway: interfaces.GetAccessPermissionInterface):

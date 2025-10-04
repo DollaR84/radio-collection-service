@@ -25,6 +25,12 @@ class GetUserInterface(Protocol):
     async def get_user_by_email(self, email: str) -> Optional[domain.UserModel]:
         ...
 
+    async def get_users(
+            self,
+            exclude_access_rights: Optional[list[UserAccessRights]] = None,
+    ) -> list[domain.UserModel]:
+        ...
+
 
 class GetAccessPermissionInterface(Protocol):
 

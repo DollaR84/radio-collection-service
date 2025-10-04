@@ -46,6 +46,22 @@ class GetUserGateway(BaseGateway[int, User]):
             return domain.UserModel(**user.dict())
         return None
 
+    async def get_users(
+            self,
+            exclude_access_rights: Optional[list[UserAccessRights]] = None,
+    ) -> list[domain.UserModel]:
+        error_message = "Error get users"
+        stmt = select(User)
+
+        if exclude_access_rights:
+            stmt = stmt.where(User.access_rights.not_in(exclude_access_rights))
+
+        users = await self._get(stmt, error_message, is_multiple=True)
+        return [
+            domain.UserModel(**user.dict())
+            for user in users
+        ]
+
 
 class GetAccessPermissionGateway(BaseGateway[int, AccessPermission]):
 
