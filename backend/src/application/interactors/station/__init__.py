@@ -4,6 +4,7 @@ from .read import (
     GetStation,
     GetStations,
     GetStationsWithCount,
+    GetStationsWithDoubleName,
     GetStationUrls,
     CheckStationUrl,
     GetUserFavorites,
@@ -20,6 +21,7 @@ __all__ = [
     "GetStation",
     "GetStations",
     "GetStationsWithCount",
+    "GetStationsWithDoubleName",
     "GetStationUrls",
     "CheckStationUrl",
 

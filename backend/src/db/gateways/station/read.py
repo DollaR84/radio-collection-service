@@ -59,6 +59,21 @@ class GetStationGateway(BaseGateway[int, Station]):
         stmt = self._build_conditions(stmt, name, info, status)
         return await self._get_count(stmt, error_message)
 
+    async def get_double_name(self) -> list[domain.StationModel]:
+        subquery = select(Station.name)
+        subquery = subquery.group_by(Station.name)
+        subquery = subquery.having(func.count(Station.url) > 1)  # pylint: disable=not-callable
+
+        stmt = select(Station)
+        stmt = stmt.where(Station.name.in_(select(subquery.subquery().c.name)))
+
+        error_message = "error getting stations with double naming"
+        stations = await self._get(stmt, error_message, is_multiple=True)
+        return [
+            domain.StationModel(**station.dict())
+            for station in stations
+        ]
+
     def _build_conditions(
             self,
             stmt: Select,

@@ -7,7 +7,7 @@ from .parse import (
     PlsPlaylistTask,
     JsonPlaylistTask,
 )
-from .service import PermissionDefaultTask
+from .service import PermissionDefaultTask, FixDoubleNameStationsTask
 from .test import TestNotVerifiedTask, TestNotWorkTask, TestWorksTask
 
 
@@ -22,6 +22,7 @@ __all__ = [
     "JsonPlaylistTask",
 
     "PermissionDefaultTask",
+    "FixDoubleNameStationsTask",
 
     "TestNotVerifiedTask",
     "TestNotWorkTask",

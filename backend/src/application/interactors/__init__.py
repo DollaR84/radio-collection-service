@@ -15,6 +15,7 @@ from .station import (
     DeleteStation,
     GetStation,
     GetStations,
+    GetStationsWithDoubleName,
     GetStationsWithCount,
     GetStationUrls,
     CheckStationUrl,
@@ -86,6 +87,7 @@ __all__ = [
     "CheckStationUrl",
     "GetStation",
     "GetStations",
+    "GetStationsWithDoubleName",
     "GetStationsWithCount",
     "GetStationUrls",
 

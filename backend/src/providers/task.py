@@ -5,6 +5,7 @@ from dishka import AsyncContainer, from_context, Provider, Scope, provide
 from application.interactors import (
     CreateStations,
     GetStations,
+    GetStationsWithDoubleName,
     GetStationUrls,
     UpdateStationsStatus,
     GetM3uFilesForParse,
@@ -28,6 +29,7 @@ from workers.tasks import (
     PlsPlaylistTask,
     JsonPlaylistTask,
     PermissionDefaultTask,
+    FixDoubleNameStationsTask,
     TestNotVerifiedTask,
     TestNotWorkTask,
     TestWorksTask,
@@ -118,6 +120,13 @@ class TaskProvider(Provider):
             updater: UpdateUserByID,
     ) -> PermissionDefaultTask:
         return PermissionDefaultTask(get_users, get_current_permission, updater)
+
+    @provide(scope=Scope.REQUEST)
+    async def get_fix_double_name_stations_task(
+            self,
+            get_stations: GetStationsWithDoubleName,
+    ) -> FixDoubleNameStationsTask:
+        return FixDoubleNameStationsTask(get_stations)
 
     @provide(scope=Scope.REQUEST)
     async def get_test_not_verified_task(

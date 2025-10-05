@@ -32,6 +32,9 @@ class GetStationInterface(Protocol):
     ) -> int:
         ...
 
+    async def get_double_name(self) -> list[domain.StationModel]:
+        ...
+
 
 class GetStationsUrlsInterface(Protocol):
 

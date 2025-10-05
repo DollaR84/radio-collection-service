@@ -57,6 +57,16 @@ class GetStationsWithCount(BaseGetStation):
         )
 
 
+class GetStationsWithDoubleName(BaseGetStation):
+
+    async def __call__(self) -> list[dto.StationData]:
+        stations = await self.gateway.get_double_name()
+        return [
+            dto.StationData(**station.dict())
+            for station in stations
+        ]
+
+
 class BaseStationUrls:
 
     def __init__(self, gateway: interfaces.GetStationsUrlsInterface):

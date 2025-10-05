@@ -4,7 +4,7 @@ from typing import Any
 from apscheduler.triggers.cron import CronTrigger
 
 from application import dto
-from application.interactors import GetUsers, GetCurrentAccessPermission, UpdateUserByID
+from application.interactors import GetUsers, GetCurrentAccessPermission, UpdateUserByID, GetStationsWithDoubleName
 from application.types import UserAccessRights
 
 from .base import BaseTask
@@ -41,5 +41,32 @@ class PermissionDefaultTask(BaseTask):
                 "total": total,
                 "percent": round((current / total) * 100, 2),
             }
+
+        logging.info("task completed: %s", self.__class__.__name__)
+
+
+class FixDoubleNameStationsTask(BaseTask):
+
+    def __init__(
+            self,
+            get_stations: GetStationsWithDoubleName,
+    ):
+        self.get_stations: GetStationsWithDoubleName = get_stations
+
+    async def execute(self, ctx: dict[Any, Any]) -> None:
+        logging.info("starting task: %s", self.__class__.__name__)
+
+        stations = await self.get_stations()
+        total = len(stations)
+
+        with open("/app/data/double_name.log", "w", encoding="utf-8") as file_log:
+            for current, station in enumerate(stations, start=1):
+                file_log.write(f"{station.name}: {station.url}\n")
+
+                ctx["progress"] = {
+                    "done": current,
+                    "total": total,
+                    "percent": round((current / total) * 100, 2),
+                }
 
         logging.info("task completed: %s", self.__class__.__name__)
