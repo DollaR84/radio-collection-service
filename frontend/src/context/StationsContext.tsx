@@ -1,16 +1,18 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
-import { StationStatusType } from "../types";
+import { StationStatusType, LastType } from "../types";
 
 interface StationsContextType {
   searchParams: {
     name: string;
     tag: string;
     status_type: StationStatusType | "";
+    last_type: LastType | "";
   };
   setSearchParams: (params: {
     name: string;
     tag: string;
     status_type: StationStatusType | "";
+    last_type: LastType | "";
   }) => void;
   stationsPage: number;
   setStationsPage: (page: number) => void;
@@ -25,6 +27,7 @@ export const StationsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     name: "",
     tag: "",
     status_type: "" as StationStatusType | "",
+    last_type: "" as LastType | "",
   });
 
   const [stationsPageState, setStationsPageState] = useState<number>(() => {

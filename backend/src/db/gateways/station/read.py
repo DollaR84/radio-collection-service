@@ -1,9 +1,10 @@
+from datetime import datetime, timedelta
 from typing import Optional
 
 from sqlalchemy import func, select, exists
 from sqlalchemy.sql import Select
 
-from application.types import StationStatusType
+from application.types import StationStatusType, LastType
 
 from db import domain
 
@@ -28,14 +29,15 @@ class GetStationGateway(BaseGateway[int, Station]):
             name: Optional[str] = None,
             info: Optional[str] = None,
             status: Optional[StationStatusType] = None,
+            last: Optional[LastType] = None,
             offset: Optional[int] = None,
             limit: Optional[int] = None,
     ) -> list[domain.StationModel]:
         error_message = "Error get stations"
         stmt = select(Station)
 
-        stmt = self._build_conditions(stmt, name, info, status)
-        stmt = stmt.order_by(Station.id)
+        stmt = self._build_conditions(stmt, name, info, status, last)
+        stmt = stmt.order_by(Station.id.desc())
 
         if offset:
             stmt = stmt.offset(offset)
@@ -53,10 +55,11 @@ class GetStationGateway(BaseGateway[int, Station]):
             name: Optional[str] = None,
             info: Optional[str] = None,
             status: Optional[StationStatusType] = None,
+            last: Optional[LastType] = None,
     ) -> int:
         error_message = "error getting stations count"
         stmt = select(func.count(Station.id))  # pylint: disable=not-callable
-        stmt = self._build_conditions(stmt, name, info, status)
+        stmt = self._build_conditions(stmt, name, info, status, last)
         return await self._get_count(stmt, error_message)
 
     async def get_double_name(self) -> list[domain.StationModel]:
@@ -80,15 +83,22 @@ class GetStationGateway(BaseGateway[int, Station]):
             name: Optional[str] = None,
             info: Optional[str] = None,
             status: Optional[StationStatusType] = None,
+            last: Optional[LastType] = None,
     ) -> Select:
         if name:
             stmt = stmt.where(Station.name.icontains(name))
+
         if info:
             stmt = stmt.where(
                 func.array_to_string(Station.tags, ',').ilike(f"%{info}%")
             )
+
         if status:
             stmt = stmt.where(Station.status == status)
+
+        if last and last != LastType.NOTHING:
+            cutoff_date = datetime.now() - timedelta(days=last)
+            stmt = stmt.where(Station.created_at >= cutoff_date)
 
         return stmt
 

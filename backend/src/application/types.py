@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, IntEnum
 
 
 class StationStatusType(str, Enum):
@@ -25,3 +25,12 @@ class FilePlaylistType(str, Enum):
     M3U = "m3u"
     PLS = "pls"
     JSON = "json"
+
+
+class LastType(IntEnum):
+    NOTHING = 0
+    DAY = 1
+    WEEK = 7
+    MONTH1 = 30
+    MONTH3 = 90
+    MONTH6 = 180

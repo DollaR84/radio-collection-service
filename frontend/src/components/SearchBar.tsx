@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { StationStatusType } from "../types";
+import { useAuth } from "../context/AuthContext";
+import { StationStatusType, LastType, lastTypeI18nKeys } from "../types";
 import { useDebounce } from "../hooks/useDebounce";
 import { useTranslation } from "react-i18next";
 
@@ -8,21 +9,25 @@ interface SearchBarProps {
     name: string;
     tag: string;
     status_type: StationStatusType | "";
+    last_type: LastType | "";
   };
   onSearchChange: (params: {
     name: string;
     tag: string;
     status_type: StationStatusType | "";
+    last_type: LastType | "";
   }) => void;
 }
 
 export default function SearchBar({ initialValues, onSearchChange }: SearchBarProps) {
   const { t } = useTranslation();
+  const { accessRights } = useAuth();
 
   const [searchParams, setSearchParams] = useState({
     name: initialValues.name,
     tag: initialValues.tag,
-    status_type: initialValues.status_type
+    status_type: initialValues.status_type,
+    last_type: initialValues.last_type,
   });
 
   const debouncedName = useDebounce(searchParams.name, 500);
@@ -34,7 +39,8 @@ export default function SearchBar({ initialValues, onSearchChange }: SearchBarPr
     setSearchParams({
       name: initialValues.name,
       tag: initialValues.tag,
-      status_type: initialValues.status_type
+      status_type: initialValues.status_type,
+      last_type: initialValues.last_type,
     });
   }, [initialValues]);
 
@@ -47,11 +53,12 @@ export default function SearchBar({ initialValues, onSearchChange }: SearchBarPr
     onSearchChange({
       name: debouncedName,
       tag: debouncedTag,
-      status_type: searchParams.status_type
+      status_type: searchParams.status_type,
+      last_type: searchParams.last_type,
     });
-  }, [debouncedName, debouncedTag, searchParams.status_type, onSearchChange]);
+  }, [debouncedName, debouncedTag, searchParams.status_type, searchParams.last_type, onSearchChange]);
 
-  const handleChange = (field: keyof typeof searchParams, value: string) => {
+  const handleChange = (field: keyof typeof searchParams, value: string | LastType) => {
     setSearchParams(prev => ({
       ...prev,
       [field]: value
@@ -62,12 +69,14 @@ export default function SearchBar({ initialValues, onSearchChange }: SearchBarPr
     const resetParams = {
       name: "",
       tag: "",
-      status_type: ""
+      status_type: "",
+      last_type: "",
     };
     setSearchParams(resetParams);
     onSearchChange(resetParams);
   };
 
+  const canUseLastTypeFilter = accessRights && accessRights !== "DEFAULT";
   return (
     <div className="bg-white p-4 rounded-lg shadow-md mb-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -110,6 +119,32 @@ export default function SearchBar({ initialValues, onSearchChange }: SearchBarPr
             <option value="works">{t("search.status_works")}</option>
             <option value="not_work">{t("search.status_not_work")}</option>
             <option value="not_verified">{t("search.status_not_verified")}</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {t("search.lastType_label")}
+          </label>
+          <select
+            disabled={!canUseLastTypeFilter}
+            className={`w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+              canUseLastTypeFilter ? "" : "bg-gray-100 text-gray-500 cursor-not-allowed"
+            }`}
+            value={searchParams.last_type}
+            onChange={(e) =>
+              handleChange("last_type", Number(e.target.value) as LastType | "")
+            }
+            title={
+              canUseLastTypeFilter
+                ? "" : t("search.lastType_disabled_hint")
+            }
+          >
+            {Object.entries(lastTypeI18nKeys).map(([key, translationKey]) => (
+              <option key={key} value={key}>
+                {t(translationKey)}
+              </option>
+            ))}
           </select>
         </div>
       </div>

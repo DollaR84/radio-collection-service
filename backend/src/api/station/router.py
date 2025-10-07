@@ -10,7 +10,7 @@ from fastapi import APIRouter, HTTPException, status, File, UploadFile
 from application import dto
 from application import interactors
 from application.services import Uploader
-from application.types import StationStatusType, FilePlaylistType
+from application.types import StationStatusType, FilePlaylistType, LastType
 
 from workers import TaskManager
 
@@ -32,11 +32,12 @@ async def get_stations(
         name: Optional[str] = None,
         info: Optional[str] = None,
         status_type: Optional[StationStatusType] = None,
+        last: Optional[LastType] = None,
         offset: Optional[int] = None,
         limit: Optional[int] = None,
 ) -> schemas.StationsResponse:
     try:
-        data = await interactor(name, info, status_type, offset, limit)
+        data = await interactor(name, info, status_type, last, offset, limit)
     except Exception as error:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

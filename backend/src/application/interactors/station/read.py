@@ -2,7 +2,7 @@ from typing import Optional
 
 from application import dto
 from application import interfaces
-from application.types import StationStatusType
+from application.types import StationStatusType, LastType
 
 
 class BaseGetStation:
@@ -25,10 +25,11 @@ class GetStations(BaseGetStation):
             name: Optional[str] = None,
             info: Optional[str] = None,
             status: Optional[StationStatusType] = None,
+            last: Optional[LastType] = None,
             offset: Optional[int] = None,
             limit: Optional[int] = None,
     ) -> list[dto.StationData]:
-        stations = await self.gateway.get_stations(name, info, status, offset, limit)
+        stations = await self.gateway.get_stations(name, info, status, last, offset, limit)
         return [
             dto.StationData(**station.dict())
             for station in stations
@@ -42,11 +43,12 @@ class GetStationsWithCount(BaseGetStation):
             name: Optional[str] = None,
             info: Optional[str] = None,
             status: Optional[StationStatusType] = None,
+            last: Optional[LastType] = None,
             offset: Optional[int] = None,
             limit: Optional[int] = None,
     ) -> dto.StationsWithCount:
-        count = await self.gateway.get_count(name, info, status)
-        stations = await self.gateway.get_stations(name, info, status, offset, limit)
+        count = await self.gateway.get_count(name, info, status, last)
+        stations = await self.gateway.get_stations(name, info, status, last, offset, limit)
 
         return dto.StationsWithCount(
             [

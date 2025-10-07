@@ -37,6 +37,16 @@ export default function HomePage() {
       <ul>
       <li>{t("pages.home.access.plus.line1")}</li>
       <li>{t("pages.home.access.plus.line2")}</li>
+      <li>
+      {t("pages.home.access.plus.line3")}
+        <ul>
+          <li>{t("pages.home.access.plus.lastType.day")}</li>
+          <li>{t("pages.home.access.plus.lastType.week")}</li>
+          <li>{t("pages.home.access.plus.lastType.month1")}</li>
+          <li>{t("pages.home.access.plus.lastType.month3")}</li>
+          <li>{t("pages.home.access.plus.lastType.month6")}</li>
+        </ul>
+      </li>
       </ul>
 
       <div className="mb-6 text-lg">

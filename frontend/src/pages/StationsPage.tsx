@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/client";
-import { Station, StationStatusType } from "../types";
+import { Station, StationStatusType, LastType } from "../types";
 import { useDebounce } from "../hooks/useDebounce";
 import SearchBar from "../components/SearchBar";
 import Pagination from "../components/Pagination";
@@ -10,10 +10,10 @@ import { useTranslation } from "react-i18next";
 import FavoriteButton from "../components/FavoriteButton";
 
 function searchParamsEqual(
-  a: { name: string; tag: string; status_type: StationStatusType | "" },
-  b: { name: string; tag: string; status_type: StationStatusType | "" }
+  a: { name: string; tag: string; status_type: StationStatusType | ""; last_type: LastType | "" },
+  b: { name: string; tag: string; status_type: StationStatusType | ""; last_type: LastType | "" }
 ) {
-  return a.name === b.name && a.tag === b.tag && a.status_type === b.status_type;
+  return a.name === b.name && a.tag === b.tag && a.status_type === b.status_type && a.last_type === b.last_type;
 }
 
 export default function StationsPage() {
@@ -40,6 +40,7 @@ export default function StationsPage() {
         ...(debouncedName && { name: debouncedName }),
         ...(debouncedTag && { info: debouncedTag }),
         ...(searchParams.status_type && { status_type: searchParams.status_type }),
+        ...(searchParams.last_type && { last: searchParams.last_type }),
       };
 
       const stationsResponse = await api.get("/stations/", { params });
@@ -51,14 +52,14 @@ export default function StationsPage() {
     } finally {
       setLoading(false);
     }
-  }, [stationsPage, itemsPerPage, debouncedName, debouncedTag, searchParams.status_type, t]);
+  }, [stationsPage, itemsPerPage, debouncedName, debouncedTag, searchParams.status_type, searchParams.last_type, t]);
 
   useEffect(() => {
     fetchStations();
   }, [fetchStations]);
 
   const handleSearchChange = useCallback(
-    (params: { name: string; tag: string; status_type: StationStatusType | "" }) => {
+    (params: { name: string; tag: string; status_type: StationStatusType | ""; last_type: LastType | "" }) => {
       if (!searchParamsEqual(params, searchParams)) {
         setSearchParams(params);
         setStationsPage(1);

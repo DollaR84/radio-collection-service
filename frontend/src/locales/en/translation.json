@@ -28,6 +28,14 @@
     "status_works": "Working",
     "status_not_work": "Not Working",
     "status_not_verified": "Not Verified",
+    "lastType_label": "Last for the period",
+    "lastType_disabled_hint": "Available only to users with PLUS rights and above",
+    "lastType_nothing": "without restrictions",
+    "lastType_day": "per day",
+    "lastType_week": "per week",
+    "lastType_month1": "per 1 month",
+    "lastType_month3": "per 3 months",
+    "lastType_month6": "per 6 months",
     "reset": "Reset Filters"
   },
   "footer": {
@@ -190,7 +198,15 @@
         "plus": {
           "title": "PLUS (advanced):",
           "line1": "Uploading a list of your radio stations to the service database",
-          "line2": "uploading playlists (m3u, pls, json) to the service database"
+          "line2": "uploading playlists (m3u, pls, json) to the service database",
+          "line3": "select the most recently added stations for the period:",
+          "lastType": {
+            "day": "per day",
+            "week": "per week",
+            "month1": "per 1 month",
+            "month3": "per 3 months",
+            "month6": "per 6 months"
+          }
         }
       },
       "contact": "Contact",

@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from typing import Optional, Protocol
 
-from application.types import StationStatusType
+from application.types import StationStatusType, LastType
 
 from db import domain
 
@@ -18,6 +18,7 @@ class GetStationInterface(Protocol):
             name: Optional[str] = None,
             info: Optional[str] = None,
             status: Optional[StationStatusType] = None,
+            last: Optional[LastType] = None,
             offset: Optional[int] = None,
             limit: Optional[int] = None,
     ) -> list[domain.StationModel]:
@@ -29,6 +30,7 @@ class GetStationInterface(Protocol):
             name: Optional[str] = None,
             info: Optional[str] = None,
             status: Optional[StationStatusType] = None,
+            last: Optional[LastType] = None,
     ) -> int:
         ...
 
