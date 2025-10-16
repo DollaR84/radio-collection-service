@@ -19,7 +19,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    restart: always
+    restart: "no"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USERNAME}"]
       interval: 3s
@@ -34,7 +34,7 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
-    restart: always
+    restart: "no"
     healthcheck:
       test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
       interval: 3s
@@ -62,7 +62,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    restart: always
+    restart: "no"
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8000/api/health || exit 1"]
       interval: 30s
@@ -85,7 +85,7 @@ services:
     depends_on:
       api:
         condition: service_healthy
-    restart: always
+    restart: "no"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:80"]
       interval: 30s
@@ -106,7 +106,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    restart: always
+    restart: "no"
 
   loki:
     image: grafana/loki
