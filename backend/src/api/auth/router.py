@@ -87,7 +87,10 @@ async def _common_login_logic(
                 )
 
         else:
-            update_data = dto.UpdateUser(device_id=data.device_id, access_rights=UserAccessRights.PLUS)
+            update_data = dto.UpdateUser(
+                device_id=data.device_id,
+                access_rights=UserAccessRights.PLUS if not user.is_admin else None,
+            )
             await updater(user.uuid_id, update_data)
             await resolver.create(user.id, UserAccessRights.PLUS, days=7, reason="set android test period")
 
