@@ -12,6 +12,7 @@ from .base import BaseData
 class BaseUser(BaseData):
     hashed_password: Optional[str] = None
     google_id: Optional[str] = None
+    device_id: Optional[str] = None
 
     user_name: Optional[str] = None
     first_name: Optional[str] = None

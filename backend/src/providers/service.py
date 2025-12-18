@@ -58,10 +58,11 @@ class ServiceProvider(Provider):
             config: Config,
             creator: interactors.CreateAccessPermission,
             getter: interactors.GetAccessPermission,
+            getter_current_permission: interactors.GetCurrentAccessPermission,
             getters: interactors.GetAccessPermissions,
             updator: interactors.UpdateAccessPermission,
     ) -> Resolver:
-        return Resolver(config.resolver, creator, getter, getters, updator)
+        return Resolver(config.resolver, creator, getter, getter_current_permission, getters, updator)
 
     @provide(scope=Scope.REQUEST)
     async def get_uploader(

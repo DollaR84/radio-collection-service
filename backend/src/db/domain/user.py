@@ -17,6 +17,8 @@ class BaseUserModel(BaseData):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
 
+    device_id: Optional[str] = None
+
 
 @dataclass(slots=True)
 class BaseEmailUserModel(BaseUserModel):

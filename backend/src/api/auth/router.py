@@ -11,9 +11,13 @@ from starlette.responses import RedirectResponse
 
 from application import dto
 from application import interactors
-from application.services import Authenticator
+from application.services import Authenticator, Resolver
+from application.types import UserAccessRights
+
+from utils.android import is_valid_android_id
 
 from .. import schemas
+
 
 router = APIRouter(prefix="/auth", route_class=DishkaRoute)
 
@@ -52,6 +56,7 @@ async def _common_login_logic(
         auth: Authenticator,
         interactor: interactors.GetUserByEmail,
         updater: interactors.UpdateUserByUUID,
+        resolver: Resolver,
         data: schemas.UserLoginByPassword | schemas.UserGoogle,
 ) -> schemas.AccessTokenResponse:
     user = await interactor(data.email)
@@ -72,6 +77,19 @@ async def _common_login_logic(
         if data.first_name != user.first_name or data.last_name != user.last_name:
             update_data = dto.UpdateUser(first_name=data.first_name, last_name=data.last_name)
             await updater(user.uuid_id, update_data)
+
+    if data.device_id and is_valid_android_id(data.device_id):
+        if user.device_id and user.device_id == data.device_id:
+            if not user.is_admin and not await resolver.get_current_permission(user.id):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Subscribe has be expired. Need bye month subscribe",
+                )
+
+        else:
+            update_data = dto.UpdateUser(device_id=data.device_id, access_rights=UserAccessRights.PLUS)
+            await updater(user.uuid_id, update_data)
+            await resolver.create(user.id, UserAccessRights.PLUS, days=7, reason="set android test period")
 
     access_token = auth.set_access_token(user.uuid_id, response)
     auth.set_refresh_token(user.uuid_id, response)
@@ -104,6 +122,7 @@ async def login_by_form(
         auth: FromDishka[Authenticator],
         interactor: FromDishka[interactors.GetUserByEmail],
         updater: FromDishka[interactors.UpdateUserByUUID],
+        resolver: FromDishka[Resolver],
         response: Response,
         form_data: OAuth2PasswordRequestForm = Depends(),
 ) -> schemas.TokenFormResponse:
@@ -112,6 +131,7 @@ async def login_by_form(
         auth=auth,
         interactor=interactor,
         updater=updater,
+        resolver=resolver,
         data=schemas.UserLoginByPassword(
             email=form_data.username,
             password=form_data.password,
@@ -131,10 +151,18 @@ async def login_by_json(
         auth: FromDishka[Authenticator],
         interactor: FromDishka[interactors.GetUserByEmail],
         updater: FromDishka[interactors.UpdateUserByUUID],
+        resolver: FromDishka[Resolver],
         response: Response,
         data: schemas.UserLoginByPassword,
 ) -> schemas.AccessTokenResponse:
-    return await _common_login_logic(response=response, auth=auth, interactor=interactor, updater=updater, data=data)
+    return await _common_login_logic(
+        response=response,
+        auth=auth,
+        interactor=interactor,
+        updater=updater,
+        resolver=resolver,
+        data=data,
+    )
 
 
 @router.get(
@@ -162,6 +190,7 @@ async def google_callback(
         interactor: FromDishka[interactors.GetUserByEmail],
         creator: FromDishka[interactors.CreateUser],
         updater: FromDishka[interactors.UpdateUserByUUID],
+        resolver: FromDishka[Resolver],
         request: Request,
 ) -> RedirectResponse:
     logger = logging.getLogger()
@@ -189,7 +218,7 @@ async def google_callback(
     redirect = RedirectResponse(redirect_uri)
 
     try:
-        await _common_login_logic(redirect, auth, interactor, updater, data)
+        await _common_login_logic(redirect, auth, interactor, updater, resolver, data)
     except HTTPException as error:
         if error.status_code == status.HTTP_404_NOT_FOUND:
             await common_register_logic(auth, creator, redirect, data)

@@ -36,6 +36,8 @@ class User(TimeCreateMixin, TimeUpdateMixin, Base):
     is_active: so.Mapped[bool] = so.mapped_column(default=True)
     is_admin: so.Mapped[bool] = so.mapped_column(default=False)
 
+    device_id: so.Mapped[Optional[str]] = so.mapped_column(sa.String(16), unique=True, nullable=True)
+
     access_rights: so.Mapped[UserAccessRights] = so.mapped_column(
         sa.Enum(UserAccessRights, name="user_access_rights", create_constraint=True, validate_strings=True),
         default=UserAccessRights.DEFAULT,

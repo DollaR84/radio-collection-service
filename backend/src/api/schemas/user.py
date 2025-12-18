@@ -10,6 +10,7 @@ from application.types import UserAccessRights
 
 class BaseUser(BaseModel):
     email: EmailStr
+    device_id: Optional[str] = None
 
 
 class UserCreateByPassword(BaseUser):
@@ -37,6 +38,7 @@ class UserGoogle(BaseUser):
 
 class UserUpdate(BaseModel):
     email: Optional[str] = None
+    device_id: Optional[str] = None
     user_name: Optional[str] = None
     first_name: Optional[str] = None
     last_name: Optional[str] = None

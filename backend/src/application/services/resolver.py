@@ -16,21 +16,33 @@ class Resolver:
             config: ResolverConfig,
             creator: interactors.CreateAccessPermission,
             getter: interactors.GetAccessPermission,
+            getter_current_permission: interactors.GetCurrentAccessPermission,
             getters: interactors.GetAccessPermissions,
             updator: interactors.UpdateAccessPermission,
     ):
         self.config = config
         self.creator = creator
         self.getter = getter
+        self.getter_current_permission = getter_current_permission
         self.getters = getters
         self.updator = updator
 
-    async def create(self, user_id: int, access_rights: UserAccessRights, reason: Optional[str] = None) -> None:
-        try:
-            days = getattr(self.config, access_rights.value)
-        except AttributeError as error:
-            logging.error("error creating permission for user %d with rights %s", user_id, access_rights.value)
-            raise ValueError(f"Missing config for access level: {access_rights.value}") from error
+    async def create(
+            self,
+            user_id: int,
+            access_rights: UserAccessRights,
+            days: Optional[int] = None,
+            reason: Optional[str] = None,
+    ) -> None:
+        if not days:
+            try:
+                days = getattr(self.config, access_rights.value)
+            except AttributeError as error:
+                logging.error("error creating permission for user %d with rights %s", user_id, access_rights.value)
+                raise ValueError(f"Missing config for access level: {access_rights.value}") from error
+
+        if days is None:
+            raise ValueError("Days must be set")
 
         time_delta = timedelta(days=days)
         expires_at = datetime.now(timezone.utc) + time_delta
@@ -49,6 +61,9 @@ class Resolver:
             access_rights: Optional[UserAccessRights] = None,
     ) -> list[dto.AccessPermission]:
         return await self.getters(user_id, access_rights)
+
+    async def get_current_permission(self, user_id: int) -> Optional[dto.AccessPermission]:
+        return await self.getter_current_permission(user_id)
 
     async def update(
             self,
