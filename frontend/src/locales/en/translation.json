@@ -206,8 +206,14 @@
             "month1": "per 1 month",
             "month3": "per 3 months",
             "month6": "per 6 months"
-          }
+          },
+          "line4": "Using an Android app to listen to radio stations from your favorites list"
         }
+      },
+      "links": {
+        "title": "Useful links:",
+        "android": "Android app",
+        "nvda": "NVDA add-on"
       },
       "contact": "Contact",
       "supportEmail": "support email",

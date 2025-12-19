@@ -47,6 +47,13 @@ export default function HomePage() {
           <li>{t("pages.home.access.plus.lastType.month6")}</li>
         </ul>
       </li>
+      <li>{t("pages.home.access.plus.line4")}</li>
+      </ul>
+
+      <h2>🔗 {t("pages.home.links.title")}</h2>
+      <ul>
+        <li><a href="/downloads/radioCenterClient.apk">{t("pages.home.links.android")}</a></li>
+        <li><a href="/downloads/radioCenter.nvda-addon">{t("pages.home.links.nvda")}</a></li>
       </ul>
 
       <div className="mb-6 text-lg">
