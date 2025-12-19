@@ -50,6 +50,7 @@ services:
       - ./backend/src/migration/versions:/app/migration/versions
       - ./backend/src/templates:/app/templates
       - ./shared_data:/app/data
+      - ./shared_downloads:/app/static/downloads
     user: "1000:1000"
     depends_on:
       db:

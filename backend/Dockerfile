@@ -15,6 +15,9 @@ RUN addgroup --gid 1000 appgroup && adduser --uid 1000 --gid 1000 --disabled-pas
 # Set the working directory in the container to /app
 WORKDIR /app
 
+# create downloads directory
+RUN mkdir -p /app/static/downloads
+
 # Copy the current directory contents and requirements.txt into the container at /app
 COPY src/ /app/
 COPY entrypoint.sh requirements.txt /app/

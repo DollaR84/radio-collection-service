@@ -1,12 +1,16 @@
+import pathlib
+
 from dishka.integrations.fastapi import DishkaRoute, FromDishka
 
-from fastapi import APIRouter, Depends, status
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import JSONResponse, FileResponse
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.openapi.docs import get_swagger_ui_html
 from starlette.responses import HTMLResponse
 
 from application.services import NoService
+
+from config import Config
 
 
 oauth2_scheme = OAuth2PasswordBearer(
@@ -44,6 +48,29 @@ async def health_check() -> JSONResponse:
     response = {"status": "OK"}
 
     return JSONResponse(content=response, status_code=status_code)
+
+
+@router.get(
+    "/downloads/{filename}",
+    description="Method for downloads files",
+)
+async def download_file(filename: str, config: FromDishka[Config]) -> FileResponse:
+    downloads_dir = pathlib.Path(config.api.download_folder)
+    safe_filename = pathlib.Path(filename).name
+    file_path = downloads_dir / safe_filename
+
+    if not file_path.exists():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"File '{filename}' is not found",
+        )
+
+    return FileResponse(
+        path=file_path,
+        filename=filename,
+        media_type="application/octet-stream",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+    )
 
 
 @router.get(

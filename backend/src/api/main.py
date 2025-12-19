@@ -53,7 +53,7 @@ class FastAPIApp:
             swagger_ui_parameters=self.swagger_ui_parameters,
         )
 
-        self.app.add_middleware(
+        self._app.add_middleware(
             CORSMiddleware,
             allow_origins=self.config.allow_origins,
             allow_credentials=self.config.allow_credentials,
@@ -61,7 +61,7 @@ class FastAPIApp:
             allow_headers=self.config.allow_headers,
         )
 
-        self.app.add_middleware(
+        self._app.add_middleware(
             SessionMiddleware,
             secret_key=self.config.secret_key,
             max_age=self.config.max_age,
@@ -69,7 +69,7 @@ class FastAPIApp:
             https_only=self.config.https_only,
         )
 
-        self.app.mount("/static", StaticFiles(directory="/app/static"), name="static")
+        self._app.mount("/static", StaticFiles(directory="/app/static"), name="static")
         self.register_routers()
 
         self.configure_openapi()

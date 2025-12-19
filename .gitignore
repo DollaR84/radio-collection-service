@@ -3,6 +3,7 @@ __pycache__/
 .mypy_cache/
 wsl2win/
 shared_data/
+shared_downloads/
 dist/
 _env/
 .env

@@ -56,6 +56,7 @@ class APIConfig(BaseSettings):
     description: str
     version: str
     upload_folder: str
+    download_folder: str
     secret_key: str
 
     max_age: int = 3600
