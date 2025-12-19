@@ -20,6 +20,7 @@ class UserAdmin(ModelView, model=User):
         "id",
         "uuid_id",
         "google_id",
+        "device_id",
         "email",
         "user_name",
         "first_name",
@@ -37,6 +38,7 @@ class UserAdmin(ModelView, model=User):
         "user_name",
         "first_name",
         "last_name",
+        "device_id",
         "access_rights",
         "is_active",
         "is_admin",
@@ -44,6 +46,7 @@ class UserAdmin(ModelView, model=User):
 
     column_labels = {
         "email": "eMail",
+        "device_id": "Android device ID",
         "access_rights": "Access rights now",
         "access_permissions": "List of access permissions",
     }
