@@ -19,7 +19,6 @@ from config import Config
 
 
 class ServiceProvider(Provider):
-    scope = Scope.REQUEST
 
     config = from_context(provides=Config, scope=Scope.APP)
 

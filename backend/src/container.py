@@ -15,7 +15,8 @@ from workers import TaskManager
 
 
 def setup_container(app: FastAPI | TaskManager, config: Config) -> None:
-    providers = [ApiProvider(), AppProvider(), DBProvider(), ServiceProvider(), TaskProvider()]
+    task_provider = TaskProvider()
+    providers = [ApiProvider(), AppProvider(), DBProvider(), ServiceProvider(), task_provider]
 
     container = make_async_container(
         *providers,
@@ -26,6 +27,7 @@ def setup_container(app: FastAPI | TaskManager, config: Config) -> None:
     )
 
     if isinstance(app, FastAPI):
+        task_provider.task_manager.dishka_container = container
         app.state.container = container
         setup_fastapi_dishka(container, app=app)
 

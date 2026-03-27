@@ -14,7 +14,6 @@ from config import Config
 
 
 class ApiProvider(Provider):
-    scope = Scope.REQUEST
 
     config = from_context(provides=Config, scope=Scope.APP)
     oauth2_scheme = from_context(provides=OAuth2PasswordBearer, scope=Scope.APP)

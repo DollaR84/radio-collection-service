@@ -1,6 +1,4 @@
-from typing import Optional
-
-from dishka import AsyncContainer, from_context, Provider, Scope, provide
+from dishka import from_context, Provider, Scope, provide
 
 from application.interactors import (
     CreateStations,
@@ -37,17 +35,17 @@ from workers.tasks import (
 
 
 class TaskProvider(Provider):
-    scope = Scope.REQUEST
 
     config = from_context(provides=Config, scope=Scope.APP)
-    container = from_context(provides=AsyncContainer, scope=Scope.APP)
-    task_manager: Optional[TaskManager] = None
+
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.task_manager: TaskManager = TaskManager()
 
     @provide(scope=Scope.APP)
-    async def get_task_manager(self, config: Config, container: AsyncContainer) -> TaskManager:
-        if self.task_manager is None:
-            self.task_manager = TaskManager()
-            self.task_manager.dishka_container = container
+    async def get_task_manager(self, config: Config) -> TaskManager:
+        if self.task_manager.redis_pool is None:
             await self.task_manager.create_redis_pool(config)
             self.task_manager.register_adhoc_tasks()
         return self.task_manager
