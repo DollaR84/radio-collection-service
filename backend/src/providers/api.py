@@ -39,7 +39,7 @@ class ApiProvider(Provider):
             raise ValueError("token not found")
         return dto.AccessToken(value=token)
 
-    @provide(scope=Scope.REQUEST)
+    @provide(scope=Scope.APP)
     async def get_auth(self, config: Config) -> Authenticator:
         if self.authenticator is None:
             self.authenticator = Authenticator(config)

@@ -43,7 +43,7 @@ class TaskProvider(Provider):
     container = from_context(provides=AsyncContainer, scope=Scope.APP)
     task_manager: Optional[TaskManager] = None
 
-    @provide(scope=Scope.REQUEST)
+    @provide(scope=Scope.APP)
     async def get_task_manager(self, config: Config, container: AsyncContainer) -> TaskManager:
         if self.task_manager is None:
             self.task_manager = TaskManager()
