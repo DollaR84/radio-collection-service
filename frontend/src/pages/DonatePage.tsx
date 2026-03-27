@@ -12,6 +12,8 @@ export default function DonatePage() {
     "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=B3VG4L8B7CV3Y&source=url";
   const privatConvertLink =
     "https://www.privat24.ua/send/i00a4";
+  const donatikLink =
+    "https://dollar84.donatik.ua";
 
   const copyToClipboard = async (text: string) => {
     try {
@@ -46,6 +48,18 @@ export default function DonatePage() {
             </button>
           </div>
         ))}
+      </div>
+
+      <div className="mt-6">
+        <div className="font-medium mb-2">{t("pages.donate.donatik")}:</div>
+        <a
+          href={donatikLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 underline break-all"
+        >
+          {donatikLink}
+        </a>
       </div>
 
       <div className="mt-6">

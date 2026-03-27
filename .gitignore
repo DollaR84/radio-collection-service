@@ -2,6 +2,7 @@ __pycache__/
 .ruff_cache/
 .mypy_cache/
 wsl2win/
+backup/
 shared_data/
 shared_downloads/
 dist/

@@ -18,13 +18,6 @@ WORKDIR /app
 # create downloads directory
 RUN mkdir -p /app/static/downloads
 
-# Copy the current directory contents and requirements.txt into the container at /app
-COPY src/ /app/
-COPY entrypoint.sh requirements.txt /app/
-
-# Ensure the entrypoint script is executable
-RUN chmod a+x /app/entrypoint.sh
-
 RUN apt-get update && apt-get install -y --no-install-recommends \
   gcc \
   libpq-dev \
@@ -44,9 +37,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
+# Copy entrypoint.sh and requirements.txt into the container at /app
+COPY entrypoint.sh requirements.txt /app/
+
+# Ensure the entrypoint script is executable
+RUN chmod a+x /app/entrypoint.sh
+
 # Install any needed packages specified in requirements.txt
 RUN pip install --upgrade pip \
   && pip install --no-cache-dir -r /app/requirements.txt
+
+# Copy the current directory source code
+COPY src/ /app/
 
 # Establish the rights to the directory
 RUN mkdir -p /app/data && chown -R appuser:appgroup /app/data
