@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from typing import Any
 
@@ -220,10 +221,11 @@ async def login_by_google_id_token(
         data: schemas.UserGoogleToken,
 ) -> schemas.AccessTokenResponse:
     try:
-        id_info = id_token.verify_oauth2_token(
+        id_info = await asyncio.to_thread(
+            id_token.verify_oauth2_token,
             data.id_token,
             google_requests.Request(),
-            audience=config.google.client_id
+            config.google.client_id
         )
 
         if "accounts.google.com" not in id_info["iss"]:

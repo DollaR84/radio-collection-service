@@ -13,6 +13,7 @@ passlib
 python-jose
 python-multipart
 aiofiles
+requests
 aiohttp
 fake_useragent
 beautifulsoup4
