@@ -1,12 +1,15 @@
 import logging
+from typing import Any
 
 from config import Config
 
 from dishka.integrations.fastapi import DishkaRoute, FromDishka
 
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
-
 from starlette.responses import RedirectResponse
 
 from application import dto
@@ -25,8 +28,8 @@ router = APIRouter(prefix="/auth", route_class=DishkaRoute)
 async def common_register_logic(
         auth: Authenticator,
         creator: interactors.CreateUser,
-        response: Response,
         data: schemas.UserCreateByPassword | schemas.UserGoogle,
+        response: Response,
 ) -> schemas.AccessTokenResponse:
     user_data = dto.NewUser(email=data.email)
     if isinstance(data, schemas.UserCreateByPassword):
@@ -52,12 +55,12 @@ async def common_register_logic(
 
 
 async def _common_login_logic(
-        response: Response,
         auth: Authenticator,
         interactor: interactors.GetUserByEmail,
         updater: interactors.UpdateUserByUUID,
         resolver: Resolver,
         data: schemas.UserLoginByPassword | schemas.UserGoogle,
+        response: Response,
 ) -> schemas.AccessTokenResponse:
     user = await interactor(data.email)
     if not user:
@@ -100,6 +103,38 @@ async def _common_login_logic(
     return schemas.AccessTokenResponse(access_token=access_token)
 
 
+async def _common_google_logic(
+        auth: Authenticator,
+        interactor: interactors.GetUserByEmail,
+        creator: interactors.CreateUser,
+        updater: interactors.UpdateUserByUUID,
+        resolver: Resolver,
+        user_data: dict[str, Any],
+        response: Response,
+) -> schemas.AccessTokenResponse:
+    data = schemas.UserGoogle(
+        email=user_data.get("email"),
+        google_id=user_data.get("sub") or user_data.get("id"),
+        first_name=user_data.get("given_name"),
+        last_name=user_data.get("family_name"),
+    )
+
+    if not data.email or not data.google_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="invalid google response",
+        )
+
+    try:
+        return await _common_login_logic(auth, interactor, updater, resolver, data, response)
+
+    except HTTPException as error:
+        if error.status_code == status.HTTP_404_NOT_FOUND:
+            return await common_register_logic(auth, creator, data, response)
+
+        raise
+
+
 @router.post(
     "/register",
     description="Method for register new user by password",
@@ -112,7 +147,7 @@ async def register_user(
         response: Response,
         data: schemas.UserCreateByPassword,
 ) -> schemas.AccessTokenResponse:
-    return await common_register_logic(auth, creator, response, data)
+    return await common_register_logic(auth, creator, data, response)
 
 
 @router.post(
@@ -130,7 +165,6 @@ async def login_by_form(
         form_data: OAuth2PasswordRequestForm = Depends(),
 ) -> schemas.TokenFormResponse:
     token_data = await _common_login_logic(
-        response=response,
         auth=auth,
         interactor=interactor,
         updater=updater,
@@ -139,6 +173,7 @@ async def login_by_form(
             email=form_data.username,
             password=form_data.password,
         ),
+        response=response,
     )
 
     return schemas.TokenFormResponse(access_token=token_data.access_token)
@@ -159,13 +194,65 @@ async def login_by_json(
         data: schemas.UserLoginByPassword,
 ) -> schemas.AccessTokenResponse:
     return await _common_login_logic(
-        response=response,
         auth=auth,
         interactor=interactor,
         updater=updater,
         resolver=resolver,
         data=data,
+        response=response,
     )
+
+
+@router.post(
+    "/google",
+    description="Login using google id token",
+    status_code=status.HTTP_200_OK,
+    response_model=schemas.AccessTokenResponse,
+)
+async def login_by_google_id_token(
+        auth: FromDishka[Authenticator],
+        config: FromDishka[Config],
+        interactor: FromDishka[interactors.GetUserByEmail],
+        creator: FromDishka[interactors.CreateUser],
+        updater: FromDishka[interactors.UpdateUserByUUID],
+        resolver: FromDishka[Resolver],
+        response: Response,
+        data: schemas.UserGoogleToken,
+) -> schemas.AccessTokenResponse:
+    try:
+        id_info = id_token.verify_oauth2_token(
+            data.id_token,
+            google_requests.Request(),
+            audience=config.google.client_id
+        )
+
+        if "accounts.google.com" not in id_info["iss"]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Wrong token issuer. Only official Google tokens are allowed."
+            )
+
+        return await _common_google_logic(auth, interactor, creator, updater, resolver, id_info, response)
+
+    except ValueError as error:
+        error_msg = str(error).lower()
+
+        if "token has expired" in error_msg or "expired" in error_msg:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Google ID Token has expired. Please refresh it on the client side."
+            ) from error
+
+        if "signature" in error_msg or "invalidate" in error_msg:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid token signature. Cryptographic check failed."
+            ) from error
+
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Malformed token. It is not a valid JWT or Google ID token."
+        ) from error
 
 
 @router.get(
@@ -204,29 +291,10 @@ async def google_callback(
     else:
         user_data = await auth.oauth.google.userinfo(token=token)
 
-    data = schemas.UserGoogle(
-        email=user_data.get("email"),
-        google_id=user_data.get("sub") or user_data.get("id"),
-        first_name=user_data.get("given_name"),
-        last_name=user_data.get("family_name"),
-    )
-
-    if not data.email or not data.google_id:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="invalid google response",
-        )
-
     redirect_uri = "/".join([config.google.redirect_url, "profile"])
     redirect = RedirectResponse(redirect_uri)
 
-    try:
-        await _common_login_logic(redirect, auth, interactor, updater, resolver, data)
-    except HTTPException as error:
-        if error.status_code == status.HTTP_404_NOT_FOUND:
-            await common_register_logic(auth, creator, redirect, data)
-        raise
-
+    await _common_google_logic(auth, interactor, creator, updater, resolver, user_data, redirect)
     return redirect
 
 

@@ -36,6 +36,11 @@ class UserGoogle(BaseUser):
     last_name: Optional[str] = None
 
 
+class UserGoogleToken(BaseModel):
+    id_token: Optional[str] = Field(None, description="Google ID Token from Android application")
+    device_id: Optional[str] = None
+
+
 class UserUpdate(BaseModel):
     email: Optional[str] = None
     device_id: Optional[str] = None
