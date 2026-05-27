@@ -213,7 +213,8 @@
       "links": {
         "title": "Useful links:",
         "android": "Android app",
-        "nvda": "NVDA add-on"
+        "nvda_x86": "NVDA add-on x86 (32 bit)",
+        "nvda_x64": "NVDA add-on x64 (64 bit)"
       },
       "contact": "Contact",
       "supportEmail": "support email",

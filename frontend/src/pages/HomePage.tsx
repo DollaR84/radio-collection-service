@@ -53,7 +53,8 @@ export default function HomePage() {
       <h2>🔗 {t("pages.home.links.title")}</h2>
       <ul>
         <li><a href="/downloads/radioCenterClient.apk">{t("pages.home.links.android")}</a></li>
-        <li><a href="/downloads/radioCenter.nvda-addon">{t("pages.home.links.nvda")}</a></li>
+        <li><a href="/downloads/radioCenter_x86.nvda-addon">{t("pages.home.links.nvda_x86")}</a></li>
+        <li><a href="/downloads/radioCenter_x64.nvda-addon">{t("pages.home.links.nvda_x64")}</a></li>
       </ul>
 
       <div className="mb-6 text-lg">

@@ -213,7 +213,8 @@
       "links": {
         "title": "Корисні посилання:",
         "android": "Android додаток",
-        "nvda": "NVDA доповнення"
+        "nvda_x86": "NVDA доповнення x86 (32 bit)",
+        "nvda_x64": "NVDA доповнення x64 (64 bit)"
       },
       "contact": "Зв’язатися",
       "supportEmail": "пошта підтримки",
