@@ -118,6 +118,7 @@ async def _common_google_logic(
         google_id=user_data.get("sub") or user_data.get("id"),
         first_name=user_data.get("given_name"),
         last_name=user_data.get("family_name"),
+        device_id=user_data.get("device_id"),
     )
 
     if not data.email or not data.google_id:
@@ -234,6 +235,7 @@ async def login_by_google_id_token(
                 detail="Wrong token issuer. Only official Google tokens are allowed."
             )
 
+        id_info["device_id"] = data.device_id
         return await _common_google_logic(auth, interactor, creator, updater, resolver, id_info, response)
 
     except ValueError as error:
