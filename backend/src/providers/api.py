@@ -48,7 +48,7 @@ class ApiProvider(Provider):
     async def get_auth(self, config: Config) -> Authenticator:
         return Authenticator(config)
 
-    @provide(scope=Scope.APP)
+    @provide(scope=Scope.REQUEST)
     async def get_auth_orchestrator(
             self,
             auth: AuthService,
@@ -59,15 +59,15 @@ class ApiProvider(Provider):
     ) -> AuthOrchestrator:
         return AuthOrchestrator(auth, register, google, subscribe, token)
 
-    @provide(scope=Scope.APP)
+    @provide(scope=Scope.REQUEST)
     async def get_auth_service(self, auth: Authenticator, interactor: interactors.GetUserByEmail) -> AuthService:
         return AuthService(auth, interactor)
 
-    @provide(scope=Scope.APP)
+    @provide(scope=Scope.REQUEST)
     async def get_google_service(self, updater: interactors.UpdateUserByUUID) -> GoogleService:
         return GoogleService(updater)
 
-    @provide(scope=Scope.APP)
+    @provide(scope=Scope.REQUEST)
     async def get_register_service(
             self,
             auth: Authenticator,
@@ -76,7 +76,7 @@ class ApiProvider(Provider):
     ) -> RegisterService:
         return RegisterService(auth, creator, interactor)
 
-    @provide(scope=Scope.APP)
+    @provide(scope=Scope.REQUEST)
     async def get_subscribe_service(
             self,
             resolver: Resolver,
@@ -84,7 +84,7 @@ class ApiProvider(Provider):
     ) -> SubscribeService:
         return SubscribeService(resolver, updater)
 
-    @provide(scope=Scope.APP)
+    @provide(scope=Scope.REQUEST)
     async def get_token_service(self, auth: Authenticator) -> TokenService:
         return TokenService(auth)
 
