@@ -1,6 +1,4 @@
 import asyncio
-import logging
-from typing import Any
 
 from config import Config
 
@@ -14,127 +12,15 @@ from fastapi.security import OAuth2PasswordRequestForm
 from starlette.responses import RedirectResponse
 
 from application import dto
-from application import interactors
-from application.services import Authenticator, Resolver
-from application.types import UserAccessRights
+from application.services import Authenticator
 
-from utils.android import is_valid_android_id
+from .orchestrators import AuthOrchestrator
+from .orchestrators.exceptions import EmailIsExists, NotRegistered, IncorrectLoginData, SubscribeExpired
 
 from .. import schemas
 
 
 router = APIRouter(prefix="/auth", route_class=DishkaRoute)
-
-
-async def common_register_logic(
-        auth: Authenticator,
-        creator: interactors.CreateUser,
-        data: schemas.UserCreateByPassword | schemas.UserGoogle,
-        response: Response,
-) -> schemas.AccessTokenResponse:
-    user_data = dto.NewUser(email=data.email)
-    if isinstance(data, schemas.UserCreateByPassword):
-        user_data.user_name = data.user_name
-        user_data.hashed_password = auth.get_password_hash(data.password)
-    elif isinstance(data, schemas.UserGoogle):
-        user_data.google_id = data.google_id
-        user_data.first_name = data.first_name
-        user_data.last_name = data.last_name
-
-    try:
-        uuid_id = await creator(user_data)
-    except Exception as error:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"Failed to create user: email '{data.email}' is exists",
-        ) from error
-
-    access_token = auth.set_access_token(uuid_id, response)
-    auth.set_refresh_token(uuid_id, response)
-
-    return schemas.AccessTokenResponse(access_token=access_token)
-
-
-async def _common_login_logic(
-        auth: Authenticator,
-        interactor: interactors.GetUserByEmail,
-        updater: interactors.UpdateUserByUUID,
-        resolver: Resolver,
-        data: schemas.UserLoginByPassword | schemas.UserGoogle,
-        response: Response,
-) -> schemas.AccessTokenResponse:
-    user = await interactor(data.email)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="this user is not registered",
-        )
-
-    if isinstance(data, schemas.UserLoginByPassword):
-        if not auth.verify_password(plain_password=data.password, hashed_password=user.hashed_password):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="incorrect email or password",
-            )
-
-    elif isinstance(data, schemas.UserGoogle):
-        if data.first_name != user.first_name or data.last_name != user.last_name:
-            update_data = dto.UpdateUser(first_name=data.first_name, last_name=data.last_name)
-            await updater(user.uuid_id, update_data)
-
-    if data.device_id and is_valid_android_id(data.device_id):
-        if user.device_id and user.device_id == data.device_id:
-            if not user.is_admin and not await resolver.get_current_permission(user.id):
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Subscribe has be expired. Need bye month subscribe",
-                )
-
-        else:
-            update_data = dto.UpdateUser(
-                device_id=data.device_id,
-                access_rights=UserAccessRights.PLUS if not user.is_admin else None,
-            )
-            await updater(user.uuid_id, update_data)
-            await resolver.create(user.id, UserAccessRights.PLUS, days=7, reason="set android test period")
-
-    access_token = auth.set_access_token(user.uuid_id, response)
-    auth.set_refresh_token(user.uuid_id, response)
-
-    return schemas.AccessTokenResponse(access_token=access_token)
-
-
-async def _common_google_logic(
-        auth: Authenticator,
-        interactor: interactors.GetUserByEmail,
-        creator: interactors.CreateUser,
-        updater: interactors.UpdateUserByUUID,
-        resolver: Resolver,
-        user_data: dict[str, Any],
-        response: Response,
-) -> schemas.AccessTokenResponse:
-    data = schemas.UserGoogle(
-        email=user_data.get("email"),
-        google_id=user_data.get("sub") or user_data.get("id"),
-        first_name=user_data.get("given_name"),
-        last_name=user_data.get("family_name"),
-        device_id=user_data.get("device_id"),
-    )
-
-    if not data.email or not data.google_id:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="invalid google response",
-        )
-
-    try:
-        return await _common_login_logic(auth, interactor, updater, resolver, data, response)
-
-    except HTTPException as error:
-        if error.status_code == status.HTTP_404_NOT_FOUND:
-            return await common_register_logic(auth, creator, data, response)
-
-        raise
 
 
 @router.post(
@@ -144,12 +30,22 @@ async def _common_google_logic(
     response_model=schemas.AccessTokenResponse,
 )
 async def register_user(
-        auth: FromDishka[Authenticator],
-        creator: FromDishka[interactors.CreateUser],
+        auth: FromDishka[AuthOrchestrator],
         response: Response,
         data: schemas.UserCreateByPassword,
 ) -> schemas.AccessTokenResponse:
-    return await common_register_logic(auth, creator, data, response)
+    try:
+        return await auth(data, response)
+    except EmailIsExists as error:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Failed to create user: email is exists",
+        ) from error
+    except NotRegistered as error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Failed to register new user",
+        ) from error
 
 
 @router.post(
@@ -159,24 +55,22 @@ async def register_user(
     response_model=schemas.TokenFormResponse,
 )
 async def login_by_form(
-        auth: FromDishka[Authenticator],
-        interactor: FromDishka[interactors.GetUserByEmail],
-        updater: FromDishka[interactors.UpdateUserByUUID],
-        resolver: FromDishka[Resolver],
+        auth: FromDishka[AuthOrchestrator],
         response: Response,
         form_data: OAuth2PasswordRequestForm = Depends(),
 ) -> schemas.TokenFormResponse:
-    token_data = await _common_login_logic(
-        auth=auth,
-        interactor=interactor,
-        updater=updater,
-        resolver=resolver,
-        data=schemas.UserLoginByPassword(
-            email=form_data.username,
-            password=form_data.password,
-        ),
-        response=response,
+    data = schemas.UserLoginByPassword(
+        email=form_data.username,
+        password=form_data.password,
     )
+
+    try:
+        token_data = await auth(data, response)
+    except IncorrectLoginData as error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="incorrect email or password",
+        ) from error
 
     return schemas.TokenFormResponse(access_token=token_data.access_token)
 
@@ -188,21 +82,22 @@ async def login_by_form(
     response_model=schemas.AccessTokenResponse,
 )
 async def login_by_json(
-        auth: FromDishka[Authenticator],
-        interactor: FromDishka[interactors.GetUserByEmail],
-        updater: FromDishka[interactors.UpdateUserByUUID],
-        resolver: FromDishka[Resolver],
+        auth: FromDishka[AuthOrchestrator],
         response: Response,
         data: schemas.UserLoginByPassword,
 ) -> schemas.AccessTokenResponse:
-    return await _common_login_logic(
-        auth=auth,
-        interactor=interactor,
-        updater=updater,
-        resolver=resolver,
-        data=data,
-        response=response,
-    )
+    try:
+        return await auth(data, response)
+    except IncorrectLoginData as error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="incorrect email or password",
+        ) from error
+    except SubscribeExpired as error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Subscribe has be expired. Need bye month subscribe",
+        ) from error
 
 
 @router.post(
@@ -212,12 +107,8 @@ async def login_by_json(
     response_model=schemas.AccessTokenResponse,
 )
 async def login_by_google_id_token(
-        auth: FromDishka[Authenticator],
+        auth: FromDishka[AuthOrchestrator],
         config: FromDishka[Config],
-        interactor: FromDishka[interactors.GetUserByEmail],
-        creator: FromDishka[interactors.CreateUser],
-        updater: FromDishka[interactors.UpdateUserByUUID],
-        resolver: FromDishka[Resolver],
         response: Response,
         data: schemas.UserGoogleToken,
 ) -> schemas.AccessTokenResponse:
@@ -236,8 +127,18 @@ async def login_by_google_id_token(
             )
 
         id_info["device_id"] = data.device_id
-        return await _common_google_logic(auth, interactor, creator, updater, resolver, id_info, response)
+        return await auth(id_info, response)
 
+    except NotRegistered as error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Failed to register new user",
+        ) from error
+    except SubscribeExpired as error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Subscribe has be expired. Need bye month subscribe",
+        ) from error
     except ValueError as error:
         error_msg = str(error).lower()
 
@@ -279,26 +180,28 @@ async def login_by_google(
     status_code=status.HTTP_302_FOUND,
 )
 async def google_callback(
-        auth: FromDishka[Authenticator],
+        auth: FromDishka[AuthOrchestrator],
+        authenticator: FromDishka[Authenticator],
         config: FromDishka[Config],
-        interactor: FromDishka[interactors.GetUserByEmail],
-        creator: FromDishka[interactors.CreateUser],
-        updater: FromDishka[interactors.UpdateUserByUUID],
-        resolver: FromDishka[Resolver],
         request: Request,
 ) -> RedirectResponse:
-    logger = logging.getLogger()
-    token = await auth.oauth.google.authorize_access_token(request)
-    logger.info("google token: %s", str(token))
+    token = await authenticator.oauth.google.authorize_access_token(request)
     if "userinfo" in token:
         user_data = token.get("userinfo")
     else:
-        user_data = await auth.oauth.google.userinfo(token=token)
+        user_data = await authenticator.oauth.google.userinfo(token=token)
 
     redirect_uri = "/".join([config.google.redirect_url, "profile"])
     redirect = RedirectResponse(redirect_uri)
 
-    await _common_google_logic(auth, interactor, creator, updater, resolver, user_data, redirect)
+    try:
+        await auth(user_data, redirect)
+    except NotRegistered as error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Failed to register new user",
+        ) from error
+
     return redirect
 
 
@@ -334,13 +237,12 @@ async def validate_access_token(
 )
 async def logout_user(
         auth: FromDishka[Authenticator],
-        user: FromDishka[dto.CurrentUser],
+        _: FromDishka[dto.CurrentUser],
         response: Response,
 ) -> schemas.UserMessageResponse:
     auth.delete_access_token(response)
     auth.delete_refresh_token(response)
 
-    logging.info("user id=%s logout successfully", user.id)
     return schemas.UserMessageResponse(
         ok=True,
         message="logout successfully",
