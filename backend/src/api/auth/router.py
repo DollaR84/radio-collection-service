@@ -117,7 +117,7 @@ async def login_by_google_id_token(
             id_token.verify_oauth2_token,
             data.id_token,
             google_requests.Request(),
-            config.google.client_id
+            config.google.app_client_id
         )
 
         if "accounts.google.com" not in id_info["iss"]:

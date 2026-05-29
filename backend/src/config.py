@@ -105,8 +105,9 @@ class GoogleConfig(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="GOOGLE_")
 
     client_name: str
-    client_id: str
-    client_secret: str
+    app_client_id: str
+    web_client_id: str
+    web_client_secret: str
     redirect_url: str
 
 

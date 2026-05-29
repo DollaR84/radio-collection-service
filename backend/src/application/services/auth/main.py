@@ -24,8 +24,8 @@ class Authenticator:
         self.oauth = OAuth()
         self.oauth.register(
             name=self.config.client_name,
-            client_id=self.config.client_id,
-            client_secret=self.config.client_secret,
+            client_id=self.config.web_client_id,
+            client_secret=self.config.web_client_secret,
             server_metadata_url=self.server_metadata_url,
             client_kwargs={
                 "scope": self.scopes,
