@@ -3,8 +3,8 @@ import { useTranslation } from "react-i18next";
 export default function DonatePage() {
   const { t } = useTranslation();
   const cardData = [
-    { currency: "€", number: "4441 1144 9720 3321" },
-    { currency: "$", number: "4441 1144 8905 4781" },
+    // { currency: "€", number: "4441 1144 9720 3321" },
+    // { currency: "$", number: "4441 1144 8905 4781" },
     { currency: "₴", number: "4441 1110 2054 2688" },
   ];
 
@@ -12,8 +12,9 @@ export default function DonatePage() {
     "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=B3VG4L8B7CV3Y&source=url";
   const privatConvertLink =
     "https://www.privat24.ua/send/i00a4";
-  const donatikLink =
+  /* const donatikLink =
     "https://dollar84.donatik.ua";
+  */
 
   const copyToClipboard = async (text: string) => {
     try {
@@ -50,7 +51,7 @@ export default function DonatePage() {
         ))}
       </div>
 
-      <div className="mt-6">
+      /* <div className="mt-6">
         <div className="font-medium mb-2">{t("pages.donate.donatik")}:</div>
         <a
           href={donatikLink}
@@ -60,7 +61,7 @@ export default function DonatePage() {
         >
           {donatikLink}
         </a>
-      </div>
+      </div> */
 
       <div className="mt-6">
         <div className="font-medium mb-2">{t("pages.donate.privat")}:</div>
