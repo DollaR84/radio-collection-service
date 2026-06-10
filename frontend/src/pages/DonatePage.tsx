@@ -51,18 +51,6 @@ export default function DonatePage() {
         ))}
       </div>
 
-      /* <div className="mt-6">
-        <div className="font-medium mb-2">{t("pages.donate.donatik")}:</div>
-        <a
-          href={donatikLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-600 underline break-all"
-        >
-          {donatikLink}
-        </a>
-      </div> */
-
       <div className="mt-6">
         <div className="font-medium mb-2">{t("pages.donate.privat")}:</div>
         <a
